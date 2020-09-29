@@ -8,16 +8,25 @@ matern_cov <- function(s,t, nu) {
   (pi^(1/2) * abs(t-s)^nu)/(gamma(nu + 1/2) * 2^(nu-1)) * besselK(abs(t-s), nu = nu) 
 }
 struve_version <- function(s,t,nu) {
-  if(s-t == 0 & nu >= 1) {
+  if(s-t == 0) {
     return(0)
   }
-  sign(t-s)*(abs(t-s))^nu * pi^(3/2)/(cos(pi * nu) * gamma(nu + 1/2)) * 2^(-nu) * 
+  sign(t-s)*(abs(t-s))^nu * pi^(1/2) * 2^(nu - 1)* gamma(-nu + 1/2)*
     (besselI(abs(t-s), nu = nu) - struve(abs(t-s), -nu))
 }
-cross_cov <- function(s,t, nu, z_ij) {
-  if (nu == 1/2 | nu == 3/2) {
-    return(Re(z_ij) * matern_cov(s,t,nu))
+plot_function <- function(s,t,nu) {
+  if(s-t == 0) {
+    return(0)
   }
+  #(t-s)^nu*
+    sign(t-s)*(abs(t-s))^nu*
+    (besselI(abs(t-s), nu = nu) - struve(abs(t-s), -nu))
+}
+
+cross_cov <- function(s,t, nu, z_ij) {
+  # if (nu == 1/2 | nu == 3/2) {
+  #   return(Re(z_ij) * matern_cov(s,t,nu))
+  # }
   Re(z_ij) * matern_cov(s,t,nu) - 
     Im(z_ij) * struve_version(s,t,nu)
 }
@@ -133,13 +142,13 @@ sim_bivariate <- function(AA_star, nu, t_eval = seq(-5, 5, by = .02), N) {
   return(data.frame(t_eval, f1, f2))
 }
 
-library(Rcpp)
-cppFunction('double compute_marginal(double eval_point, NumericVector omega, NumericVector phi) {
-              return sum(cos(eval_point * omega + phi));
-            }')
-cppFunction('double compute_marginal_cross(double eval_point, NumericVector omega, NumericVector phi, NumericVector c_vec, NumericVector theta) {
-              return sum(c_vec * cos(eval_point * omega + phi + theta));
-            }')
+#library(Rcpp)
+# cppFunction('double compute_marginal(double eval_point, NumericVector omega, NumericVector phi) {
+#               return sum(cos(eval_point * omega + phi));
+#             }')
+# cppFunction('double compute_marginal_cross(double eval_point, NumericVector omega, NumericVector phi, NumericVector c_vec, NumericVector theta) {
+#               return sum(c_vec * cos(eval_point * omega + phi + theta));
+#             }')
 # cppFunction('double f1_eval(double eval_point, NumericVector omega, NumericVector phi) {
 #               return sqrt();
 #             }')

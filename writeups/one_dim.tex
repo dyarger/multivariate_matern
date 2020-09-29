@@ -1,0 +1,238 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[margin=1in]{geometry}
+\usepackage{framed}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{bbm}
+\usepackage{amsthm}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}{Lemma}[theorem]
+\newtheorem{assumption}{Assumption}[theorem]
+\newtheorem*{remark}{Remark}
+\usepackage{amssymb}
+\usepackage{mathrsfs}
+\usepackage{amsthm}
+
+\usepackage{mathtools}
+%\pagenumbering{gobble}
+\newcommand{\maxl}{\lambda}
+\newcommand{\vlen}{\boldsymbol{h}}
+\newcommand{\vint}{\boldsymbol{\omega}}
+\newcommand{\vpla}{\boldsymbol{a}}
+\newcommand{\innerone}{D_{11}}
+\newcommand{\inneronej}{D_{11j}}
+\newcommand{\innertwo}{D_{12}}
+\newcommand{\innertwoj}{D_{12j}} 
+\newcommand{\innerthree}{D_{22}}
+\newcommand{\biasone}{B_1}
+\newcommand{\biastwo}{B_2}
+\newcommand{\biasthree}{B_3}
+\newcommand{\Imn}{D}
+\newcommand{\Tmn}{T}
+\newcommand{\io}{\mathscr{Q}_{p,q}}
+\newcommand{\slle}{\hat{\mu}^{LL}_{0j}}
+\linespread{1}
+\usepackage{bbold}
+\usepackage[utf8]{inputenc}
+\usepackage{dirtytalk}
+\usepackage{float}
+\newcommand{\rh}{r\left\lVert \boldsymbol{h}\right\rVert}
+\newcommand{\hh}{\left\lVert \boldsymbol{h}\right\rVert}
+
+\newcommand{\bigCI}{\mathrel{\text{\scalebox{1.07}{$\perp\mkern-10mu\perp$}}}}
+%\usepackage{cite}
+%\usepackage[backend=bibtex,style=verbose-trad2]{biblatex}
+%\bibliography{lesson7a1} 
+%\bibliographystyle{ieeetr}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareUnicodeCharacter{2014}{\dash}
+\usepackage{hyperref}
+%\usepackage{natbib}
+\usepackage{url}
+
+\usepackage[numbers]{natbib}
+\bibliographystyle{plainnat} 
+
+%\usepackage{biblatex}
+%\addbibresource{prelim.bib}
+
+%\bibliographystyle{plain}
+
+%\DeclareUnicodeCharacter{0027}{\dash}
+%\DeclareRobustCommand\dash{%
+%  \unskip\nobreak\thinspace\textemdash\allowbreak\thinspace\ignorespaces}
+%\bibliography{prelim} 
+%\pagestyle{headings}
+\allowdisplaybreaks
+\newcommand{\Var}{\textrm{Var}}
+\newcommand{\Cov}{\textrm{Cov}}
+\newcommand{\Br}{\mathcal{B}(\mathbb{R})}
+
+ % \title{Teaching Statement}
+ % \author{}
+% %\date{Committee Members: Tailen Hsing, Kerby Shedden, Stilian Stoev}
+% \date{April 24, 2019}
+
+\begin{document}
+
+
+Stilian proposes that in $d=1$, the multivariate matern process is \begin{align*}
+ Y(t) = \int_{\mathbb{R}} e^{itx} \left((1 + ix)^{-\nu - 1/2}A 1_{x > 0} + (1 + ix)^{-\nu-1/2} \overline{A}1_{x < 0}\right) \tilde{B}(x)
+\end{align*}where $A$ is a $k\times k$ complex valued matrix, $\nu$ is a $k\times k$ real matrix, and $\tilde{B}(x)$ is a $\mathbb{C}^k$-valued Brownian motion such that \begin{align*}
+\tilde{B}(x) &= \overline{\tilde{B}(-x)} & \mathbb{E}(\tilde{B}(x) \tilde{B}(x) ^*) &=\mathbb{I}_k dx.
+\end{align*}
+
+
+
+
+Below, we developed two versions of this integral that give extensions of the multivariate matern model of Gneiting et al (2010). 
+\begin{itemize}
+\item (1) The first gives an asymmetric cross covariances when the two processes have the same smoothness parameter $\nu$, with the asymmetric portion coming from a complex valued $A$. 
+\item (2) The second takes a real-valued $A$, and allows the smoothness of the two processes to be different. In contrast to the OFBM case, a real-valued $AA^*$ does not imply time-reversibility, and this second approach also allows asymmetries to be modelled!
+\end{itemize}
+Presumably, there exists a complete version that has the two above special cases, but I haven't found it yet. The first seems to deal more with the shape of the cross-covariance, while the second seems to deal more with the lag of the cross-covariance. 
+We outline results for the general integral below. 
+I've specified where we do or do not have a closed-form of the covariance:
+
+\begin{itemize}
+\item $d=1$
+\begin{itemize}
+\item $\nu$ is a constant
+\begin{itemize}
+\item Covariance: Matern covariance
+\item Cross-Covariance:
+\begin{itemize}
+\item $AA^*$ is real: Matern covariance
+\item $AA^*$ is complex (1): Matern covariance + (combo of Bessel + Struve functions)
+\end{itemize}
+\end{itemize}
+\item $\nu$ is a diagonal matrix
+\begin{itemize}
+\item Covariances: Matern covariance
+\item Cross covariances: \begin{itemize}
+\item When the two smoothness parameters are the same, you get the same thing as when $\nu$ is a constant above.
+\item $AA^*$ is real and different smoothness (2): Whittaker function
+\item $AA^*$ is complex and different smoothness: Not solved
+\end{itemize}
+\end{itemize}
+\item $\nu$ is diagonalizable: Not solved, but probably could follow naturally from diagonal case
+\item $\nu$ even more general?: Not solved
+\end{itemize}
+\item $d > 1$: Not solved, but some work has been done for it.
+\end{itemize}
+
+The surprising thing, to me, is that even when you consider only when $A$ is real, the Multivariate Matern of Gneiting et al (2010) is not the complete class of cross covariances!! There are more of them when the processes have different smoothnesses. %These functions (Whittaker functions) do not appear to be symmetric cross-covariances. 
+In fact, when two of the processes have different smoothness, the Multivariate Matern of Gneiting et al (2010) does not follow from the spectral density.
+
+
+
+\section{The case $d=1$}
+
+
+\subsection{$\nu = \nu \mathbb{I}_k$}
+
+Stilian proposed first looking at the subset of processes where $\nu$ is a constant diagonal matrix. In the following, we write $\nu$ to be a real constant. In this case \begin{align*}
+\mathbb{E}\left(Y(t) Y(s)^*\right)&=\int_\mathbb{R} e^{i(t-s)x}(1 + x^2)^{-\nu - 1/2}(AA^*1_{x> 0} + \overline{AA^*}1_{x < 0}) dx
+\end{align*}
+Now, since $e^{i(t-s)x} = \cos((t -s) x) + i \sin( (t-s) x)$, we can write \begin{align*}
+\mathbb{E}\left(Y(t) Y(s)^*\right) &= \int_\mathbb{R} \cos((t -s)  x) (1 + x^2)^{-\nu - 1/2}(AA^*1_{x> 0} + \overline{AA^*}1_{x < 0}) dx \\
+& \ \ \ \ \ \ \ +i\int_\mathbb{R} \sin((t -s) x) (1 + x^2)^{-\nu - 1/2}(AA^*1_{x> 0} + \overline{AA^*}1_{x < 0}) dx
+\end{align*}provided that the integrals exist. Then, using Gradshteyn and Ryzhik 3.771 1 and 2, we have \begin{align*}
+\mathbb{E}\left(Y(t) Y(s)^*\right) &= \textrm{Re}(AA^*)\left(c_1\left(|t-s|\right)^{\nu} K_{\nu}(|t-s|) \right)\\
+& \ \ \ \ \ \ \ -\textrm{Im}(AA^*)\left(\textrm{sign}(t-s)c_2\left(|t-s|\right)^{\nu} \left(I_{\nu}(|t-s|) - L_{-\nu}(|t-s|)\right) \right)
+\end{align*}when $\nu \neq 1/2, 3/2, \dots$ and  \begin{align*}
+c_1 &= \frac{2}{\sqrt{\pi}} \frac{1}{2^\nu}\cos(-\pi \nu) \Gamma(-\nu + 1/2)\\
+c_2 &=  \frac{\sqrt{\pi}}{2^\nu}\Gamma(-\nu + 1/2)\\
+K_\nu(t) &: \textrm{ modified Bessel function of the second kind}\\
+I_\nu(t) &: \textrm{ modified Bessel function of the first kind}\\
+L_\nu(t) &: \textrm{ modified Struve function}
+\end{align*}The first part is the standard Matern covariance. See \url{https://argo.stat.lsa.umich.edu/shiny/ShinyApps/multivariate_matern/} to see various plots of the covariances and cross covariances.
+
+The second function has been mentioned, for example in the Gnieting turning bands paper.
+
+\subsection{$\nu$ is diagonal}
+The more general case is where $\nu$ is a matrix. We then get \begin{align*}
+\mathbb{E}(Y(t)Y(s)^*) &= \int_\mathbb{R} e^{i(t-s) x}\big((1 + ix)^{-\nu - 1/2 \mathbb{I}_k}AA^*\overline{(1 + ix)^{-\nu - 1/2 \mathbb{I}_k} }1_{x > 0} \\
+& \ \ \ \ \ \ \ \ \ \ +(1 + ix)^{-\nu - 1/2 \mathbb{I}_k}\overline{AA^*}\overline{(1 +ix)^{-\nu - 1/2 \mathbb{I}_k} }1_{x < 0} \big) dx
+\end{align*}Throughout, we use the fact that $\overline{(1 + ix)^{- \nu - 1/2 \mathbb{I}_k}} = \overline{(1 + ix)}^{-\nu - 1/2\mathbb{I}_k} = (1 - ix)^{-\nu - 1/2\mathbb{I}_k}$, since $\nu$ is a real-valued matrix.
+
+We now consider the more general case where $\nu$ does not necessarily have equal diagonal entries. Let $\nu = \textrm{diag}(\nu_1, \dots, \nu_k)$.
+Then the $j_1, j_2$ element of the covariance is
+\begin{align*}
+\mathbb{E}(Y_{j_1}(t)Y_{j_2}(s)) &= \int_{\mathbb{R}} e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}(B_{j_1, j_2}1_{x > 0} + \overline{B_{j_1, j_2}} 1_{x < 0}) dx
+\end{align*}where $B = AA^*$. It's not clear how to evaluate this in generality, so we focus now on a few special cases.
+
+For $j_1 = j_2$, $(1 + ix)^{a} (1 - ix)^a = (1+x^2)^a$ as Stilian noted, and $B_{j_1, j_1} = \overline{B_{j_1, j_1}}$ so the integral reduces to \begin{align*}
+\int_{\mathbb{R}} e^{i(t-s) x} (1 + x^2)^{-\nu_{j_1}- \frac{1}{2}}B_{j_1, j_1}dx
+\end{align*}giving the familiar Matern covariance. Thus, the marginal covariances of each process are Matern.
+
+% Then, when $j_1 \neq j_2$, \begin{align*}
+% \mathbb{E}(Y_{j_1}(t)Y_{j_2}(s)) &= \int_{\mathbb{R}} e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- 1/2}(1 -i x)^{-\nu_{j_2} - 1/2}(B_{j_1, j_2}1_{x > 0} + \overline{B_{j_1, j_2}} 1_{x < 0}) dx
+% \end{align*}
+
+
+% Then \begin{align*}
+% \int_{\mathbb{R}}e^{i(t-s)x} \sum_{\ell_1= 1}^k\sum_{\ell_2= 1}^k(1 + ix)^{-\nu_{\ell_1}- \frac{1}{2} 1_{i = j}}\overline{(1 + ix)^{-\nu_{\ell_2}-  \frac{1}{2} 1_{i = j}}}(B_{\ell_1, \ell_2}1_{x > 0}+ \overline{B_{\ell_1, \ell_2}}1_{x < 0}) dx
+% \end{align*}where $B = AA^*$. It's not clear how to evaluate this.% It is clear we need to evaluate integrals of the form $$\int_{0}^\infty e^{i(t-s)x}(1 + ix)^a(1 - ix)^b dx = \int_{0}^\infty e^{i(t-s)x}(1 + ix)^{a-b}(1 + x^2)^b dx.$$ I don't know how to do this.
+
+Consider another special case when $B_{j_1, j_2} = \overline{B_{j_1,j_2}}$ (i.e. $(AA^*)_{j_1, j_2}$ is real). We should end up with something like the Multivariate Matern of Gneiting et al (2010). The formula 3.384 9 of Gradshteyn and Ryzhik can be adjusted to show \begin{align*}
+\int_{\mathbb{R}}e^{ipx}(1 + ix)^{-2\mu}(1 -ix)^{-2\nu} dx &= \begin{cases}\pi 2^{-\nu-\mu+1} \frac{|p|^{\nu+\mu-1}}{\Gamma(2 \nu)} W_{\nu - \mu, 1/2 - \nu- \mu}(2|p|) & \textrm{if } p > 0 \\
+\pi 2^{-\nu-\mu+1} \frac{|p|^{\nu+\mu-1}}{\Gamma(2 \mu)} W_{\mu - \nu, 1/2 - \nu- \mu}(2|p|)&\textrm{if } p< 0 \end{cases}
+\end{align*}where $W_{\mu, \nu}(z)$ is the Whittaker function. Thus, in the above equation, we set $\mu = \nu_{j_1}/2 + \frac{1}{4} $ and $\nu = \nu_{j_2}/2 + \frac{1}{4}$, so that \begin{align*}
+\mathbb{E}(Y_{j_1}(t)Y_{j_2}(s)) &= B_{j_1, j_2} \pi 2^{-\nu_{j_1, j_2} + 1/2} |t-s|^{\nu_{j_1, j_2}-  1/2}\begin{cases}
+\frac{1}{\Gamma( \nu_{j_2}+ 1/2 )}W_{\frac{-\nu_{j_1} + \nu_{j_2}}{2}, -\nu_{j_1, j_2}}(2|t-s|)&\textrm{if } t-s> 0\\
+\frac{1}{\Gamma( \nu_{j_1}+ 1/2)}W_{\frac{\nu_{j_1} - \nu_{j_2}}{2},- \nu_{j_1, j_2}}(2|t-s|)&\textrm{if } t-s< 0
+\end{cases}%\int_{\mathbb{R}} e^{i(t-s) x} (1 + i x)^{\nu_{j_1}- \frac{1}{2}1_{j_1 = j_2}}(1 -i x)^{\nu_{j_2}- \frac{1}{2}1_{j_1 = j_2}}(B_{j_1, j_2}1_{x > 0} + \overline{B_{j_1, j_2}} 1_{x < 0}) dx.
+\end{align*}where $\nu_{j_1, j_2} = \frac{1}{2}\left(\nu_{j_1}+\nu_{j_2}\right)$. That's a bit messy. One can visualize for different smoothness values at the same shiny app \url{https://argo.stat.lsa.umich.edu/shiny/ShinyApps/multivariate_matern/}.
+
+Now, consider the case where $\nu_{j_1} = \nu_{j_2}$, the processes have the same smoothness. Using the fact that $W_{0, \nu}(2z) = \sqrt{2z/\pi} K_\nu(z)$ and $K_\nu(z) = K_{-\nu}(z)$, we have \begin{align*}
+\mathbb{E}(Y_{j_1}(t)Y_{j_2}(s)) &=B_{j_1, j_2} \frac{\sqrt{\pi} 2^{-\nu_{j_1} +1} |t-s|^{\nu_{j_1}}}{\Gamma(\nu_{j_1} + 1/2)} K_{\nu_{j_1}}(|t-s|)
+\end{align*}back to the Matern that we would expect! Thus, the Whittaker functions provide a natural cross-covariance to the Matern when the two processes have different smoothness.
+
+
+Now, in order to evaluate the version where $AA^*$ contains non-zero imaginary part, we must compute \begin{align*}
+\int_0^\infty e^{i(t-s)x} (1 + ix)^{\nu_{j_1} - 1/2}(1 - ix)^{\nu_{j_2} - 1/2} dx
+\end{align*}which I have not found in any formula book yet.
+
+
+% This is messy. But suppose for a second that $j_1 = j_2$, and using the fact that $W_{0, \nu}(2z) = \sqrt{2z/\pi} K_\nu(z)$, we have \begin{align*}
+% \mathbb{E}(Y_{j_1}(t)Y_{j_1}(s)) &= B_{j_1, j_1} \frac{\sqrt{\pi} 2^{\nu_{j_1}+1} |t-s|^{\nu_{j_1}}}{\Gamma(-\nu_{j_1} + 1/2)} K_{\nu_{j_1}}(|t-s|)
+% \end{align*}giving the familiar Matern covariance. Thus, the covariances of each process are Matern.
+
+% Gnieting et al (2010) considered the further simplification as the \textit{parsimonious} multivariate Matern.
+% 
+% Thus, even when $AA^*$ is real and we have time-reversibility, we have extended the Matern class of cross covariances when compared to Gneiting et al (2010)!!!
+
+
+%It's not clear how to evaluate this.
+% Thus, when $B_{\ell_1, \ell_2} = \overline{B_{\ell_1, \ell_2}}$, we have \begin{align*}
+% \mathbb{E}(Y(t)Y(s)^*) &= \pi \sum_{\ell_1 = 1}^k\sum_{\ell_2 = 1}^k B_{\ell_1, \ell_2}2^-\frac{-\nu-\mu+1}{2}}|p|^{-\nu/2-\mu/2} \begin{cases}\frac{1}{\Gamma(\nu)} W_{\nu/2 - \mu/2, 1/2 - \nu/2- \mu/2}(2|t-s|) & \textrm{if } t-s > 0 \\
+%  \frac{1}{\Gamma(2 \mu)} W_{\mu - \nu, 1/2 - \nu- \mu}(2|t-s|)&\textrm{if } t-s< 0 \end{cases}
+% \end{align*}
+
+% Because $W_{0, \nu}(2z) = \sqrt{2z/\pi} K_\nu(z)$, when $\nu_\ell = \nu$ for all $\ell=1, \dots, k$, we have \begin{align*}
+% \mathbb{E}(Y(t)Y(s)^*) &\propto |t-s|
+% \end{align*}
+% 
+% Suppose for a second that $a-b = 1$. Look at 3.384 9 
+% fAsianOptions
+% fAsianOptions::whittakerW(.2, .2, .2)
+% fOptions::whittakerW(x, kappa, mu, ip = 0)
+
+\subsection{$\nu$ is diagonalizable}
+
+
+Suppose that we can write $\nu = V\Lambda V^{-1}$.
+
+
+
+
+
+
+\end{document}
