@@ -4,3 +4,9 @@
 .Ruserdata
 davidbolin-ngme-457a0dc6e198/*
 bolin_code/*
+*.gz
+writeups/one_dim.pdf
+*.log
+*.bbl
+*.aux
+*.blg

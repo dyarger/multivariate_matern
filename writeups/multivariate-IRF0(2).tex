@@ -1,0 +1,528 @@
+\documentclass[11pt]{article}
+\usepackage{fullpage,amsfonts,amsmath,amsthm}
+
+\RequirePackage[numbers]{natbib}
+\RequirePackage[colorlinks,citecolor=blue,urlcolor=blue]{hyperref}
+\bibliographystyle{plain}
+\def\E{\mathbb E}
+\def\C{\mathbb C}
+\def\I{\mathbb I}
+\def\P{\mathbb P}
+\def\R{\mathbb R}
+\def\Rd{\R^d}
+\def\eqd{\stackrel{d}{=}}
+
+
+%Theorems***************************************
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{property}[theorem]{{\em Property}}
+
+\newtheorem{problem}[theorem]{{\bf Problem}}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{condition}
+\newtheorem{condition}[theorem]{Condition}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{convention}[theorem]{Convention}
+\newtheorem{claim}[theorem]{Claim}
+\newtheorem{fact}[theorem]{Fact}
+\newtheorem{example}[theorem]{Example}
+
+\title{On the structure of vector-valued IRF$_0$}
+
+\begin{document}
+\maketitle
+
+\section{Preliminaries}
+
+Let $\{X(s),\ s\in \Rd\}$ be a continuous in probability zero mean (Gaussian) random field with stationary increments taking values
+in $\R^k$.
+That is, such that 
+$$
+\{X(t+s)-X(s),\ t\in\Rd\}\eqd \{X(t) - X(0),\ t\in\Rd\}
+$$
+Such processes are known as IRF$_0$.
+
+ We shall assume that we are in the multivariate situation where
+$$
+k\ge 2.
+$$
+Our goal is to understand (characterize!) such classes of models under perhaps additional conditions.
+
+Recall that rhe process $X$ is also $H$-self-similar if
+$$
+\{X(ct),\ t\in\Rd\} \eqd \{ c^H X(t),\ t\in\Rd\},\ \ \mbox{ for all }c>0.
+$$
+
+
+\subsection{The case $d=1$}
+
+It is interesting (and it might have been done!) to completely characterize the $\R^k$-valued fractional Brownian motions.  That is, the
+class of all Gaussian self-similar IRF$_{0}$ processes.  This is not that easy and in principle should follow from Jinqi's work, but I am not so 
+sure the results there are as explicit as possible.  In the case when the increments are time-reversible, however, is solved in this section.
+
+Suppose that $X$ is an $H$-sssi process on the line and $X(0) = 0$.  Then, it is well-known that
+$X_a[t] := \langle X(t),a\rangle$ is a fractional Brownian motion process for every vector $a\in\R^k$.  It is not clear though,
+apriori, how these fBm's are tied together.  Let
+$$
+C(s,t) := \E [ X(s) X(t)^\top],\ \ s,t\in\R. 
+$$
+Observe that, for all $s,t\in\R$,
+\begin{equation}\label{e:c-cov}
+C(t-s,t-s) = \E [ (X(t) - X(s)) (X(t)-X(s))^\top] = C(t,t) + C(s,s) -C(s,t) - C(t,s).
+\end{equation}
+Observe that
+$$
+C(s,t)= \E[ X(s)X(t)^\top] = C(t,s)^\top.
+$$
+
+\begin{condition}[Condition R] \label{co:condtion-R}
+A vector-valued stationary increments process $X$ is said to be covariance-reversible, if $C(s,t) = C(t,s)$, for all $s,t\in\R$.  That is,
+the cross-covariance function is always symmetric.  
+\end{condition}
+
+It is argued in the next section that for stationary processes, covariance-reversibility is equivalent to time (space) reversibility.
+
+\medskip
+The stationarity of the increments and the fact that $X(0)=0$ entails that 
+$$
+X(t) - X(0) \eqd X(0) - X(-t) \ \ \Leftrightarrow X(t) \eqd -X(-t) \eqd X(-t).
+$$
+Since also the process $X$ is Gaussian and hence we have $-X\eqd X$.  The above relation and the
+$H$-self-similarity entails that (just in terms of equality of the marginal distributions):
+$$
+X(-t) \eqd t^H X(-1) \eqd t^H X(1) \eqd X(t),\ \ \forall t>0. 
+$$
+That is, 
+$$
+C(t,t) = |t|^{2H} C(1,1) \equiv |t|^{2H} C(-1,-1) =: |t|^{2H} C_1,
+$$
+where $C$ is a psd matrix.  These elementary observations lead us to the following.
+
+\begin{proposition}\label{p:basic} Let $X = \{X(t),\ t\in\R\}$ be a zero-mean $\R^k$-valued Gaussian process with stationary increments and such that $X(0)=0$.
+Assume that $X$ is $H$-sssi.  Then:
+
+{\bf (i)} We have that, for some psd $k\times k$ matrix $C_1$: 
+$$
+C(s,t) + C(t,s)^\top = C_1  \left( |t|^{2H} + | s|^{2H} - |t-s|^{2H} \right),\ \ \forall s,t\in\R.
+$$
+
+{\bf (ii)} Condition R holds if and only if
+$$
+\E [ X(s)X(t)^\top]  \equiv C(s,t) = \frac{C_1}{2}  \left( |t|^{2H} + | s|^{2H} - |t-s|^{2H} \right),\ \ \forall s,t\in\R.
+$$
+\end{proposition}
+
+Part {\bf (ii)} is trivial. Condition R trivially implies or in fact, assumes away the challenges.  The `only if' part also follows trivially. This result 
+shows, however, that the in the case when this (perhaps stringent) condition holds, the structure of the $H$-sssi $\R^k$-valued process is 
+rather simple.  Specifically, since $C_1$ is psd, it is diagonal in a suitable orthonormal basis.  Therefore, we obtain
+
+\begin{corollary} Under the conditions of Proposition \ref{p:basic}.{\bf (ii)}, we have that 
+$$
+\{X(t),\ t\in\R\} \eqd \left\{ \sum_{j=1}^k \sqrt{\lambda_j} f_j Z_j(t),\ \ t\in\R\right\},
+$$
+where $f_1,\cdots,f_k\in\R^k$ are orthonormal and $Z_j = \{Z_j(t),\ t\in\R\}$ are iid standard fBm's with Hurst parameter $H$.  In fact, we have
+$$
+C_1 = \sum_{j=1}^k \lambda_j f_j f_j^\top.
+$$
+\end{corollary}
+
+This means that, in the orthonormal basis $f_1,\cdots,f_k$, the process $X$ consists of independent fBm's in each coordinate (with possibly different) variances.
+Once again, this happens if and only if the cross-covariance matrices $C(s,t)=C(t,s)$ are symmetric.
+
+\subsection{The case $d\ge 2$.}  As before, we obtain
+$X(t) \eqd X(-t)$ and therefore 
+$$
+C(t,t) = \|t\|^{2H} C(t_0,t_0),\ \ \mbox{ where } t_0 := \frac{t}{\|t\|},\ \ t\in\R^k\setminus \{0\}.
+$$
+Suppose, yet again, that $C(s,t) = C(t,s)$, i.e., Condition R holds. Then, the covariance structure of $X$ is completely determined by the 
+M-variogram (M, for matrix):
+$$
+C(s,t) = \frac{1}{2} \left( \gamma(t) + \gamma(s) - \gamma(t-s)  \right),
+$$
+where
+$$
+\gamma(t) = C(t,t) = \E [X(t) X(t)^\top].
+$$
+Note that the M-variogram determines the covariance structure if and only if $C(s,t) = C(t,s)$ Condition R holds.
+
+\medskip
+\noindent
+{\bf A covariance reversible model.} This discussion suggest the following model, which is $H$-sssi.  It is very likely that {\em not all} $H$-sssi
+$\R^k$-valued processes can be represented using this model.  Namely, let
+$$
+X(t) := \int_{S} \int_{\R} \left( (\langle t,\theta\rangle -x)_+^{H-1/2} - (-x)_+^{H-1/2} \right) B(\theta) W(dx,d\theta),
+$$
+where $W$ is a vector-valued independently scattered Gaussian random measure with the standard control measure, i.e.,
+$$
+\E [W (dx,d\theta) W(dy,d\eta)^\top ] = \delta(x-y)dx \delta(\theta-\eta) d\theta {\mathbb I}_k. 
+$$
+Here, $B(\theta)$ is an arbitrary (measurable) $k\times k$ matrix-valued function.
+
+\section{The stationary (IRF$_{-1}$) case}
+
+Here we take an important detour to the case where $X$ is {\em stationary} aka IRF$_{-1}$  and $\R^k$-valued.
+
+\begin{proposition}\label{p:trev} The stationary zero-mean Gaussian process $X$ is time-reversible if and only if Condition R holds. 
+\end{proposition}
+
+{\bf Remark.} Before we proceed, observe that in the scalar case ($k=1$) Condition R always holds and hence all 1D stationary Gaussian random field are (time) reversible.
+
+\begin{proof}  `if' part: Assume Condition R.  By Gaussianity, to prove reversibility, i.e.,
+$$ 
+\{X(t),\ t\in\R^d\} \eqd \{ X(-t),\ t\in\Rd\}
+$$ 
+it is enough to show that
+\begin{equation}\label{e:trev}
+\E [ X(t) X(s)^\top] = \E [ X(-t)X(-s)^\top],\ \ \mbox{ for all }s,t\in\Rd.
+\end{equation}
+
+Stationarity entails however that
+$$
+\E [ X(t) X(s)^\top]  = \E [ X(t-s) X(0)^\top]\ \ \mbox{ and }\ \ \E[X(-t)X(-s)^\top] = \E[X(0)X(t-s)^\top].
+$$
+Condition R implies, however, that $\E [X(t-s) X(0)^\top] = \E[X(0)X(t-s)^\top]$, which in view of the last display yields \eqref{e:trev}.
+
+Conversely, if \eqref{e:trev} holds, then by reversing the above argument, one concludes that $\E[X(h)X(0)^\top] = \E[X(0)X(h)^\top]$ for all $h\in\Rd$ 
+(by taking $h:=t-s$). This, in view of the stationarity of $X$, yields Condition R.
+\end{proof}
+
+{\bf Remark.}  This result shows (or rather suggests) that there are {\em non-reversible} $\R^k$-valued stationary Gaussian processes.  This does not seem to 
+contradict, however, the classic Bochner representation theorem that we have in our IRF paper (Section 5).  There may be some issues with 
+Theorem 5.4  (and possibly Theorem 5.5).  The main issue may be with Definition 5.1, where we explicitly assume the generalized covariance to be {\em symmetric}.
+In the $\R^k$-valued and certainly $\mathbb H$-valued case, however, the cross covariance function
+$$
+C(t,s) = C(t-s,0) = \E[ X(t-s) X(0)^\top] \equiv {\cal K}(t-s)
+$$
+need not be symmetric.  That is, ${\cal K}(-h) = {\cal K}(h)$ may not always hold.  Indeed, Proposition \ref{p:trev} implies that the symmetry of the covariance function is
+equivalent to time-reversibility, which we need not have in general (I guess).  Having looked at the Bochner's theorem, I see nothing wrong with it.  That is, one can still have
+$$
+{\cal K}(h) = \int e^{i h^\top x} \mu(dx),\ \ h\in\Rd,
+$$
+for some ${\mathbb T}_+$-valued measure $\mu$. {\bf But} the notion of generalized covariance function needs to be extended.  Specifically, I don't think we should assume
+symmetry.  Then, I am not very confident in Theorems 5.4 and 5.5, but the proofs may just be valid if we {\bf fix Definition 5.1}.  {\bf Note:} The spectral measure in Theorems 5.4 and
+5.5 should not (and it is not!) assumed to be symmetric.
+
+\section{The local structure of stationary processes through an example}
+
+Suppose that $X = \{X(t),\ t\in\Rd\}$ is an $\R^k$-valued stationary zero-mean Gaussian process.  Suppose that
+$$
+C(t,s) = \E [X(t)\otimes X(s)] \equiv \E [X(t-s) X(0)^\top] = {\cal K}(t-s),\ \ t,s\in\Rd
+$$
+is the covariance function of $X$.  Here ${\cal K}(\cdot)$ is a $(k\times k)$-matrix-valued psd function.  That is,
+$$
+\sum_{i,j} \langle a_i, K(t_i - t_j) a_j\rangle \equiv \sum_{i,j} \overline a_i^\top {\cal K}(t_i-t_j) a_j \ge 0,
+$$
+for all choices of $a_i \in \mathbb C^k$ and $t_i\in\Rd,\ i=1,\dots,d$.  This can be readily shown by noting that
+$$
+{\rm Var} \left( \sum_{i=1}^n \overline a_i^\top X(t_i) \right) = \sum_{i,j=1}^n \overline{a_i}^\top\underbrace{\E [X(t_i)X(t_j)^\top]}_{{\cal K}(t_i-t_j)} a_j \ge 0.
+$$
+
+Assuming that ${\cal K}(\cdot)$ is continuous at $0$, an extension of the classic Bochner theorem entails:
+$$
+{\cal K}(h) = \int_{\Rd} e^{i h^\top x} \mu(dx),
+$$
+where $\mu(dx)$ is a $(k\times k)$-matrix-valued measure, such that
+$$
+\mu(A) = \overline\mu(-A)\ \ \mbox{ and }\ \ \mu(A) \mbox{ is Hermitian and psd, }
+$$
+for all Borel $A\subset \R^d$.  Recall that a complex-valued matrix $B$ is said to be Hermitian if $B = \overline {B}^\top$.  It is psd 
+iff $\overline a^\top  B a \ge 0$, for all $a\in {\mathbb C}^k$.
+
+
+Observe that  if ${\cal K}(h)$ is real, then
+$$
+{\cal K}(h)^\top = \overline {\cal K}(h)^\top = \int e^{-ih^\top x} \nu(dx),
+$$
+where $\nu(dx) = \overline \mu(dx)^\top$. Since $\mu(A) = \overline \mu(A)^\top$, then it follows that $\mu= \nu$, which, as expected, yields
+$$
+{\cal K}(h)^\top = {\cal K}(-h).
+$$ 
+Now, if the measure $\mu$ was also symmetric, i.e., $\mu(A) = \mu(-A)$, then we would have
+$$
+{\cal K}(-h) = {\cal K}(h).
+$$
+Notice that in this case since $\mu(A) = \overline\mu(-A) = \overline \mu(A)$, we get that $\mu$ takes real values.  This essentially
+completes the proof of the following.
+
+\begin{corollary} The process $X$ is reversible, i.e., ${\cal K}(h) = {\cal K}(-h),\ \forall h\in\Rd$, if and only if
+the spectral measure $\mu$ is symmetric and afortori, $\R^{k\times k}$-valued.
+\end{corollary}
+
+\medskip
+{\bf Some asymptotics.}  WLOG, let $K(0)=\I_k$ and suppose  that 
+\begin{equation}\label{e:K-to-gamma}
+ \lim_{c\downarrow 0} \frac{\I_k - {\cal K}(ch)}{r(c)} = \gamma(h),
+\end{equation}
+for some $r(c)\downarrow 0$ as $c\downarrow 0$, where $\gamma(\cdot)$ is a $(k\times k)$-valued function.
+
+The psd-ness of ${\cal K}$ implies the negative-definiteness of $\gamma$. 
+
+\begin{definition} A function $\gamma(\cdot)$ is said to be negative definite, if
+\begin{equation}\label{e:nsd}
+\sum_{i,j} \overline a_i^\top \gamma(t_i-t_j) a_j \le 0,
+\end{equation}
+for all $a_i\in \C^k$, such that $\sum_{i} a_i = 0$. 
+\end{definition}
+
+It is easy to see that for $a_i$'s as in the above definition, we have
+$$
+\sum_{i,j} \overline a_i^\top (\I_k - {\cal K}(t_i-t_j)) a_j = - \sum_{i,j} \overline a_i^\top {\cal K}(t_i-t_j) a_j \le 0, 
+$$
+where the latter inequality follows from the psd-ness of ${\cal K}$ and the former by the fact that $\sum_{i} a_i = 0$.  Since the above
+is non-positive, so is its limit (normalized by $r(c)>0$).  Thus, \eqref{e:nsd} holds, i.e., $\gamma$ is nsd.  
+
+
+{\bf Consequences:} It can be shown that the following are necessarily true:
+\begin{itemize}
+ \item If $\gamma$ is non-trivial, it follows that $r(c) = c^{\alpha} \ell(c)$ for some 
+ $$
+ 0 <\alpha \le 2
+ $$
+ and a slowly varying function $\ell$.
+ \item The limit $\gamma$ is $\alpha$-homogeneous, i.e.
+ $$
+ \gamma(c h) = c^\alpha \gamma(h),\ \ \forall c>0,\ h\in\Rd.
+ $$
+ \item As shown $\gamma$ is {\em negative semidefinite} (nsd).
+\end{itemize}
+
+\noindent {\bf Tangent fields.} Consider the increments $Y(t):= X(t) -X(0)$ and let us compute their cross-covariance 
+$$
+C_Y(t,s):=\E[ Y(t) \otimes Y(s)] = {\cal K}(t-s) - {\cal K}(t) - {\cal K}(-s) + {\cal K}(0) 
+$$
+Thus, by adding and subtracting ${\cal K}(0) = \I_k$, in view of \eqref{e:K-to-gamma}, we obtain
+$$
+\frac{1}{r(c)}C_Y(ct,cs) \to \gamma(t) + \gamma(-s) - \gamma(t-s),\ \ \mbox{ as }c\downarrow 0.
+$$
+(Note that ${\cal K}(-s) = {\cal K}(s)^\top$ and hence $\gamma(-s) = \gamma(s)^\top$.)
+The convergence of the covariance function and Gaussianity entail process convergence in the sense of fdd's.  Namely, 
+we have
+$$
+\left\{  \frac{1}{r(c)} (X(ct) - X(0)),\ t\in\Rd\right\} \stackrel{fdd}{\longrightarrow} \{Z(t),\ t\in\Rd\},\  \ \ \mbox{ as }c\downarrow 0,
+$$
+where $Z$ is a zero-mean Gaussian process taking values in $\R^k$ with cross-covariance:
+\begin{equation}\label{e:C-via-gamma}
+C_Z(t,s) =\gamma(t) +\gamma(s)^\top -  \gamma(t-s),\ \ t,s\in\Rd.
+\end{equation}
+(Sanity check: verify that the above formula does indeed satisfy $C_Z(s,t) = C_Z(t,s)^\top$. Since $C_Z(t,s)$ is a limit 
+cross-covariance, it is also a valid cross-covariance function itself.)
+
+The limit process $Z$ is said to be the {\em tangent process} of $X$ at $0$. By stationarity [of $X$], the tangent process
+will have the same distribution if instead at $0$ we zoomed-in at another point $u$ and considered the local asymptotic behavior of $(X(ct+u) - X(u))$,
+as $c\downarrow 0$.  Since $\gamma$ is $\alpha$-homogeneous, it necessarily follows that the tangent process $Z$ is $H$-self-similar with $H:= \alpha/2$.
+
+Indeed, to prove that $\{Z(ct),\ t\in\Rd\}\eqd\{c^H Z(t),\ t\in\Rd\}$ it is enough to show that
+$$
+C_Z(ct,cs) = c^{2H}C_Z(t,s),\ \ \forall c>0,t,s\in\Rd.
+$$ 
+This, however, automatically follows from the fact that $\gamma(ct) = c^{2H} \gamma(t)$ for all $c>0$ and $t\in\Rd$.
+
+The tangent process $Z$ has also stationary increments.  Indeed, for all $s,t,h\in\Rd$, using \eqref{e:C-via-gamma},
+we obtain
+\begin{align*}
+\E (Z(t+h) - Z(h))\otimes (Z(s+h) - Z(h)) &= \gamma(t+h) + \gamma(s+h)^\top - \gamma(t-s) +\gamma(h) +\gamma(h)^\top \\
+& - \gamma(h) -\gamma(s+h)^\top + \gamma(s)^\top -\gamma(t+h) -\gamma(h)^\top + \gamma(t)\\
+&= \gamma(t) + \gamma(s)^\top - \gamma(t-s) \equiv C_Z(t,s).
+\end{align*}
+This calculation shows that the covariance function of $\{ Z(t+h) - Z(h),\ t\in \Rd\}$ is the same as that of $Z$ and hence (by Gaussianity)
+it follows that $Z$ has stationary increments.
+
+Observe that since $\gamma(0) = 0$ and $\gamma$ is continuous at $0$ (must be verified),
+$$
+\E[Z(t)Z(t)^\top] = \gamma(t) + \gamma(-t).
+$$
+Note that, given the developments in the previous sections, $\gamma(t)=\gamma(-t) \equiv \gamma(t)^\top$ if and only if $Z$ satisfies Condition R.
+In particular, if $X$ is reversible (satisfies Condition R), then ${\cal K}(h) = {\cal K}(-h) \equiv {\cal K}(h)^\top$ and hence $\gamma(t) = \gamma(t)^\top$.
+In this case, the structure of the limit process in the case when $d=1$ is established in Proposition \ref{p:basic}.
+
+
+{\bf Comments and questions to be addressed:}
+
+ \begin{itemize}
+  \item As we have seen, under the rather general condition \eqref{e:K-to-gamma}, we have that the stationary $\R^k$-valued Gaussian process $X$
+  has a tangent process $Z$, which is $H$-sssi, where $H =\alpha/2$.  This underscores the importance of the class of self-similar processes with
+  stationary increments (i.e., self-similar IRF$_0$).  Basically, locally very many spatial models look like fractional Brownian sheets.
+  
+  \item If the process $X$ is {\em smooth}, then condition \eqref{e:K-to-gamma} does not hold.  In this case, higher order or generalized increments 
+  can be taken to study the local behavior of the process leading to self-similar IRF$_k$ models.  For simplicity, we stick with the IRF$_0$ case here.
+  
+  \item In the vector-valued case, the notion of reversibility plays an important role.  In the special case when $X$ (or the tangent process $Z$) satisfy Condition R,
+  then can one characterize more explicitly (through convenient stochastic integral representations) all possible tangent processes (fBm's).  This should follow
+  from the existing spectral representations, but needs to be written up.  Specifically, an efficient method for the simulation of such fBm's could be developed that
+  extends the scalar version.    
+  
+  \item Understand the non-reversible case when $d=1$.  Then, it can be used as in the previous point to provide a turning-band-type representation of a
+  general $\R^k$ (or eventually Hilbert-space)-valued fBm.  A certain notion of skewness should play a role. 
+  
+  \item {\bf Question:} In the case $d=1$,  we have that $\gamma(t) = t^{2H} C$ for all $t>0$, where the matrix $C$ is such that $C+C^\top$ is psd.  Does
+  every choice of such $C$ lead to a valid covariance? 
+  
+ \end{itemize}
+ 
+ \section{Operator Mat\'ern}
+ 
+  This is inspired by the characterization results of the operator fractional Brownian motion by Didier and Pipiras  \cite{didier:pipiras:2011}.  The focus here (for now) is on the case $d=1$.
+  Let $H \in M_k(\R)$, i.e., $H$ is an $k\times k$ real matrix and for all $c>0$ interpret $c^H$ as $\exp\{ \log(c) H\}$, where the matrix exponent is defined in the usual way.
+  
+  An $\R^k$-valued stochastic process $X = \{X(t),\ t\in\R\}$ is said to be operator self-similar with exponent $H$, if 
+  $$
+  \{X(ct),\ t\in \R\} \eqd \{ c^H X(t),\ t\in \R\}.
+  $$
+  An zero-mean Gaussian $\R^k$-valued process $X$ 
+  with stationary increments which is $H$-self-similar will be referred to as an operator fBm.  We refer to these processes as to
+  $H$-fBm's.
+  
+   Didier and Pipiras \cite{didier:pipiras:2011} provide a characterization of all possible operator fBm processes under the natural condition that
+   $$
+   0 < {\rm Re}(h_j) <1,\ j=1,\dots,k,
+   $$
+   where the $h_j$'s are the (possibly complex) eigenvalues of the matrix $H$.   Namely, under this condition,
+   their Theorem 3.1 entails that every $H$-fBm has the representation
+   \begin{equation}\label{e:diddier-pipiras}
+   \{X(t),\ t\in \R\} \eqd \left\{ \int_{\R} \frac{e^{itx} -1}{ix} ( x_+^{-D}A + x_-^{-D}\overline{A}) \tilde B(dx)\right\}
+   \end{equation}
+   where
+   $$
+   D = H - (1/2)\I_k,
+   $$
+   $A$  is a complex-valued $(k\times k)$ matrix, $\overline A$ is its conjugate and $\tilde B(dx)$ denotes a $\C^k-$valued Brownian motion such that
+   $$
+   \tilde B(x) = \overline {\tilde B(-x)}\quad \mbox{ and }\quad \E [\tilde B(dx) \tilde B(dx)^*] = \I_k dx.
+   $$
+   Here unless stated otherwise all our vectors are column vectors and for a matrix (or a vector) $C$, we denote $C^*:= \overline C^\top$ -- the adjoint matrix.
+   
+   Inspired by these results and the fact that operator fBm's can arise as tangent processes for stationary $\R^k$-valued models (under operator normalization), we would like to introduce an
+   extension of the Mat\'ern model.  This extension can be considered as {\em canonical} or {\em complete}, if its tangent processes can realize all possible operator fBm models.
+   
+   To this end, consider the process
+   \begin{equation}\label{e:o-Matern}
+   Y(t):= \int_{\R} e^{itx} ( (1+ix)^{-\nu -1/2}A 1_{\{x>0\}} + (1+ix)^{-\nu - 1/2}\overline{A}1_{\{x<0\}}) \tilde B(dx),
+   \end{equation}
+   where $\nu$ is a real $(k\times k)$ matrix and $A\in M_k(\C)$.  The matrix $\nu = (\nu_{ij})$ will play the role of the exponent of the Mat\'ern model.  
+    Note that $\nu$ will essentially correspond to the operator $H$ of the tangent operator fBm process associated with the above model.  Indeed, to 
+    gain some intuition, suppose that $\nu = \nu \I_k$ is scalar.  In this case, using commutativity of multiplication with scalars, for the cross-covariance of $Y(t)$, we obtain:
+    \begin{equation}\label{e:o-Matern-spectral}
+    \E [Y(t) Y(s)^\top] \equiv \E [Y(t) Y(s)^*] = \int_{\R} e^{i(t-s)x} (1+x^2)^{-\nu-1/2}  (A A^*1_{\{ x>0\} } + \overline A\overline A^*1_{\{ x<0\} }) dx.
+   \end{equation}
+   Indeed, this follows from the fact that $(1+ix)^{-\nu-1/2} \overline{(1+ix)^{-\nu-1/2}} = (1+ x^2)^{-\nu-1/2}$.  
+   (Note: I am being cavalier with complex exponents -- they can be defined properly in every neighborhood of  
+   a point on the complex plane that does not contain zero and extended analytically.).  
+   
+    Notice that the latter complex integral is in fact real-valued since \fbox{check!} $\E [Y(t) Y(s)^\top] = \overline{\E[Y(t)Y(s)^\top]}$.
+    We do not generally have however that $\E[Y(t) Y(s)^\top] = \E[Y(s)Y(t)^\top]$, unless
+    $$
+    A A^* =  \overline A\overline A^*.
+    $$
+    That is, the so-proposed Mat\'ern model is {\em time reversible} only if the matrix $\Sigma:= AA^*$ is real-valued and a fortori psd.
+    In this latter case, as we have seen above, in a suitable orthonormal basis, we have that $Y(t)$ consists of independent scalar stationary time 
+    series with Mat\'ern auto-covariance.  Notice that time reversibility is a very restrictive property shared by many existing extensions of the Matern models.
+  
+   The interesting feature of the  model  in \eqref{e:o-Matern} is that even in the scalar case, with a suitable choice of a matrix $A$ such that $A A^*$ is not real-valued,
+   we obtain {\em time-non-reversible} models. This is remarkable! 
+   
+   
+\noindent {\bf Connection to the characterization of Didier and Pipiras.} 
+In the following, we will argue that the tangent process to $Y$ above is an operator fBm.  Letting $c\downarrow 0$, consider a matrix exponent $H$  
+   (to be determined) and focus on the increment:
+   $$
+   c^{-H} (Y(ct) - Y(0)) = c^{-H} \int_{\R}  \frac{(e^{ictx} -1)}{ix} \left( ix (1+ix)^{-\nu -1/2}A 1_{\{x>0\}} + i x (1+ix)^{-\nu - 1/2}\overline{A}1_{\{x<0\}}\right) \tilde B(dx).
+   $$
+   By changing the variables $u := cx$, and using the facts that 
+   $$
+   iu (c+iu)^{-\nu-1/2} 1_{\pm u>0} \to  (u)_\pm^{-\nu+1/2} e^{ \pm i (1/2 -\nu) \pi/2 } ,\ \mbox{ as }c\downarrow 0,
+   $$
+   we obtain \fbox{justify the exchange of limits and integration}
+   \begin{align*}
+  \{ c^{-H} (Y(ct) - Y(0))\} &\eqd\left\{ c^{-H} \int_{\R} c \frac{(e^{itu} -1)}{iu} \left( iu c^{-1} c^{\nu+1/2} ( c + iu)^{-\nu-1/2} {\Big(} A 1_{\{ u>0\}}+ \overline{A} 1_{\{ u<0\}}{\Big)}\right) c^{-1/2}   \tilde B(d u) \right\}\\
+   &\stackrel{fdd}{\to} \left \{ \int_{\R} \frac{(e^{itu} -1)}{iu} \left( (u)_+^{-D}A_\nu 1_{\{ u>0\}}+ (u)_-^{-D} \overline A_\nu 1_{\{ u<0\}}\right) \tilde B(d u)\right \},
+   \end{align*}
+   where we used the fact that $\{B(du/c)\} \eqd\{c^{-1/2} B(du)\}$ and $\stackrel{fdd}{\to}$ means convergence in fdd,
+   $$
+   D \equiv H- 1/2 := \nu - 1/2\quad \mbox{ and }\quad A_\nu := e^{i (1/2 -\nu) \pi/2 }A.
+   $$
+   (Note: observe that $(ab)^C = a^C b^C = b^C a^C$ for all $a,b\in\C$ (appropriately defined) while $c^A c^B$ does not always equal $c^B c^A$
+   -- unless $A$ and $B$ commute.)  This shows that if we choose 
+   $H:=\nu$,
+   we obtain that the tangent process to $Y$ is the operator fBm with self-similarity exponent $H\equiv \nu$.
+   
+   Now, the characterization of \cite{didier:pipiras:2011} in \eqref{e:diddier-pipiras} shows that the model in \eqref{e:o-Matern} can achieve all possible 
+   tangent processes and in this sense it is a complete extension to the Mat\'ern model, where the exponent $\nu$ is replaced by an operator ($k\times k$ matrix) 
+   whose eigenvalues have real parts in $(0,1)$.
+   
+   \noindent{\bf Exercise:} Consider the spectral representation of the operator-Matern in the simple case of a scalar exponet
+    \eqref{e:o-Matern-spectral}.  Letting $\I = (e_1\ e_2\ \cdots e_k)$ for the cross-covariance, between the $i$-th and $j$-th components of $Y(t)$, 
+    we obtain 
+    \begin{align*}
+    \E[Y_i(t) Y_j(s)] &= \int_{\R}  e^{i(t-s)x} (1+x^2)^{-\nu-1/2}  \big( e_i^\top A A^*e_j 1_{\{ x>0\} } + e_i^\top \overline A\overline A^*e_j1_{\{ x<0\} }\Big) dx\\
+    & = \int_{\R}  e^{i(t-s)x} (1+x^2)^{-\nu-1/2} ( z_{i,j} 1_{\{x>0\}} + \overline z_{i,j}  1_{\{x>0\}} ) dx,
+    \end{align*}  
+    where
+    $$
+    z_{i,j} = a_i \overline a_j^\top \in \C,
+    $$
+    with $a_1,\cdots,a_k$ being the {\em row}-vectors of the matrix $A$.
+    
+    \fbox{Drew} Can you compute explicitly (via perhaps Bessel functions) the last integral?  This will be very nice since it will give the cross-covariance model 
+    for Mat\'ern, which is non-reversible in general!  In some sense, it will correct the misconceptions in the literature as to what one should call multivariate Mat\'ern!
+    
+    
+    \textbf{Preliminary}
+
+We consider the integral for the general Matern first as an exercise. To evaluate the integral $$\int_\mathbb{R} e^{ihx} (1+x^2)^{-\nu-1/2} dx,$$we use the fact that for the modified Bessel function of the second kind, $K_\nu(\cdot)$, we have $$K_\nu(h) = \frac{\Gamma(\nu + 1/2) 2^\nu}{\pi^{1/2} h^\nu} \int_0^\infty \frac{\cos(hx) dx}{( 1+x^2)^{\nu+1/2}}$$ (for example, see Abramowitz and Stegun 9.6.25). Then, we have \begin{align*}
+\int_\mathbb{R} e^{ihx} (1+x^2)^{-\nu-1/2} dx &= \int_\mathbb{R} \frac{\cos(hx) + i\sin(hx)}{(1+ x^2)^{\nu+1/2}} dt \\
+&= 2K_\nu(h) \frac{\pi^{1/2}h^\nu}{2^\nu\Gamma(\nu+1/2)} + i \int_\mathbb{R} \frac{\sin(hx)}{(1 + x^2)^{\nu+1/2}} dt \\
+&= K_\nu(h) \frac{\pi^{1/2}h^\nu}{2^{\nu-1}\Gamma(\nu+1/2)}+0
+\end{align*}because the right integrand is an odd function. This gives the standard Matern class as expected. 
+
+
+\vskip .5cm
+
+\textbf{Non-reversible}
+
+
+We return to the cross-covariance problem; the challenge is that the imaginary part will probably be nonzero. We have, letting $h = t-s$, \begin{align*}
+\mathbb{E}(Y_i(s+h) Y_j(s)) &= \int_\mathbb{R} e^{ihx} (1 + x^2)^{-\nu -1/2}(z_{i,j} 1_{\{x > 0\}} + \overline{z}_{i,j}1_{\{x < 0\}})dx \\
+&= \int_\mathbb{R}  (\cos(hx) + i \sin(hx)) (1 + x^2)^{-\nu -1/2}(z_{i,j} 1_{\{x > 0\}} + \overline{z}_{i,j}1_{\{x < 0\}})dx\end{align*}
+For simplicity, let $M(h, \nu)$ be the Matern covariance at lag $h$ and parameter $\nu$, so that we can write
+\begin{align*}
+\mathbb{E}(Y_i(s+h) Y_j(s))&= M(h,\nu)\frac{ z_{i,j} + \overline{z}_{i,j}}{2} + i\int_\mathbb{R}  \sin(hx) (1 + x^2)^{-\nu -1/2}(z_{i,j} 1_{\{x > 0\}} + \overline{z}_{i,j}1_{\{x < 0\}})dx
+\end{align*}
+
+Now, if $z_{i,j} = \overline{z}_{i,j}$, then simply $\mathbb{E}(Y_i(s+h) Y_j(s))= M(h,\nu)z_{i,j}$, and the reversible Matern cross-covariance falls out cleanly. We turn to when cross-covariance may not be reversible.
+
+We can see that 
+\begin{align*}
+\mathbb{E}(Y_i(s+h) Y_j(s))&= \frac{ z_{i,j} + \overline{z}_{i,j}}{2}M(h,\nu) + i%&\int_\mathbb{R}  \sin(hx) (1 + x^2)^{-\nu -1/2}(z_{i,j} 1_{\{x > 0\}} + \overline{z}_{i,j}1_{\{x < 0\}})dx \\
+(z_{i,j} - \overline{z}_{i,j}) \int_{(0,\infty)} \frac{\sin(hx)}{(1+x^2)^{\nu +1/2}}dx \\  %- \overline{z}_{i,j}\int_{(0,\infty)} \frac{\sin(hx)}{(1+x^2)^{\nu +1/2}}dx
+%\end{align*}or \begin{align*}
+%\mathbb{E}(Y_i(s+h) Y_j(s))
+&=\textrm{Re}(z_{i,j}) M(h,\nu) - \textrm{Im}(z_{i,j}) \int_{(0,\infty)} \frac{2\sin(hx)}{(1+x^2)^{\nu +1/2}}dx.  
+\end{align*}
+
+Using Wolfram-Alpha to evaluate the integral, we see that \begin{align*}
+\int_{(0, \infty)} \frac{2\sin(hx)}{(1+x^2)^{\nu+1/2}} dx &= \frac{\textrm{sign}(h)\pi^{3/2} 2^{-\nu} |h|^{\nu} \sec(\pi\nu) ( I_\nu(|h|) - L_{-\nu}(|h|))}{\Gamma(\nu + 1/2)} 
+\end{align*}where $I_\nu$ is the modified Bessel function of the first kind and $L_{-\nu}$ is the modified Struve function (see \url{https://www.wolframalpha.com/input/?i=integrate+from+x\%3D0+to+x+\%3D+infinity\%3A+sin\%28\%7Cb\%7Cx\%29\%2F\%281\%2Bx\%5E2\%29\%5E\%28\%7Ca\%7C\%2B+1\%2F2\%29+dx}).
+
+Numerical testing seem to support that this formula is true.
+
+%To show the non-reversibility of the process when $z_{i,j} \neq \overline{z}_{i,j}$, we see that  \begin{align*}
+%\mathbb{E}(Y_i(t)Y_j(s)) 
+%%&= \mathbb{E}(Y_i(s)Y_j(t))+i2(z_{i,j} - \overline{z}_{i,j})  \int_{(0,\infty)} \frac{\sin((t-s)x)}{(1+x^2)^{\nu +1/2}}dx.
+%&= \mathbb{E}(Y_i(s)Y_j(t))-4\textrm{Im}(z_{i,j}) \int_{(0,\infty)} \frac{\sin((t-s)x)}{(1+x^2)^{\nu +1/2}}dx.
+%\end{align*}
+
+    
+    
+    
+   
+   \bibliography{/Users/sstoev/Dropbox/doc/articles/mst-bibfile}
+
+\end{document}

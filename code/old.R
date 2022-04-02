@@ -82,10 +82,9 @@ z_ij <- complex(real = .02, imaginary =  .0001)
 matern_cov <- function(s,t, nu) {
   (gamma(nu + 1/2) * 2^nu)/(pi^(1/2) * abs(t-s)^nu) * besselK(abs(t-s), nu = nu) 
 }
-library(RandomFieldsUtils)
 struve_version <- function(s,t,nu) {
   abs(t-s)^nu * pi^(3/2)/(cos(pi * nu) * gamma(nu + 1/2)) * 2^(-nu-1) * 
-    (besselI(abs(t-s), nu = nu) - RandomFieldsUtils::struveL(abs(t-s), nu = -nu))
+    (besselI(abs(t-s), nu = nu) - struve(abs(t-s), nu_eval = -nu))
 }
 cross_cov <- function(s,t, nu, z_ij) {
   Re(z_ij) * matern_cov(s,t,nu) -2 * 

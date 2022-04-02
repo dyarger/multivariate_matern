@@ -73,7 +73,7 @@
 \newcommand{\Var}{\textrm{Var}}
 \newcommand{\Cov}{\textrm{Cov}}
 \newcommand{\Br}{\mathcal{B}(\mathbb{R})}
-
+\newcommand{\defeq}{\mathrel{:\mkern-0.25mu=}}
  % \title{Teaching Statement}
  % \author{}
 % %\date{Committee Members: Tailen Hsing, Kerby Shedden, Stilian Stoev}
@@ -82,7 +82,7 @@
 \begin{document}
 
 
-Stilian proposes that in $d=1$, the multivariate matern process is \begin{align*}
+Stilian proposes that in $d=1$, the multivariate matern process $Y(t) \in \mathbb{R}^k$ is \begin{align*}
  Y(t) = \int_{\mathbb{R}} e^{itx} \left((1 + ix)^{-\nu - 1/2}A 1_{x > 0} + (1 + ix)^{-\nu-1/2} \overline{A}1_{x < 0}\right) \tilde{B}(x)
 \end{align*}where $A$ is a $k\times k$ complex valued matrix, $\nu$ is a $k\times k$ real matrix, and $\tilde{B}(x)$ is a $\mathbb{C}^k$-valued Brownian motion such that \begin{align*}
 \tilde{B}(x) &= \overline{\tilde{B}(-x)} & \mathbb{E}(\tilde{B}(x) \tilde{B}(x) ^*) &=\mathbb{I}_k dx.
@@ -91,10 +91,10 @@ Stilian proposes that in $d=1$, the multivariate matern process is \begin{align*
 
 
 
-Below, we developed two versions of this integral that give extensions of the multivariate matern model of Gneiting et al (2010). 
+Below, we develop two versions of this integral that give extensions of the multivariate matern model of Gneiting et al (2010). 
 \begin{itemize}
-\item (1) The first gives an asymmetric cross covariances when the two processes have the same smoothness parameter $\nu$, with the asymmetric portion coming from a complex valued $A$. 
-\item (2) The second takes a real-valued $A$, and allows the smoothness of the two processes to be different. In contrast to the OFBM case, a real-valued $AA^*$ does not imply time-reversibility, and this second approach also allows asymmetries to be modelled!
+\item (1) The first gives an asymmetric cross covariance when the two processes have the same smoothness parameter $\nu$, with the asymmetric portion coming from a complex valued $A$. 
+\item (2) The second takes a real-valued $A$, and allows the smoothness of the two processes to be different. In contrast to the OFBM case, a real-valued $A$ does not imply time-reversibility, and this second approach also allows asymmetries to be modelled!
 \end{itemize}
 Presumably, there exists a complete version that has the two above special cases, but I haven't found it yet. The first seems to deal more with the shape of the cross-covariance, while the second seems to deal more with the lag of the cross-covariance. 
 We outline results for the general integral below. 
@@ -106,7 +106,7 @@ I've specified where we do or do not have a closed-form of the covariance:
 \item $\nu$ is a constant
 \begin{itemize}
 \item Covariance: Matern covariance
-\item Cross-Covariance:
+\item Cross covariances:
 \begin{itemize}
 \item $AA^*$ is real: Matern covariance
 \item $AA^*$ is complex (1): Matern covariance + (combo of Bessel + Struve functions)
@@ -146,31 +146,34 @@ Now, since $e^{i(t-s)x} = \cos((t -s) x) + i \sin( (t-s) x)$, we can write \begi
 \end{align*}provided that the integrals exist. Then, using Gradshteyn and Ryzhik 3.771 1 and 2, we have \begin{align*}
 \mathbb{E}\left(Y(t) Y(s)^*\right) &= \textrm{Re}(AA^*)\left(c_1\left(|t-s|\right)^{\nu} K_{\nu}(|t-s|) \right)\\
 & \ \ \ \ \ \ \ -\textrm{Im}(AA^*)\left(\textrm{sign}(t-s)c_2\left(|t-s|\right)^{\nu} \left(I_{\nu}(|t-s|) - L_{-\nu}(|t-s|)\right) \right)
-\end{align*}when $\nu \neq 1/2, 3/2, \dots$ and  \begin{align*}
+\end{align*}where  \begin{align*}
 c_1 &= \frac{2}{\sqrt{\pi}} \frac{1}{2^\nu}\cos(-\pi \nu) \Gamma(-\nu + 1/2)\\
 c_2 &=  \frac{\sqrt{\pi}}{2^\nu}\Gamma(-\nu + 1/2)\\
 K_\nu(t) &: \textrm{ modified Bessel function of the second kind}\\
 I_\nu(t) &: \textrm{ modified Bessel function of the first kind}\\
 L_\nu(t) &: \textrm{ modified Struve function}
-\end{align*}The first part is the standard Matern covariance. See \url{https://argo.stat.lsa.umich.edu/shiny/ShinyApps/multivariate_matern/} to see various plots of the covariances and cross covariances.
+\end{align*}The first part is the standard Matern covariance. The second part is only defined when $\nu \neq 1/2, 3/2, \dots$. In this case, the symmetric part of the cross-covariance is Matern, while the assymmetric part is proportional to $\textrm{sign}(t-s)c_2\left(|t-s|\right)^{\nu} \left(I_{\nu}(|t-s|) - L_{-\nu}(|t-s|)\right)$. See \url{https://argo.stat.lsa.umich.edu/shiny/ShinyApps/multivariate_matern/} to see various plots of the covariances and cross covariances.
 
-The second function has been mentioned, for example in the Gnieting turning bands paper.
+%The second function has been mentioned, for example in the Gnieting turning bands paper.
 
 \subsection{$\nu$ is diagonal}
-The more general case is where $\nu$ is a matrix. We then get \begin{align*}
+The more general case is where $\nu$ is a matrix. This complicates things by giving different components different smoothness. We then get \begin{align*}
 \mathbb{E}(Y(t)Y(s)^*) &= \int_\mathbb{R} e^{i(t-s) x}\big((1 + ix)^{-\nu - 1/2 \mathbb{I}_k}AA^*\overline{(1 + ix)^{-\nu - 1/2 \mathbb{I}_k} }1_{x > 0} \\
 & \ \ \ \ \ \ \ \ \ \ +(1 + ix)^{-\nu - 1/2 \mathbb{I}_k}\overline{AA^*}\overline{(1 +ix)^{-\nu - 1/2 \mathbb{I}_k} }1_{x < 0} \big) dx
 \end{align*}Throughout, we use the fact that $\overline{(1 + ix)^{- \nu - 1/2 \mathbb{I}_k}} = \overline{(1 + ix)}^{-\nu - 1/2\mathbb{I}_k} = (1 - ix)^{-\nu - 1/2\mathbb{I}_k}$, since $\nu$ is a real-valued matrix.
 
 We now consider the more general case where $\nu$ does not necessarily have equal diagonal entries. Let $\nu = \textrm{diag}(\nu_1, \dots, \nu_k)$.
-Then the $j_1, j_2$ element of the covariance is
+Then, define $B = AA^*$, and the $j_1, j_2$ element of the covariance is
 \begin{align*}
-\mathbb{E}(Y_{j_1}(t)Y_{j_2}(s)) &= \int_{\mathbb{R}} e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}(B_{j_1, j_2}1_{x > 0} + \overline{B_{j_1, j_2}} 1_{x < 0}) dx
-\end{align*}where $B = AA^*$. It's not clear how to evaluate this in generality, so we focus now on a few special cases.
+\mathbb{E}(Y_{j_1}(t)Y_{j_2}(s)) &= \int_{\mathbb{R}} e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}(B_{j_1, j_2}1_{x > 0} + \overline{B_{j_1, j_2}} 1_{x < 0}) dx \\
+&=\textrm{Re}(B_{j_1, j_2}) \int_{\mathbb{R}} e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx\\
+& \ \ \ \ \ \ \ \ \ \ \ \ + \textrm{Im}(B_{j_1, j_2})i\int_{0}^\infty e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx\\
+& \ \ \ \ \ \ \ \ \ \ \ \ - \textrm{Im}(B_{j_1, j_2})i\int_{-\infty}^0 e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx
+\end{align*}by breaking out the indicator functions. It's not clear how to evaluate the integral with the limit besides $\mathbb{R}$, so we focus now on a few special cases.
 
-For $j_1 = j_2$, $(1 + ix)^{a} (1 - ix)^a = (1+x^2)^a$ as Stilian noted, and $B_{j_1, j_1} = \overline{B_{j_1, j_1}}$ so the integral reduces to \begin{align*}
-\int_{\mathbb{R}} e^{i(t-s) x} (1 + x^2)^{-\nu_{j_1}- \frac{1}{2}}B_{j_1, j_1}dx
-\end{align*}giving the familiar Matern covariance. Thus, the marginal covariances of each process are Matern.
+For $j_1 = j_2$, $(1 + ix)^{a} (1 - ix)^a = (1+x^2)^a$ as Stilian noted, and $\textrm{Im}(B_{j_1, j_1}) = 0$ so the result reduces to \begin{align*}
+B_{j_1, j_1}\int_{\mathbb{R}} e^{i(t-s) x} (1 + x^2)^{-\nu_{j_1}- \frac{1}{2}}dx,
+\end{align*}which gives the familiar Matern covariance as above. Thus, the marginal covariances of each process are Matern.
 
 % Then, when $j_1 \neq j_2$, \begin{align*}
 % \mathbb{E}(Y_{j_1}(t)Y_{j_2}(s)) &= \int_{\mathbb{R}} e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- 1/2}(1 -i x)^{-\nu_{j_2} - 1/2}(B_{j_1, j_2}1_{x > 0} + \overline{B_{j_1, j_2}} 1_{x < 0}) dx
@@ -181,7 +184,7 @@ For $j_1 = j_2$, $(1 + ix)^{a} (1 - ix)^a = (1+x^2)^a$ as Stilian noted, and $B_
 % \int_{\mathbb{R}}e^{i(t-s)x} \sum_{\ell_1= 1}^k\sum_{\ell_2= 1}^k(1 + ix)^{-\nu_{\ell_1}- \frac{1}{2} 1_{i = j}}\overline{(1 + ix)^{-\nu_{\ell_2}-  \frac{1}{2} 1_{i = j}}}(B_{\ell_1, \ell_2}1_{x > 0}+ \overline{B_{\ell_1, \ell_2}}1_{x < 0}) dx
 % \end{align*}where $B = AA^*$. It's not clear how to evaluate this.% It is clear we need to evaluate integrals of the form $$\int_{0}^\infty e^{i(t-s)x}(1 + ix)^a(1 - ix)^b dx = \int_{0}^\infty e^{i(t-s)x}(1 + ix)^{a-b}(1 + x^2)^b dx.$$ I don't know how to do this.
 
-Consider another special case when $B_{j_1, j_2} = \overline{B_{j_1,j_2}}$ (i.e. $(AA^*)_{j_1, j_2}$ is real). We should end up with something like the Multivariate Matern of Gneiting et al (2010). The formula 3.384 9 of Gradshteyn and Ryzhik can be adjusted to show \begin{align*}
+Consider another special case when $\textrm{Im}(B_{j_1, j_2})=0$, but $j_1 \neq j_2$. We should end up with something like the Multivariate Matern of Gneiting et al (2010). The formula 3.384 9 of Gradshteyn and Ryzhik can be adjusted to show \begin{align*}
 \int_{\mathbb{R}}e^{ipx}(1 + ix)^{-2\mu}(1 -ix)^{-2\nu} dx &= \begin{cases}\pi 2^{-\nu-\mu+1} \frac{|p|^{\nu+\mu-1}}{\Gamma(2 \nu)} W_{\nu - \mu, 1/2 - \nu- \mu}(2|p|) & \textrm{if } p > 0 \\
 \pi 2^{-\nu-\mu+1} \frac{|p|^{\nu+\mu-1}}{\Gamma(2 \mu)} W_{\mu - \nu, 1/2 - \nu- \mu}(2|p|)&\textrm{if } p< 0 \end{cases}
 \end{align*}where $W_{\mu, \nu}(z)$ is the Whittaker function. Thus, in the above equation, we set $\mu = \nu_{j_1}/2 + \frac{1}{4} $ and $\nu = \nu_{j_2}/2 + \frac{1}{4}$, so that \begin{align*}
@@ -225,6 +228,8 @@ Now, in order to evaluate the version where $AA^*$ contains non-zero imaginary p
 % fAsianOptions::whittakerW(.2, .2, .2)
 % fOptions::whittakerW(x, kappa, mu, ip = 0)
 
+
+
 \subsection{$\nu$ is diagonalizable}
 
 
@@ -232,7 +237,230 @@ Suppose that we can write $\nu = V\Lambda V^{-1}$.
 
 
 
+\subsection{Complete $d=1$}
+
+Now, we write $h= t-s$, \begin{align*}
+\mathbb{E}\left(Y(t) Y(s)^*\right) &= |h|^{\nu_+-  1/2}\bigg(\textrm{Re}(AA^*)\left(c_1 W_{-\gamma\nu_-, \nu_+}(2|h|)\right)\\
+& \ \ \ \ \ \ \ -\textrm{Im}(AA^*)\left(c_2\left(M_{-\gamma\nu_-,\nu_+}(2|h|) - A_{-\gamma\nu_-,\nu_+ }(2|h|)\right) \right)\bigg)
+\end{align*}where  \begin{align*}
+c_1 &= \frac{2}{\sqrt{\pi}} \frac{1}{2^\nu}\cos(-\pi \nu) \Gamma(-\nu + 1/2)\\
+c_2 &=  \gamma \frac{\sqrt{\pi}}{2^\nu}\Gamma(-\nu + 1/2)\\
+\gamma &= \textrm{sign}(h) \\
+\nu_+ &= \frac{\nu_{j_1} + \nu_{j_2}}{2}\\
+\nu_- &= \frac{\nu_{j_1} - \nu_{j_2}}{2}\\
+W_{\nu, \mu}(t) &: \textrm{ Whittaker function of the second kind}\\
+M_{\nu, \mu}(t) &: \textrm{ Whittaker function of the first kind}\\ 
+A_{\nu, \mu}(t) &: \textrm{ Generalized modified Struve function}
+\end{align*}
+
+The functions $W$ and $M$ are implemented in the R package fAsianOptions (as well as mathematica). $A$ is a bit more tricky.
 
 
+Use 5.23 and and 4.78 to compute.
+
+%$\Omega (a,c;z) = \frac{\Gamma(c)}{\Gamma(a)\Gamma(c-a)} \sum_{n=0}^\infty\frac{z^n}{n!}( B_{1/2} (c-a, a+n) - B_{1/2}(a+n, c-a))$
+
+%where $B_{1/2}(c-a, a) = 2^{1-c} \int_0^1(1+u)^{(a-1)} * (1-u)^{(c-a-1)}du = \int_0^{1/2}t^{c-a-1}(1-t)^{a-1}dt$
+
+%$A_{\kappa,\mu}(z) = e^{-(1/2)z}z^{(1/2) + \mu}\Omega(1/2 - \kappa + \mu, 1 + 2\mu; z)$
+
+%# 4.111
+% https://www.wolframalpha.com/input/?i=2+*+%282i%29%5E%28-a-b-1%29+*+%28-1%29%5E%28-b-1%2F2%29%2F%28%28e%5E%282+*+pi*i%28-a+%2B+1%2F2%29%29+-+2+%2B+e%5E%28-2+*+pi+*+i%28-b+%2B+1%2F2%29%29%29+i+e%5E%28-i*pi*%28-a+%2B+1%2F2+-+1%2F2%28-b-a%2B1%29%29%29%29
+
+
+Remark: It's clear how to compute M and W, which are available in Mathematica or the fAsianOptions package in R. However, the function A is less well known, and the only references I see for it are Babister in the 1950s. We may have to work out how to compute it on our own. In a sense, the A function generalizes the modified struve function in the way that W and M generalize the bessel functions K and I, respectively.
+
+\textbf{Mathematical details}. We are left with the expression: \begin{align}
+\begin{split}
+\mathbb{E}(Y_{j_1}(t)Y_{j_2}(s))
+&=\textrm{Re}(B_{j_1, j_2}) \int_{\mathbb{R}} e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx\\
+& \ \ \ \ \ \ \ \ \ \ \ \ + \textrm{Im}(B_{j_1, j_2})i\int_{0}^\infty e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx\\
+& \ \ \ \ \ \ \ \ \ \ \ \ - \textrm{Im}(B_{j_1, j_2})i\int_{-\infty}^0 e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx
+\end{split}\label{breakout}
+\end{align}
+
+The formula 3.384 9 of Gradshteyn and Ryzhik can be adjusted to show\begin{align*}
+ \textrm{Re}(B_{j_1, j_2})\int_{\mathbb{R}}& e^{i(t-s) x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx= \\
+ & \ \ \ \ \ \textrm{Re}(B_{j_1, j_2})\pi 2^{-\nu_+ + 1/2} |t-s|^{\nu_+-  1/2}\begin{cases}
+\frac{1}{\Gamma( \nu_{j_2}+ 1/2 )}W_{-\nu_-,\nu_+}(2|t-s|)&\textrm{if } t-s> 0\\
+\frac{1}{\Gamma( \nu_{j_1}+ 1/2)}W_{\nu_-,\nu_+}(2|t-s|)&\textrm{if } t-s< 0
+\end{cases}%\int_{\mathbb{R}} e^{i(t-s) x} (1 + i x)^{\nu_{j_1}- \frac{1}{2}1_{j_1 = j_2}}(1 -i x)^{\nu_{j_2}- \frac{1}{2}1_{j_1 = j_2}}(B_{j_1, j_2}1_{x > 0} + \overline{B_{j_1, j_2}} 1_{x < 0}) dx.
+\end{align*}where $\nu_{+} = \frac{1}{2}\left(\nu_{j_1}+\nu_{j_2}\right)$, $\nu_- = \frac{1}{2}\left(\nu_{j_1}-\nu_{j_2}\right)$, and
+$W_{\mu, \nu}(z)$ is the (second) Whittaker function.
+
+Now, must deal with the second two integrals of (\ref{breakout}). Let this quantity be $M$. Also, let $z = 2h = t-s$ to avoid confusion. We have \begin{align*}
+M &= \textrm{Im}(B_{j_1, j_2})i\left(\int_{0}^\infty e^{ih x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx + \int_{0}^{-\infty} e^{ih x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx\right) 
+\end{align*}Now, consider the change of variables $t = \frac{ix}{2} + \frac{1}{2}$, so that $x = -2i(t-1/2)$ and $dt = (i/2)dx$. Transforming this integral gives
+\begin{align*}
+M &= \textrm{Im}(B_{j_1, j_2})i\bigg(\int_{1/2}^{1/2 + \infty i} e^{ih (-2i)(t-1/2)} (1 + i (-2i)(t-1/2))^{-\nu_{j_1}- \frac{1}{2}}(1 -i (-2i)(t-1/2))^{-\nu_{j_2}- \frac{1}{2}} (-2i)dt \\
+&\ \ \ \ \ \ \ \ + \int_{1/2}^{1/2-\infty i} e^{ih (-2i)(t-1/2)} (1 + i (-2i)(t-1/2))^{-\nu_{j_1}- \frac{1}{2}}(1 -i (-2i)(t-1/2))^{-\nu_{j_2}- \frac{1}{2}}(-2i)dt\bigg)  \\
+&= 2\textrm{Im}(B_{j_1, j_2})\left(\int_{\frac12}^{\frac12 + \infty i} e^{2h(t-1/2)} (2t)^{-\nu_{j_1}- \frac{1}{2}}(2 -2t)^{-\nu_{j_2}- \frac{1}{2}}dt+\int_{\frac12}^{\frac12 - \infty i} e^{2h(t-1/2)} (2t)^{-\nu_{j_1}- \frac{1}{2}}(2 -2t)^{-\nu_{j_2}- \frac{1}{2}}dt\right) \\ 
+&= 2^{-2\nu_+}e^{-h}\textrm{Im}(B_{j_1, j_2})\left(\int_{\frac12}^{\frac12 + \infty i} e^{2ht} t^{-\nu_{j_1}- \frac{1}{2}}(1 -t)^{-\nu_{j_2}- \frac{1}{2}}dt+\int_{\frac12}^{\frac12 - \infty i} e^{2ht} t^{-\nu_{j_1}- \frac{1}{2}}(1 -t)^{-\nu_{j_2}- \frac{1}{2}}dt\right)
+\end{align*} I'm happy up to here. This is when I question:
+\begin{align*}
+&= 2^{-2\nu_+}e^{-h} (-1)^{-\nu_{j_2}-\frac12}\textrm{Im}(B_{j_1, j_2})\left(\int_{\frac12}^{\frac12 + \infty i} e^{2ht} t^{-\nu_{j_1}- \frac{1}{2}}(t-1)^{-\nu_{j_2}- \frac{1}{2}}dt+\int_{\frac12}^{\frac12 - \infty i} e^{2ht} t^{-\nu_{j_1}- \frac{1}{2}}(t-1)^{-\nu_{j_2}- \frac{1}{2}}dt\right) \\ 
+&= 2^{-2\nu_+}e^{-h}  e^{i \pi (-\nu_{j_2} - \frac12) }\textrm{Im}(B_{j_1, j_2})\left(\int_{\frac12}^{\frac12 + \infty i} Xdt+\int_{\frac12}^{\frac12 - \infty i} X dt\right)
+\end{align*}where $X = e^{zt} t^{-\nu_{j_1} - \frac12}(t-1)^{-\nu_{j_2} - \frac12}$.
+
+Furthermore, suppose $\nu_{j_2} = \nu_{j_1} + n$, where $n$ is an integer with $n> -\nu_{j_1}$. Then, this is equal to  \begin{align*}
+&=\frac{2\pi i 2^{-2\nu_+}e^{-h}  e^{i \pi (-\nu_{j_2} - \frac12) }\textrm{Im}(B_{j_1, j_2})}{1 - 2e^{2 \pi i (1/2 - \nu_{j_1})} + e^{2 \pi i (1 - \nu_{j_1}-\nu_{j_2})}}\left(\omega - (e^{2 \pi i (1/2 - \nu_{j_1})}- 1) y_4\right) \\
+&=\frac{2\pi i 2^{-2\nu_+}e^{-h} \textrm{Im}(B_{j_1, j_2})}{e^{i \pi (\nu_{j_2} + \frac12) } - 2e^{2 \pi i (1/2 - \nu_{j_1})}e^{i \pi (\nu_{j_2} + \frac12) } + e^{2 \pi i (1 - \nu_{j_1}-\nu_{j_2})}e^{i \pi (\nu_{j_2} +\frac12) }}\left(\omega - (e^{2 \pi i (1/2 - \nu_{j_1})}- 1) y_4\right) \\
+&= \frac{2\pi i}{1 - 2e^{2 \pi i (1/2 - \nu_{j_1})} + e^{2 \pi i (1 - \nu_{j_1}-\nu_{j_2})}}\left(\frac{2 \pi(\Gamma(1/2+ \nu_{j_1})\Gamma(1/2 + \nu_{j_2}))^{-1} }{ie^{i \pi (1/2- \nu_1)}\Gamma(1 - \nu_{j_1} - \nu_{j_2})}\Omega -  \frac{\overline{\Phi}(e^{-2 \pi i (1/2 - \nu_{j_1})}- 1)}{\Gamma(1 + \nu_{j_1} + \nu_{j_2})}\right) \\
+&= \frac{2\pi}{1 - 2e^{2 \pi i (1/2 - \nu_{j_1})} + e^{2 \pi i (1 - \nu_{j_1}-\nu_{j_2})}}\left(\frac{2 \pi(\Gamma(1/2+ \nu_{j_1})\Gamma(1/2 + \nu_{j_2}))^{-1} }{e^{i \pi (1/2- \nu_1)}\Gamma(1 - \nu_{j_1} - \nu_{j_2})}\Omega -  i\frac{\overline{\Phi}(e^{-2 \pi i (1/2 - \nu_{j_1})}- 1)}{\Gamma(1 + \nu_{j_1} + \nu_{j_2})}\right) 
+\end{align*}
+
+\pagebreak 
+
+We have \begin{align*}
+M &= \textrm{Im}(B_{j_1, j_2})i\left(\int_{0}^\infty e^{ih x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx + \int_{0}^{-\infty} e^{ih x} (1 + i x)^{-\nu_{j_1}- \frac{1}{2}}(1 -i x)^{-\nu_{j_2}- \frac{1}{2}}dx\right) 
+\end{align*}Now, consider the change of variables $t = \frac{ix}{2} + \frac{1}{2}$, so that $x = -2i(t-1/2)$ and $dt = (i/2)dx$. Transforming this integral gives
+\begin{align*}
+M &= \textrm{Im}(B_{j_1, j_2})i\bigg(\int_{1/2}^{1/2 + \infty i} e^{ih (-2i)(t-1/2)} (1 + i (-2i)(t-1/2))^{-\nu_{j_1}- \frac{1}{2}}(1 -i (-2i)(t-1/2))^{-\nu_{j_2}- \frac{1}{2}} (-2i)dt \\
+&\ \ \ \ \ \ \ \ + \int_{1/2}^{1/2-\infty i} e^{ih (-2i)(t-1/2)} (1 + i (-2i)(t-1/2))^{-\nu_{j_1}- \frac{1}{2}}(1 -i (-2i)(t-1/2))^{-\nu_{j_2}- \frac{1}{2}}(-2i)dt\bigg)  \\
+&= 2\textrm{Im}(B_{j_1, j_2})\left(\int_{\frac12}^{\frac12 + \infty i} e^{2h(t-1/2)} (2t)^{-\nu_{j_1}- \frac{1}{2}}(2 -2t)^{-\nu_{j_2}- \frac{1}{2}}dt+\int_{\frac12}^{\frac12 - \infty i} e^{2h(t-1/2)} (2t)^{-\nu_{j_1}- \frac{1}{2}}(2 -2t)^{-\nu_{j_2}- \frac{1}{2}}dt\right) \\ 
+&= 2^{-2\nu_+}e^{-h}\textrm{Im}(B_{j_1, j_2})\left(\int_{\frac12}^{\frac12 + \infty i} e^{2ht} t^{-\nu_{j_1}- \frac{1}{2}}(1 -t)^{-\nu_{j_2}- \frac{1}{2}}dt+\int_{\frac12}^{\frac12 - \infty i} e^{2ht} t^{-\nu_{j_1}- \frac{1}{2}}(1 -t)^{-\nu_{j_2}- \frac{1}{2}}dt\right) \\ 
+&= 2^{-2\nu_+}e^{-h} (-1)^{-\nu_{j_2}-\frac12}\textrm{Im}(B_{j_1, j_2})\left(\int_{\frac12}^{\frac12 + \infty i} e^{2ht} t^{-\nu_{j_1}- \frac{1}{2}}(t-1)^{-\nu_{j_2}- \frac{1}{2}}dt+\int_{\frac12}^{\frac12 - \infty i} e^{2ht} t^{-\nu_{j_1}- \frac{1}{2}}(t-1)^{-\nu_{j_2}- \frac{1}{2}}dt\right) \\ 
+&= 2^{-2\nu_+}e^{-h}  e^{i \pi (-\nu_{j_2} - \frac12) }\textrm{Im}(B_{j_1, j_2})\left(\int_{\frac12}^{\frac12 + \infty i} Xdt+\int_{\frac12}^{\frac12 - \infty i} X dt\right)
+\end{align*}
+
+\pagebreak
+
+Now, must deal with the second two integrals of (\ref{breakout}). Note that we can write the remaining work as \begin{align*}
+2\textrm{Im}(B_{j_1, j_2}) \textrm{Re}(X(\nu_{j_1}, \nu_{j_2};h))
+\end{align*}where $h = t-s$ and \begin{align*}
+X(\nu_{j_1}, \nu_{j_2};h) &= i \int_0^\infty e^{ihx}(1 + ix)^{-\nu_1 - 1/2}(1 - ix)^{-\nu_2 - 1/2} dx.
+\end{align*}This follows by considering the conjugate of $X(\nu_{j_1}, \nu_{j_2};h)$ and adjusting the limits of integration. 
+
+
+Referring to Babister 4.44, we define \begin{align*}
+Z(a,c;z) &= ie^{-i\pi(a - c/2)}(e^{2\pi i a}- 2 + e^{-2\pi i(c-a)})\int_0^\infty e^{isz}\left(s-\frac{i}{2}\right)^{a-1}\left(s + \frac{i}{2}\right)^{c-a-1} ds 
+\end{align*}and try to write $X$ in terms of $Z$:
+\begin{align*}
+X(\nu_1, \nu_2; h) &= i\int_0^\infty e^{ihx} (1 + ix)^{-\nu_1 - 1/2}(1 -ix)^{-\nu_2-1/2} dx \\
+&=i(i^{-\nu_1 - 1/2})(-i)^{-\nu_2 - 1/2} \int_0^\infty e^{ihx}(x-i)^{-\nu_1 - 1/2} (x + i)^{-\nu_2 - 1/2} dx \\
+&=i(i^{-\nu_1 - 1/2})(-i)^{-\nu_2 - 1/2} 2^{-\nu_1 - \nu_2 - 1}\int_0^\infty e^{ihx}\left(\frac{x}{2}-\frac{i}{2}\right)^{-\nu_1 - 1/2} \left(\frac{x}{2} + \frac{i}{2}\right)^{-\nu_2 - 1/2} dx\\
+&=i(i^{-\nu_1 - 1/2})(-i)^{-\nu_2 - 1/2} 2^{-\nu_1 - \nu_2}\int_0^\infty e^{ih2s}\left(s-\frac{i}{2}\right)^{-\nu_1 - 1/2} \left(s + \frac{i}{2}\right)^{-\nu_2 - 1/2} ds\\
+&=\frac{i(i^{-\nu_1 - 1/2})(-i)^{-\nu_2 - 1/2} 2^{-\nu_1 - \nu_2}Z(1/2 - \nu_1, 1- \nu_1 - \nu_2; 2h)}{ie^{i \pi(1/2)(\nu_1 - \nu_2)}(e^{2\pi i (1/2 - \nu_1)} - 2+ e^{-2\pi i (1/2 - \nu_2)}) }\\
+&=\frac{2^{-\nu_1 - \nu_2}Z(1/2 - \nu_1, 1- \nu_1 - \nu_2; 2h)}{-4\cos(\pi \nu_1)\cos(\pi \nu_2) - 2 i \sin(\pi (\nu_1 - \nu_2)}
+\end{align*}by using Wolfram Alpha. Now, assume that $\nu_1 - \nu_2$ is an integer. This ensures that the imaginary part in the denominator is $0$.
+%Now, we have to make a leap that $\textrm{Re}(X(\nu_1, \nu_2; h)) = Z(1/2 - \nu_1, 1- \nu_1 - \nu_2; 2h)$ up to a real-valued constant. If that is the case (but requires more work), we can derive the functional form. I do think we are going in the right direction, but more details need to be worked out. If we take this to be true, 
+Then, according to Babister, for $h > 0$, \begin{align*}
+\textrm{Re}(Z(1/2 - \nu_{1},1 - \nu_{1} - \nu_{2};2h)) &= \frac{2\pi^2e^{-z/2}}{\Gamma(1-a)}\left(\frac{\Omega(a,c;z)}{\Gamma(c)\Gamma(1+a-c)} - \frac{1}{\Gamma(2-c)\Gamma(a)}\overline{\Phi}(a,c;z)\right)\\
+&= \frac{2\pi^2e^{-h}}{\Gamma(1/2 + \nu_{1})}\left(\frac{\Omega(\frac12 - \nu_{1},1 - \nu_{1} - \nu_{2};2h)}{\Gamma(1 - \nu_{1} - \nu_{2})\Gamma(1/2 + \nu_{2})} - \frac{\overline{\Phi}(\frac12 - \nu_{1},1 - \nu_{1} - \nu_{2};2h)}{\Gamma(1 + \nu_{1} + \nu_{2})\Gamma(1/2 - \nu_{1})}\right)
+\end{align*}where $\Omega$ is the generalized modified Struve function defined in Babister 4.30, and $\overline{\Phi}$ is the confluent hypergeometric function defined by Babister 4.7. Notably, these reduce to other functions for certain values of the parameters, which we define here: \begin{align*}
+M_{\kappa,- \mu}(z) &=  e^{-1/2 z}z^{1/2 +\mu}\overline{\Phi}(1/2- \kappa + \mu, 1 + 2\mu; z)\\
+A_{\kappa, \mu}(z) &= e^{-1/2 z}z^{1/2 + \mu}\Omega(1/2- \kappa + \mu, 1 + 2\mu; z)
+\end{align*}We refer to $M$ as the Whittaker function of the first kind, and $A$ as (another) generalized modified struve function. Notably, for certain values these reduce to the Bessel function of the second kind  ($I_\mu$) and the modified struve function $L_\mu$:\begin{align*}
+M_{0,\mu}(z) &= 2^{2\mu}\Gamma(\mu + 1)z^{1/2}I_\mu(1/2 z)\\
+A_{0,\mu}(z) &= 2^{2\mu}\Gamma(\mu + 1)z^{1/2}L_\mu(1/2 z).
+\end{align*}
+
+Using these definitions, \begin{align*}
+\textrm{Re}(Z(1/2 - \nu_{j_1},1 - \nu_{j_1} - \nu_{j_2};2h)) &= \frac{2\pi^2(2h)^{\nu_+-\frac12}}{\Gamma(1/2 + \nu_{j_1})}\left(\frac{ A_{\nu_-,-\nu_+}(2h)}{\Gamma(1 - \nu_{j_1} - \nu_{j_2})\Gamma(\frac12 + \nu_{j_2})} - \frac{M_{\nu_-,\nu_+}(2h)}{\Gamma(1 + \nu_{j_1} + \nu_{j_2})\Gamma(\frac12 - \nu_{j_1})}\right).
+\end{align*}Thus, when the smoothness of the two processes are the same, we will revert to the more familiar $K_\nu$, $I_\nu$, and $L_\nu$ from the functions $W_{\kappa, \nu}(z)$, $M_{\kappa, \nu}(z)$, and $A_{\kappa, \nu}(z)$, respectively.
+
+Thus, piecing it all together, the cross covariance is \begin{align*}
+\frac{\textrm{Im}(B_{j_1, j_2}) }{2\cos(\pi \nu_1)\cos(\pi \nu_2) }
+\frac{\pi^2(h/2)^{\nu_+-\frac12}}{\Gamma(1/2 + \nu_{1})}\left(\frac{M_{\nu_-,\nu_+}(2h)}{\Gamma(1 + \nu_{1} + \nu_{2})\Gamma(\frac12 - \nu_{1})} - \frac{ A_{\nu_-,-\nu_+}(2h)}{\Gamma(1 - \nu_{1} - \nu_{2})\Gamma(\frac12 + \nu_{2})}\right)
+\end{align*}
+
+\pagebreak
+\section{In multiple dimensions}
+
+Let $ \vlen, \vint$ be vectors in $\mathbb{R}^d$, and let $AA^* = R + iM$ where $R$ is a $k\times k$ real positive definite matrix and $M = \begin{pmatrix} 0 & -m\\  m & 0\end{pmatrix}$ for some $m \in \mathbb{R}$. Let $\vpla$ be a vector in $\mathbb{R}^d$ that describes the plane through the origin for which the non-reversibility is reflected, defined by all $\vint$ such that $\vpla^\top \vint = 0$.
+
+We want to consider the covariance of \begin{align*}
+C(\boldsymbol{0}, \boldsymbol{h}) &= \int_{\mathbb{R}^d} e^{i \vint^\top \vlen} (1 + i \left\lVert \vint \right\rVert )^{-\nu_1- \frac{d}{2}}(1 - i \left\lVert \vint \right\rVert )^{-\nu_2- \frac{d}{2}} \left(AA^* 1_{\{\vpla^\top \vint > 0\}} + \overline{AA^*} 1_{\{\vpla^\top\vint < 0\}}\right) d\vint% \\
+%&=\int_{\mathbb{R}^d} e^{i \vint^\top \vlen }(1 + \vint^\top \vint)^{-\nu- \frac{d}{2}} \left((R + iM)1_{\{\vpla^\top\vint > 0\}} + (R - iM) 1_{\{\vpla^\top\vint < 0\}}\right) d\vint 
+\end{align*}
+Plugging in $AA^* = R + iM$ gives
+\begin{align*}
+C(\boldsymbol{0}, \boldsymbol{h})&=\int_{\mathbb{R}^d} e^{i \vint^\top \boldsymbol{h}} (1 + i \left\lVert \vint \right\rVert )^{-\nu_1- \frac{d}{2}}(1 - i \left\lVert \vint \right\rVert )^{-\nu_2- \frac{d}{2}} \left(R + iM1_{\{\vpla^\top\vint > 0\}}  - iM1_{\{\vpla^\top\vint < 0\}}\right) d\vint\end{align*}
+and by breaking up the integral we have
+\begin{align*}
+C(\boldsymbol{0}, \boldsymbol{h})%&=\int_{\mathbb{R}^d} (\cos(\vint^\top \boldsymbol{h}) + i\sin(\vint^\top \boldsymbol{h}))(1 + \vint^\top \vint)^{-\nu- \frac{d}{2}} \left(R + iM1_{\{\vint > 0\}}  - iM1_{\{\vint < 0\}}\right) d\vint \\
+&=\int_{\mathbb{R}^d}\cos(\vint^\top \boldsymbol{h}) (1 + i \left\lVert \vint \right\rVert )^{-\nu_1- \frac{d}{2}}(1 - i \left\lVert \vint \right\rVert )^{-\nu_2- \frac{d}{2}}\left(R + iM1_{\{\vpla^\top\vint > 0\}}  - iM1_{\{\vpla^\top\vint < 0\}}\right) d\vint \\
+&\ \ \ \ \ \ +i\int_{\mathbb{R}^d}\sin(\vint^\top \boldsymbol{h}) (1 + i \left\lVert \vint \right\rVert )^{-\nu_1- \frac{d}{2}}(1 - i \left\lVert \vint \right\rVert )^{-\nu_2- \frac{d}{2}} \left(R + iM1_{\{\vpla^\top\vint > 0\}}  - iM1_{\{\vpla^\top\vint < 0\}}\right) d\vint.\end{align*}
+Using the even and odd properties of the cosine and sine functions, respectively, gives
+\begin{align*}
+C(\boldsymbol{0}, \boldsymbol{h})&=R\int_{\mathbb{R}^d}\cos(\vint^\top \boldsymbol{h}) (1 + i \left\lVert \vint \right\rVert )^{-\nu_1- \frac{d}{2}}(1 - i \left\lVert \vint \right\rVert )^{-\nu_2- \frac{d}{2}} d\vint \\
+& \ \ \ \ \ + i^2M\int_{\mathbb{R}^d}\sin(\vint^\top \boldsymbol{h}) (1 + i \left\lVert \vint \right\rVert )^{-\nu_1- \frac{d}{2}}(1 - i \left\lVert \vint \right\rVert )^{-\nu_2- \frac{d}{2}} \left(1_{\{\vpla^\top\vint > 0\}}  - 1_{\{\vpla^\top\vint < 0\}}\right) d\vint \\
+&=R\int_{\mathbb{R}^d}\cos(\vint^\top \boldsymbol{h}) (1 + i \left\lVert \vint \right\rVert )^{-\nu_1- \frac{d}{2}}(1 - i \left\lVert \vint \right\rVert )^{-\nu_2- \frac{d}{2}} d\vint \\
+& \ \ \ \ \ -2M\int_{\vint | \vpla^\top\vint > 0}\sin(\vint^\top \boldsymbol{h}) (1 + i \left\lVert \vint \right\rVert )^{-\nu_1- \frac{d}{2}}(1 - i \left\lVert \vint \right\rVert )^{-\nu_2- \frac{d}{2}} d\vint .
+\end{align*}
+
+We first switch to a form of $d$-dimensional spherical coordinates. A similar approach is done in Stein (1999) page 43. Note that $\sin(\vint^\top \boldsymbol{h}) = \sin(r \left\lVert \boldsymbol{h}\right\rVert \cos(\theta))$ where $\theta$ is the angle between $\vint$ and $\boldsymbol{h}$ and $r = \left\lVert \vint \right\rVert$. Using these coordinates, note that the integral depends only on $r$ and $\theta$, and by integrating the other $d-2$ dimensions with volume transformation $r^{d-1}\sin^{d-2}(\theta)$, we have \begin{align*}
+C(\boldsymbol{0}, \boldsymbol{h})&=R\int_0^{2\pi}\int_0^\infty \cos(r\hh\cos(\theta)) (1 + ir)^{-\nu_1- \frac{d}{2}}(1 - ir )^{-\nu_2- \frac{d}{2}} \sin(\theta)^{d-2} r^{d-1}dr d\theta \\
+& \ \ \ \ \ -2M \int_{-\pi+c}^c\int_0^\infty \sin(r\hh\cos(\theta)) (1 + ir)^{-\nu_1- \frac{d}{2}}(1 - ir )^{-\nu_2- \frac{d}{2}} \sin(\theta)^{d-2} r^{d-1}dr d\theta \\
+&=R\int_0^\infty J_{(d-2)/2}(r\hh)\frac{\sqrt{\pi}\Gamma(d/2)}{(r\hh)^{(d-2)/2}}(1 + ir)^{-\nu_1- \frac{d}{2}}(1 - ir )^{-\nu_2- \frac{d}{2}} r^{d-1}dr \\
+& \ \ \ \ \ -2M\int_{0}^\infty \frac{\sqrt{\pi}\Gamma(d/2)}{(r \hh)^{(d-2)/2}} H_{(d-2)/2}(r\hh)(1 + ir)^{-\nu_1- \frac{d}{2}}(1 - ir )^{-\nu_2- \frac{d}{2}}dr \\
+&=R\frac{\sqrt{\pi}\Gamma(d/2)}{\hh^{(d-2)/2}}\int_0^\infty J_{(d-2)/2}(r\hh)(1 + ir)^{-\nu_1- \frac{d}{2}}(1 - ir )^{-\nu_2- \frac{d}{2}} rdr \\
+& \ \ \ \ \ -2M\frac{\sqrt{\pi}\Gamma(d/2)}{\hh^{(d-2)/2}}\int_0^\infty H_{(d-2)/2}(r\hh)(1 + ir)^{-\nu_1- \frac{d}{2}}(1 - ir )^{-\nu_2- \frac{d}{2}} rdr
+\end{align*}where $c = \pi$ is the angle that $\boldsymbol{h}$ makes with $\boldsymbol{a}$. The sign term determines if the angle between $\boldsymbol{h}$ and $\boldsymbol{a}$ is less than or greater than $\pi/2$ degrees.
+
+%When $M$ is the $0$ matrix, each component is Matern, and the above is a simplified version of Gneiting et al (2010) with scale parameter $1$, which is a valid covariance iff $R$ is positive definite and $\nu > 0$. The derivation of the Matern covariance in the univariate case in arbitrary dimension is given in Stein 1999 \textit{Interpolation of Spatial Data}.
+
+
+
+
+
+
+
+%\pagebreak 
+
+
+% Throughout the following, let $h = t-s$, $\nu_1 = \nu_{j_1}$, and $\nu_2 = \nu_{j_2}$ for simplicity. Then we are left to evaluate the integral \begin{align*}
+% J \defeq \int_0^\infty e^{ihx} (1 + i x)^{-\nu_1 - 1/2}(1-ix)^{-\nu_2 - 1/2} dx.
+% \end{align*}We will first adjust this integral to make it look similar to Babister 4.44. Making use of the factorizations $(1+ix) = i(x-i)$ and $(1-ix) = -i(x+i)$, we have \begin{align*}
+% J = i^{-\nu_1 - \nu_2 - 1} (-1)^{-\nu_2-1/2} \int_0^\infty e^{ihx} (x-i)^{-\nu_1 - 1/2}(x+i)^{-\nu_2 - 1/2} dx.
+% \end{align*}Considering the change of variable $s = \frac{x}{2}$, we have \begin{align*}
+% J = 2(2i)^{-\nu_1 - \nu_2 - 1} (-1)^{-\nu_2-1/2} \int_0^\infty e^{2ihs} \left(s-\frac{i}{2}\right)^{-\nu_1 - 1/2}\left(s+\frac{i}{2}\right)^{-\nu_2 - 1/2} dx.
+% \end{align*}Now, using the notation from Babister 4.44, we define \begin{align*}
+% Z(a,c;z) &= ie^{-i\pi(a - 1/2c)}(e^{2\pi i a}- 2 + e^{-2\pi i(c-a)})\int_0^\infty e^{isz}\left(s-\frac{i}{2}\right)^{a-1}\left(s + \frac{i}{2}\right)^{c-a-1} dx.
+% \end{align*}Thus, we can write $J$ in terms of $Z(a,c;z)$, with $a =  -\nu_1 +1/2$, $c = 1-\nu_1 - \nu_2$, and $z=  2h$: \begin{align*}
+% J &=\frac{2(2i)^{-\nu_1 - \nu_2 - 1} e^{i\pi (-\nu_2-1/2)} }{ie^{-i\pi(-\nu_1/2+\nu_2/2)}(e^{\pi i (-2\nu_1 +1)}- 2 + e^{\pi i(2 \nu_2-1)})} Z(-\nu_1 + 1/2, 1 - \nu_1 - \nu_2; 2h) \\
+% &=\frac{2(2)^{-\nu_1 - \nu_2 - 1}e^{i \pi (-\nu_1 - \nu_2 - 1)/2}  e^{i\pi (-\nu_2-1/2)} }{ie^{i\pi(\nu_1/2-\nu_2/2)}(e^{\pi i (-2\nu_1 +1)}- 2 + e^{\pi i(2 \nu_2-1)})} Z(-\nu_1 + 1/2, 1 - \nu_1 - \nu_2; 2h) \\
+% % &=\frac{2(2)^{-\nu_1 - \nu_2 - 1} e^{i\pi (-2\nu_2 - 3/2)}}{(e^{\pi i (-2\nu_1 +1)}- 2 + e^{\pi i(2 \nu_2-1)})} Z(-\nu_1 + 1/2, 1 - \nu_1 - \nu_2; 2h) \\  
+% % &=\frac{2(2)^{-\nu_1 - \nu_2 - 1}}{(e^{\pi i (-2\nu_1 +2\nu_2 + 5/2)}- 2 e^{i\pi (2\nu_2 + 3/2)} + e^{\pi i(4 \nu_2+1/2)})} Z(-\nu_1 + 1/2, 1 - \nu_1 - \nu_2; 2h) 
+% &=\frac{2(2)^{-\nu_1 - \nu_2 - 1} e^{i\pi (-\nu_1 - \nu_2 - 3/2)}}{(e^{\pi i (-2\nu_1 +1)}- 2 + e^{\pi i(2 \nu_2-1)})} Z(-\nu_1 + 1/2, 1 - \nu_1 - \nu_2; 2h) \\  
+% \end{align*}using $(-1)^a = e^{i\pi a}$.
+
+
+% \begin{align*}
+% X(\nu_1, \nu_2; h) &= i\int_0^\infty e^{ihx} (1 + ix)^{-\nu_1 - 1/2}(1 -ix)^{-\nu_2-1/2} dx \\
+% &=i(i^{-\nu_1 - 1/2})(-i)^{-\nu_2 - 1/2} \int_0^\infty e^{ihx}(x-i)^{-\nu_1 - 1/2} (x + i)^{-\nu_2 - 1/2} dx \\
+% &=ie^{-(1/2) \pi i (\nu_1 - \nu_2)}\int_0^\infty e^{ihx}(x-i)^{-\nu_1 - 1/2} (x + i)^{-\nu_2 - 1/2} dx \\ 
+% &=ie^{-(1/2) \pi i (\nu_1-\nu_2)} 2^{-\nu_1 - \nu_2 - 1}\int_0^\infty e^{ihx}\left(\frac{x}{2}-\frac{i}{2}\right)^{-\nu_1 - 1/2} \left(\frac{x}{2} + \frac{i}{2}\right)^{-\nu_2 - 1/2} dx\\
+% &=ie^{-(1/2) \pi i (\nu_1-\nu_2)} 2^{-\nu_1 - \nu_2}\int_0^\infty e^{ih2s}\left(s-\frac{i}{2}\right)^{-\nu_1 - 1/2} \left(s + \frac{i}{2}\right)^{-\nu_2 - 1/2} ds\\
+% &= ie^{-(1/2) \pi i (\nu_1-\nu_2)} 2^{-\nu_1 - \nu_2}\frac{Z(1/2 - \nu_1, 1- \nu_1 - \nu_2; 2h)}{ie^{i \pi(1/2)(\nu_1 - \nu_2)}(e^{2\pi i (1/2 - \nu_1)} - 2+ e^{-2\pi i (1/2 - \nu_2)}) }\\
+% &=  2^{-\nu_1 - \nu_2}\frac{Z(1/2 - \nu_1, 1- \nu_1 - \nu_2; 2h)}{e^{i \pi(\nu_1 - \nu_2)}(e^{2\pi i (1/2 - \nu_1)} - 2+ e^{-2\pi i (1/2 - \nu_2)}) }\\
+% &=  2^{-\nu_1 - \nu_2}\frac{Z(1/2 - \nu_1, 1- \nu_1 - \nu_2; 2h)}{(e^{\pi i (-\nu_1 - \nu_2 +1)} - 2e^{i \pi(\nu_1 - \nu_2)}+ e^{\pi i (-1 +\nu_2 + \nu_1)}) }\\
+% &=  -2^{-\nu_1 - \nu_2}\frac{Z(1/2 - \nu_1, 1- \nu_1 - \nu_2; 2h)}{(e^{\pi i (-\nu_1 - \nu_2 )} + 2e^{i \pi(\nu_1 - \nu_2)}+e^{\pi i (\nu_2 + \nu_1)}) }
+% \end{align*}
+
+% Referring to Babister 4.44, we define \begin{align*}
+% Z(a,c;z) &= ie^{-i\pi(a - c/2)}(e^{2\pi i a}- 2 + e^{-2\pi i(c-a)})\int_0^\infty e^{isz}\left(s-\frac{i}{2}\right)^{a-1}\left(s + \frac{i}{2}\right)^{c-a-1} ds \\
+% &= e^{-i\pi(a - c/2)}(e^{2\pi i a}- 2 + e^{-2\pi i(c-a)})2^{1-c}e^{i\pi(c/2 -a)}X\left(\frac12 - a, a- c +\frac12, \frac{z}{2}\right) \\
+% %&=ie^{-i\pi(a - 1/2c)}(e^{2\pi i a}- 2 + e^{-2\pi i(c-a)})\int_0^\infty e^{isz}\left(s-\frac{i}{2}\right)^{a-1}\left(s + \frac{i}{2}\right)^{c-a-1} ds.
+% % &=e^{-i\pi(a - 1/2c)}(e^{\pi i 2a}- 2 + e^{-\pi i2(c-a)}) (-1)^{a-1} i^{c-2} 2^{-c+1}X(-a +1/2, a-c+1/2; z/2)\\
+% % &=e^{i\pi(c-2)}(e^{\pi i 2a}- 2 + e^{\pi i2(a-c)}) 2^{-c+1}X(-a +1/2, a-c+1/2; z/2)\\
+% % &=e^{i\pi(-2)}(e^{\pi i (2a + c)}- 2e^{i\pi c} + e^{\pi i(2a-c)}) 2^{-c+1}X(-a +1/2, a-c+1/2; z/2)\\
+% &=2^{1-c} e^{i \pi (c-2a)}(e^{i\pi 2a} - 2 + e^{i \pi 2(a-c)}) X\left(\frac12 - a, a- c +\frac12, \frac{z}{2}\right),
+% % &=2^{1-c} e^{i \pi (2a-2)}(e^{i\pi 2a} - 2 + e^{i \pi 2(a-c)}) X\left(\frac12 - a, a- c +\frac12, \frac{z}{2}\right)\\
+% % &=2^{1-c} e^{i \pi 2a}(e^{i\pi 2a} - 2 + e^{i \pi 2(a-c)}) X\left(\frac12 - a, a- c +\frac12, \frac{z}{2}\right)
+% %&=(e^{\pi i (2a+c-2)}- 2e^{i\pi(c-2)} + e^{\pi i(2a-c-2)}) 2^{-c+1}X(-a +1/2, a-c+1/2; z/2).
+% \end{align*}writing it in terms of $X$ using some change of variables. Since Babister gives a clear formula for $\textrm{Re}(Z(a,c;z))$ in 4.45, we just need to go through with the transformation from $X$ to $Z$. We attempt this, with $a = 1/2 - \nu_{j_1}$ and $c = 1- \nu_{j_1} -\nu_{j_2}$ by writing \begin{align*}
+% \textrm{Re}(X(\nu_{j_1}, \nu_{j_2};h)) &= \textrm{Re}\left(\frac{Z(1/2 - \nu_{j_1},1 - \nu_{j_1} - \nu_{j_2};2h) 2^{(1 - \nu_{j_1} - \nu_{j_2})-1}}{e^{i\pi(\nu_{j_1} - \nu_{j_2})}(e^{\pi i (1 - 2\nu_{j_1})}- 2 + e^{\pi i(2\nu_2 - 1) })}\right)\\
+% &= \textrm{Re}\left(\frac{Z(1/2 - \nu_{j_1},1 - \nu_{j_1} - \nu_{j_2};2h) 2^{(1 - \nu_{j_1} - \nu_{j_2})-1}}{e^{-i\pi(\nu_{j_2} - \nu_{j_1})}(e^{2\pi i (1/2 - \nu_{j_1})}- 2 + e^{-2\pi i(1/2 - \nu_2 ) })}\right)\\
+% %\textrm{Re}(X(\nu_{j_1}, \nu_{j_2};h)) &= \textrm{Re}\left(\frac{Z(1/2 - \nu_{j_1},1 - \nu_{j_1} - \nu_{j_2};2h) 2^{(1 - \nu_{j_1} - \nu_{j_2})-1}}{e^{i\pi(1 - \nu_{j_1} - \nu_{j_2})}(e^{\pi i (1 - 2\nu_{j_1})}- 2 + e^{\pi i(2\nu_2 - 1) })}\right)\\
+% % \textrm{Re}(X(\nu_{j_1}, \nu_{j_2};h)) &= \textrm{Re}\left(\frac{Z(1/2 - \nu_{j_1},1 - \nu_{j_1} - \nu_{j_2};2h) 2^{1-(1 - \nu_{j_1} - \nu_{j_2})}}{e^{i\pi(-1/2)(4 - 5\nu_{j_1}-3 \nu_{j_2}))}(e^{\pi i (1 - 2\nu_{j_1})}- 2 + e^{\pi i(2\nu_2 - 1) })}\right)\\
+% \end{align*}
+
+%We attempt this, with $a = 1/2 - \nu_{j_1}$ and $c = 1- \nu_{j_1} -\nu_{j_2}$ by writing \begin{align*}
+% \textrm{Re}(X(\nu_{j_1}, \nu_{j_2};h)) &= \textrm{Re}\left(\frac{Z(1/2 - \nu_{j_1},1 - \nu_{j_1} - \nu_{j_2};2h)(-1)^{1-(1/2 - \nu_{j_1})} i^{2-(1- \nu_{j_1} - \nu_{j_2})} 2^{1-(1 - \nu_{j_1} - \nu_{j_2})}}{e^{-i\pi(1/2 - \nu_{j_1} - 1/2(1 - \nu_{j_1} - \nu_{j_2}))}(e^{2\pi i (1/2 - \nu_{j_1})}- 2 + e^{-2\pi i(1/2  -\nu_{j_2}) })}\right)\\
+% &= \textrm{Re}\left(\frac{Z(1/2 - \nu_{j_1},1 - \nu_{j_1} - \nu_{j_2};2h)(-1)^{1/2+ \nu_{j_1}} i^{1+\nu_{j_1} + \nu_{j_2}} 2^{ \nu_{j_1} + \nu_{j_2}}}{e^{-i\pi( -1/2 \nu_{j_1} +1/2\nu_{j_2})}(e^{2\pi i (1/2 - \nu_{j_1})}- 2 + e^{-2\pi i(1/2  -\nu_{j_2}) })}\right)\\
+% &=(-1)^{1/2+ \nu_{j_1}}2^{ \nu_{j_1} + \nu_{j_2}} \textrm{Re}\left(\frac{Z(1/2 - \nu_{j_1},1 - \nu_{j_1} - \nu_{j_2};2h) i^{1+\nu_{j_1} + \nu_{j_2}} }{e^{-i\pi( -1/2 \nu_{j_1} +1/2\nu_{j_2})}(e^{2\pi i (1/2 - \nu_{j_1})}- 2 + e^{-2\pi i(1/2  -\nu_{j_2}) })}\right)\\
+% &=(-1)^{1/2+ \nu_{j_1}}2^{ \nu_{j_1} + \nu_{j_2}} \textrm{Re}\left(\frac{Z(1/2 - \nu_{j_1},1 - \nu_{j_1} - \nu_{j_2};2h) e^{\pi i(1+\nu_{j_1} + \nu_{j_2}) }}{e^{-i\pi( -1/2 \nu_{j_1} +1/2\nu_{j_2})}(e^{2\pi i (1/2 - \nu_{j_1})}- 2 + e^{-2\pi i(1/2  -\nu_{j_2}) })}\right)
+% \end{align*}
 
 \end{document}

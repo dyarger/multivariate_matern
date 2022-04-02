@@ -1,34 +1,30 @@
 
 ## Covariance and plotting
 
-matern_cov <- function(s,t, nu) {
+matern_cov <- function(s,t, nu, a) {
   if (t-s == 0) {
     return(gamma(nu)/gamma(nu + 1/2) * sqrt(pi))
   }
-  (pi^(1/2) * abs(t-s)^nu)/(gamma(nu + 1/2) * 2^(nu-1)) * besselK(abs(t-s), nu = nu) 
+  (2*pi^(1/2) * abs(t-s)^nu)/( (2*a)^(nu) * gamma(nu + 1/2)) * besselK(a*abs(t-s), nu = nu) 
 }
-struve_version <- function(s,t,nu) {
+struve_version <- function(s,t,nu, a = 1) {
   if(s-t == 0) {
     return(0)
   }
-  sign(t-s)*(abs(t-s))^nu * pi^(1/2) * 2^(nu - 1)* gamma(-nu + 1/2)*
-    (besselI(abs(t-s), nu = nu) - struve(abs(t-s), -nu))
+  sign(t-s)*(abs(t-s)/a)^nu * pi^(1/2) * 2^(-nu)* gamma(-nu + 1/2)*
+    (besselI(a * abs(t-s), nu = nu) - struve(a* abs(t-s), -nu))
 }
 plot_function <- function(s,t,nu) {
   if(s-t == 0) {
     return(0)
   }
-  #(t-s)^nu*
-    sign(t-s)*(abs(t-s))^nu*
+  sign(t-s)*(abs(t-s))^nu*
     (besselI(abs(t-s), nu = nu) - struve(abs(t-s), -nu))
 }
 
-cross_cov <- function(s,t, nu, z_ij) {
-  # if (nu == 1/2 | nu == 3/2) {
-  #   return(Re(z_ij) * matern_cov(s,t,nu))
-  # }
-  Re(z_ij) * matern_cov(s,t,nu) - 
-    Im(z_ij) * struve_version(s,t,nu)
+cross_cov <- function(s,t, nu, z_ij, a) {
+  Re(z_ij) * matern_cov(s,t,nu, a) - 
+    Im(z_ij) * struve_version(s,t,nu, a)
 }
 struve <- function(z, nu_eval) {
   if (nu_eval == -1/2) {
@@ -142,13 +138,13 @@ sim_bivariate <- function(AA_star, nu, t_eval = seq(-5, 5, by = .02), N) {
   return(data.frame(t_eval, f1, f2))
 }
 
-#library(Rcpp)
-# cppFunction('double compute_marginal(double eval_point, NumericVector omega, NumericVector phi) {
-#               return sum(cos(eval_point * omega + phi));
-#             }')
-# cppFunction('double compute_marginal_cross(double eval_point, NumericVector omega, NumericVector phi, NumericVector c_vec, NumericVector theta) {
-#               return sum(c_vec * cos(eval_point * omega + phi + theta));
-#             }')
+library(Rcpp)
+cppFunction('double compute_marginal(double eval_point, NumericVector omega, NumericVector phi) {
+              return sum(cos(eval_point * omega + phi));
+            }')
+cppFunction('double compute_marginal_cross(double eval_point, NumericVector omega, NumericVector phi, NumericVector c_vec, NumericVector theta) {
+              return sum(c_vec * cos(eval_point * omega + phi + theta));
+            }')
 # cppFunction('double f1_eval(double eval_point, NumericVector omega, NumericVector phi) {
 #               return sqrt();
 #             }')
@@ -169,3 +165,102 @@ sim_bivariate <- function(AA_star, nu, t_eval = seq(-5, 5, by = .02), N) {
 #   f1[q] <- sqrt(sigma_vec[1] * 2/N) *
 #     sum(cos(t_eval[q] *omega_ij[,1] + phi[,1]))
 # }
+
+
+whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
+  p11 <- c11* (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs(h))^nu1) * (2*a1)^(-nu1) * 
+    besselK(x = a1 * abs(h), nu = nu1)
+  p22 <- c2* (2*sqrt(pi)/(gamma(nu2 + .5)))*((abs(h))^nu2) * (2*a2)^(-nu2) * 
+    besselK(x = a2 * abs(h), nu = nu2)
+  if (nu1 == nu2) {
+    p12 <- c12 * (abs(h))^nu2 * besselK(x = abs(h), nu = nu2)
+    if (h == 0) {
+      p12 <- c12 * 1e-10^nu1 * besselK(x = 1e-10, nu = nu1)
+      p11 <- c11 * 1e-10^nu1 * (2*a1)^(-nu1) * sqrt(pi)* (2/( gamma(nu1 + .5)))* besselK(x = 1e-10, nu = nu1)
+      p22 <- c2 * 1e-10^nu2 * (2*a2)^(-nu2) *sqrt(pi)* (2/(gamma(nu2 + .5))) * besselK(x = 1e-10, nu = nu2)
+    }
+  } else if (nu1 + nu2 == round(nu1 + nu2)) { 
+    p12 <- 0
+  } else if(h == 0) {
+    p11 <- c11 * 1e-10^nu1 * (2*a1)^(-nu1) * sqrt(pi)* (2/( gamma(nu1 + .5)))* besselK(x = 1e-10, nu = nu1)
+    p22 <- c2 * 1e-10^nu2 * (2*a2)^(-nu2) *sqrt(pi)* (2/(gamma(nu2 + .5))) * besselK(x = 1e-10, nu = nu2)
+    p12 <- 2* pi*c12 * 1/gamma(nu2 + 1/2) * abs(1e-10)^(nu1/2 + nu2/2 - 1/2)* 
+      fAsianOptions::whittakerW(x = (a1 + a2)*abs(1e-10),kappa = -nu1/2 + nu2/2,
+                                mu = - (nu1+nu2)/2 , ip = 50) *(a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*
+      exp((a1 - a2)/2 *1e-10) 
+  } else if (h < 0) {
+    p12 <- 2* pi *c12 * 1/gamma(nu1 + 1/2) * abs(h)^(nu1/2 + nu2/2 - 1/2)* (a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*
+      exp((a1 - a2)/2 * h) * 
+      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h),  kappa = nu1/2 - nu2/2, mu = - (nu1+nu2)/2 , ip = 50)
+  } else {
+    p12 <- 2* pi *c12 * 1/gamma(nu2 + 1/2) * abs(h)^(nu1/2 + nu2/2 - 1/2)* (a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*
+      exp((a1 - a2)/2 * h) *  
+      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h), kappa = -nu1/2 + nu2/2,mu = - (nu1+nu2)/2 , ip = 50)
+  }
+  return(c(p11, Re(p12),p22))
+}
+
+whittaker_covariance_matrix <- function(locs, nu1, nu2, c11, c12, c2, a1,a2) {
+  grid <- expand.grid(locs, locs)
+  cov_val <- sapply(1:nrow(grid), function(x) {
+    whitt_version(grid[['Var1']][x]-grid[['Var2']][x], nu1= nu1, nu2 = nu2, c11 = c11, c12 = c12, c2 = c2)
+  })
+  cov_mat1 <- matrix(cov_val[1,], nrow = length(locs))
+  cov_mat2 <- matrix(cov_val[3,], nrow = length(locs))
+  cov_mat12 <- matrix(cov_val[2,], nrow = length(locs))
+  cov_mat_all <- rbind(cbind(cov_mat1, cov_mat12),
+                       cbind(t(cov_mat12), cov_mat2))
+}
+whittaker_covariance_matrix_lags <- function(locs, nu1, nu2, c11, c12, c2, a1,a2) {
+  lags1 <- locs - locs[1]
+  lags2 <- locs - locs[length(locs)]
+  cov_val1 <- sapply(1:length(lags1), function(x) {
+    whitt_version(lags1[x], nu1= nu1, nu2 = nu2, c11 = c11, c12 = c12, c2 = c2)
+  })
+  cov_val2 <- sapply(1:length(lags2), function(x) {
+    whitt_version(lags2[x], nu1= nu1, nu2 = nu2, c11 = c11, c12 = c12, c2 = c2)
+  })
+  cov_mat1 <- toeplitz(cov_val1[1,])
+  cov_mat2 <- toeplitz(cov_val1[3,])
+  cov_mat12 <- toeplitz(rev(cov_val2[2,]))
+  lt <- lower.tri(cov_mat12)
+  cov_mat12[lt] <- toeplitz(cov_val1[2,])[lt]
+  cov_mat_all <- rbind(cbind(cov_mat1, cov_mat12),
+                       cbind(t(cov_mat12), cov_mat2))
+}
+
+imaginary_covariance_matrix_lags <- function(locs, nu1, nu2, c11, c12, c22, a1, a2) {
+  lags1 <- locs - locs[1]
+  lags2 <- locs - locs[length(locs)]
+  
+  cov_val11 <- sapply(1:length(lags1), function(x) {
+    cross_cov(s = 0, t = lags1[x], nu = nu1, z_ij = c11, a  = a1)
+  })
+  cov_val22 <- sapply(1:length(lags1), function(x) {
+    cross_cov(s = 0, t = lags1[x], nu = nu1, z_ij = c22, a  = a1)
+  })
+  cross_cov1 <- sapply(1:length(lags1), function(x) {
+    cross_cov(s = 0, t = lags1[x], nu = nu1, z_ij = c12, a  = a1)
+  })
+  cross_cov2 <- sapply(1:length(lags1), function(x) {
+    cross_cov(s = 0, t = lags2[x], nu = nu1, z_ij = c12, a  = a1)
+  })
+  cov_mat1 <- toeplitz(cov_val11)
+  cov_mat2 <- toeplitz(cov_val22)
+  cov_mat12 <- toeplitz(rev(cross_cov2))
+  lt <- lower.tri(cov_mat12)
+  cov_mat12[lt] <- toeplitz(cross_cov1)[lt]
+  cov_mat_all <- rbind(cbind(cov_mat1, cov_mat12),
+                       cbind(t(cov_mat12), cov_mat2))
+}
+
+simulate_manually <- function(cholesky, n_simu, locs) {
+  simulated <- t(cholesky) %*% matrix(nrow = nrow(cholesky),
+                                          ncol = n_simu,
+                                          rnorm(nrow(cholesky) *n_simu))
+  s1 <- simulated[1:length(locs),]
+  s2 <- simulated[-(1:length(locs)),]
+  simulation <- data.frame(var1 = as.double(s1), var2 = as.double(s2),
+                           t = locs, 
+                           simulation = rep(1:n_simu, each = length(locs)))
+}
