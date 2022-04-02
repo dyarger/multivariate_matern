@@ -18,21 +18,8 @@ plot_function <- function(s,t,nu) {
 }
 
 norm_constant <- function(d, x, nu_1, nu_2, a_1 = 1, a_2 = 1) {
-  # (2 * pi)^(d/2-1) *abs(x) * sqrt(nu_1) * sqrt(nu_2)*2* 
-  #   a_1^nu_1 * a_2^nu_2  /
-  #   ((2^(nu_1/2 + nu_2/2 - 1)) * gamma(nu_1/2 + nu_2/2))
-  # 1/(
-  #   gamma(nu_1/2 + nu_2/2) *
-  #     sqrt(pi) /(a_1^(nu_1) * a_2^(nu_2)))
   a_1^(nu_1) * a_2^(nu_2)
 }
-
-spec_dens_cpp <- function(x, h, d, a_1, a_2, nu_1, nu_2) {
-  y <- complex(imaginary = x, length.out = length(x))
-  Re(exp(complex(imaginary = x * h))*(a_1 + y)^(-nu_1-d/2)*(a_2 - y)^(-nu_2-d/2)) *
-    x^(d/2 - 1)
-}
-
 
 plot_seq <- seq(-8, 8, by = .05)
 nu25 <- sapply(1:length(plot_seq), function(x) plot_function(0, plot_seq[x], nu = .25) *
@@ -61,7 +48,7 @@ ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = fa
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(nu),
        linetype = expression(nu))+
   theme(legend.position = 'bottom')
-ggsave('example_fun.png', height = 4, width = 4)
+ggsave('images/example_fun.png', height = 4, width = 4)
 
 plot_seq <- seq(-8, 8, by = .01)
 nu11 <- sapply(1:length(plot_seq), function(x) whitt_version(h = plot_seq[x], nu1 = .5, nu2 = .5, c2 = 1,c11 = 1, c12 = 1)*
@@ -88,7 +75,7 @@ ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = fa
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(nu[2]),
        linetype = expression(nu[2]))+
   theme(legend.position = 'bottom')
-ggsave('example_fun_whittaker.png', height = 4, width = 4)
+ggsave('images/example_fun_whittaker.png', height = 4, width = 4)
 
 nu11 <- sapply(1:length(plot_seq), function(x) whitt_version(h = plot_seq[x], nu1 = .5, nu2 = .8,c2 = 1,c11 = 1, c12 = 1,
                                                              a1 = 1, a2 = .2)*
@@ -106,14 +93,12 @@ df <- data.frame(plot_seq,
                  value = c(nu11[2,], nu22[2,], nu33[2,], nu44[2,]),
                  nu = rep(c('0.2', '0.5','1.0', '2.0'), each = length(plot_seq)))
 
-library(ggplot2)
-theme_set(theme_bw())
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line() + 
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(a[2]),
        linetype = expression(a[2]))+
   theme(legend.position = 'bottom')
-ggsave('example_fun_whittaker_scale.png', height = 4, width = 4)
+ggsave('images/example_fun_whittaker_scale.png', height = 4, width = 4)
 
 cov_val_lag <- sapply(1:length(plot_seq), function(x) 
   cross_cov(0, plot_seq[x], nu = .75, z_ij = complex(real = 1, imaginary = 0), a = 1) *
@@ -142,7 +127,7 @@ ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = fa
   theme(legend.position = 'bottom') + 
   scale_color_discrete(labels = expression(1, frac(sqrt(2) + i,sqrt(3)),frac(1 + sqrt(2)*i,sqrt(3)),i))+
   scale_linetype_discrete(labels = expression(1, frac(sqrt(2) + i, sqrt(3)),frac(1 + sqrt(2)*i,sqrt(3)), i))
-ggsave('example_combination_function.png', height = 4, width = 7)
+ggsave('images/example_combination_function.png', height = 4, width = 7)
 
 
 
@@ -250,10 +235,6 @@ ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = fa
        linetype = expression(a[2]))+
   theme(legend.position = 'bottom')
 ggsave('images/im_varying_a.png', height = 4, width = 4)
-plot(test_seq, test, type = 'l')
-lines(col = 2,test_seq, -rev(test), type = 'l')
-
-
 
 
 
