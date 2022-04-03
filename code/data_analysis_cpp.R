@@ -289,7 +289,7 @@ exp(test_optim_full$par)
 
 save(test_optim_ind, test_optim_pars, test_optim_product, test_optim,
      test_optim_full, 
-     file = 'data_analysis_optim.RData')
+     file = 'results/data_analysis_optim.RData')
 
 
 

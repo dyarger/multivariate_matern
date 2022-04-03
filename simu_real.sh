@@ -2,7 +2,7 @@
  # computing info
 #SBATCH --job-name=simu
 #SBATCH --mail-user=dyarger@umich.edu
-#SBATCH --mail-type=END,ARRAY_TASKS
+#SBATCH --mail-type=END,ERROR,ARRAY_TASKS
 #SBATCH --cpus-per-task=1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=12
@@ -17,4 +17,4 @@ export out_file=/home/dyarger/multivariate_matern/out_simu.out
 # The application(s) to execute along with its input arguments and options:
 cd /home/dyarger/multivariate_matern/
 module load R/4.1.0
-R CMD BATCH code/new_simulation.R $out_file
+R CMD BATCH code/simulation_real.R $out_file

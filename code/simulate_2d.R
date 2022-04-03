@@ -48,7 +48,6 @@ simu_bivariate <- function(grid, L = 1000, nu1 = 1.5, nu2 = 1.5, g_new, cc_fun) 
       phi <- runif(n = 1, 0, 2 * pi)
       sim_vals <- rnorm(2)/sqrt(rgamma(n = 1,shape = .5))
       test_g <- g_new(sqrt(sum(sim_vals^2)), a = 1, nu = nu1)
-      #test_g12 <- .9*h_fun(sqrt(sum(sim_vals^2)), a1 = 1, a2 = 1, nu1 = nu1, nu2 = nu2)
       test_g12 <- cc_fun(sim_vals, a1 = 1, a2 = 1, nu1 = nu1, nu2 = nu2)
       test_g22 <- g_new(sqrt(sum(sim_vals^2)), a = 1, nu = nu2)
       

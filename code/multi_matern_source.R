@@ -38,10 +38,10 @@ struve <- function(z, nu_eval) {
 plot_cov <- function(plot_seq =  seq(-5, 5, by = .2), AA_star, nu) {
   params <- par()$mfrow
   cov_val_lag <- sapply(1:length(plot_seq), function(x) {
-    c(cross_cov(0, plot_seq[x], nu = nu, z_ij = AA_star[1,1]),
-      cross_cov(0, plot_seq[x], nu = nu, z_ij = AA_star[1,2]),
+    c(cross_cov(0, plot_seq[x], nu = nu, z_ij = AA_star[1,1], a = 1),
+      cross_cov(0, plot_seq[x], nu = nu, z_ij = AA_star[1,2], a = 1),
       #cross_cov(0, plot_seq[x], nu = nu, z_ij = AA_star[2,1]),
-      cross_cov(0, plot_seq[x], nu = nu, z_ij = AA_star[2,2])
+      cross_cov(0, plot_seq[x], nu = nu, z_ij = AA_star[2,2], a = 1)
       )
   })
   par(mfrow = c(2,2))
@@ -106,18 +106,9 @@ gj <- function(omega, j, AA_star, nu, sigma_vec) {
   abs(H(omega, j,j,AA_star,nu))^2/sigma_vec[j]
 }
 
-# generate_samples1 <- function(n_samples, j, AA_star, nu, sigma_vec, constant) {
-#   n <- rt(n_samples, df = nu)
-#   u <- runif(n_samples)
-#   vals <- sapply(n, gj, j= j , AA_star = AA_star, nu =nu, sigma_vec = sigma_vec)
-#   n[ u < vals/ ( constant * dt(n, df = nu)) ]
-# }
-
 generate_samples <- function(n_samples, nu) {
   (1/sqrt(2*nu)) * rt(n_samples, df = 2*nu)
 }
-
-#generate_samples <- generate_samples1
 
 sim_bivariate <- function(AA_star, nu, t_eval = seq(-5, 5, by = .02), N) {
   phi <- matrix(ncol = 2, nrow = N, runif(n = 2 * N, min = 0, max = 2*pi))
@@ -145,27 +136,6 @@ cppFunction('double compute_marginal(double eval_point, NumericVector omega, Num
 cppFunction('double compute_marginal_cross(double eval_point, NumericVector omega, NumericVector phi, NumericVector c_vec, NumericVector theta) {
               return sum(c_vec * cos(eval_point * omega + phi + theta));
             }')
-# cppFunction('double f1_eval(double eval_point, NumericVector omega, NumericVector phi) {
-#               return sqrt();
-#             }')
-# eval_point = 1; omega <- c(0,0,0); phi = c(1,2,1)
-# compute_marginal(eval_point = eval_point, omega = omega, phi = phi)
-# compute_marginal_cross(eval_point = eval_point, omega = omega, phi = phi, c_vec = c(1,1,1))
-# sum(cos(eval_point * omega + phi ))
-# f2 <- vector(mode = 'double', length = length(t_eval))
-# for (q in 1:length(t_eval)) {
-#   f2[q] <- sqrt(sigma_vec[1] * 2/N) *sum(
-#     cross_vec *
-#       cos(t_eval[q] *omega_ij[,1] + phi[,1]+theta_eval))+
-#     sqrt(sigma_vec[2] * 2/N) *sum(
-#       cos(t_eval[q] *omega_ij[,2] + phi[,2]))
-# }
-# f1 <- vector(mode = 'double', length = length(t_eval))
-# for (q in 1:length(t_eval)) {
-#   f1[q] <- sqrt(sigma_vec[1] * 2/N) *
-#     sum(cos(t_eval[q] *omega_ij[,1] + phi[,1]))
-# }
-
 
 whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
   p11 <- c11* (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs(h))^nu1) * (2*a1)^(-nu1) * 
