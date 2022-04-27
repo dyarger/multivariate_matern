@@ -2,8 +2,8 @@
 library(ncdf4)
 source('code/multi_matern_source.R')
 file_folder <- '~/Downloads/SOCCOM_HRQC_MLR_netcdf_20220322/'
-files <- list.files(file_folder, pattern = '.nc')[93]#49, 93
-#files <- "5904470_HRQC.nc"
+#files <- list.files(file_folder, pattern = '.nc')[100]
+files <- "5906030_HRQC.nc"
 data_list <- list()
 for (j in 1:length(files)) {
   file <- nc_open(paste0(file_folder, files[j]))
@@ -89,176 +89,143 @@ for (j in 1:length(files)) {
 
 df <- data_list[[1]]  %>%
   filter(!is.na(pressure), !is.na(temp), !is.na(psal), 
-         pressure < 950, psal_QC != 8) %>%
+         pressure < 950) %>%
   mutate(date = as.Date(day, format = '%m/%d/%Y'))
-
-
+ggplot(data = df, aes(x = pressure, y = temp, color = profile)) +
+  geom_point()
+ggplot(data = df, aes(x = pressure, y = psal, color = profile)) +
+  geom_point()
+p_vec_max <- c(15, 105, 205, 305)
+p_vec_min <- p_vec_max - 10
 df_single_level <- df %>%
-  filter(pressure > 145, pressure < 150) %>%
-  group_by(profile) %>%
+  mutate(p_group1 = findInterval(pressure, vec = p_vec_max),
+         p_group2 = findInterval(pressure, p_vec_min)) %>%
+  filter(p_group1 != p_group2) %>%
+  group_by(profile, p_group1) %>%
   summarize(temp = mean(temp), psal = mean(psal), 
             date = date[1]) %>%
+  ungroup() %>%
+  group_by(p_group1) %>%
+  mutate(temp_0 = temp - mean(temp),
+         psal_0 = psal - mean(psal)) %>%
   ungroup()
-X_val <- cbind(1, sin(julian(df_single_level$date) / 366* 2*pi), 
-               cos(julian(df_single_level$date) / 366* 2*pi))
-mean_fun_temp <- solve(crossprod(X_val), crossprod(X_val, df_single_level$temp))
-mean_fun_psal <- solve(crossprod(X_val), crossprod(X_val, df_single_level$psal))
-df_single_level[['temp_0']] <- df_single_level$temp - as.double(X_val %*% mean_fun_temp)
-df_single_level[['psal_0']] <- df_single_level$psal - as.double(X_val %*% mean_fun_psal)
+ggplot(data = df_single_level) +
+  geom_boxplot(aes(x = p_group1, y = temp_0, group = p_group1))
 
-nobs <- nrow(df_single_level)
-response1 <- df_single_level[['temp_0']]
-response2 <- df_single_level[['psal_0']]
+df_wide <- pivot_wider(df_single_level, id_cols = c(profile, date), names_from =  p_group1, values_from = psal_0)
+head(df_wide)
+cov(df_wide %>% dplyr::select(-profile, -date))
+cor(df_wide %>% dplyr::select(-profile, -date))
 
-grid <- expand.grid('V1' = 1:length(response2),
-                    'V2' = 1:length(response2))
-
-
-temp_val <- data.frame('V' = 1:length(response2), 'temp' = response1)
-psal_val <- data.frame('V' = 1:length(response2), 'psal' = response2)
-
-grid_temp <-grid %>%
-  left_join(rename(temp_val, V1 = V), by = 'V1') %>%
-  left_join(rename(temp_val, V2 = V), by = 'V2') %>%
-  mutate(prod = temp.x * temp.y,
-         lag_val = (V1 - V2)) %>%
-  group_by(lag_val) %>%
-  summarize(cov = mean(prod))
-grid_psal <-grid %>%
-  left_join(rename(psal_val, V1 = V), by = 'V1') %>%
-  left_join(rename(psal_val, V2 = V), by = 'V2') %>%
-  mutate(prod = psal.x * psal.y,
-         lag_val = (V1 - V2)) %>%
-  group_by(lag_val) %>%
-  summarize(cov = mean(prod))
-
-grid_cc <-grid %>%
-  left_join(rename(temp_val, V1 = V), by = 'V1') %>%
-  left_join(rename(psal_val, V2 = V), by = 'V2') %>%
-  mutate(prod = psal * temp,
-         lag_val = (V1 - V2)) %>%
-  group_by(lag_val) %>%
-  summarize(cov = mean(prod))
-
-df_sum <- data.frame(grid_cc, 'temp_cov' = grid_temp[['cov']],
-                     'psal_cov' = grid_psal[['cov']]) %>%
-  rename(temp_psal_cov = cov) %>%
-  pivot_longer(cols = ends_with('cov'))
-label_df <- data.frame('name'  =  c('temp_cov', 'psal_cov', 'temp_psal_cov'),
-                       'label' = factor(c('Temperature covariogram',
-                                          'Salinity covariogram', 
-                                          'Temperature and salinity cross-covariogram'),
-                                        c('Temperature covariogram',
-                                          'Temperature and salinity cross-covariogram',
-                                          'Salinity covariogram')))
-
-
-
-a <- ggplot(data = df_sum %>% filter(lag_val > -35, lag_val < 35) %>%
-         left_join(label_df), aes(x = lag_val, y = value)) + 
-  geom_point() + 
-  geom_line() + 
-  facet_wrap(~label, ncol = 2, scales = 'free_y') + 
-  labs(x = 'Lag (number of profiles)',
-       y = 'Covariances and cross-covariances')+
-  theme_bw()
-ggsave(plot = a, 'images/argo_cc.png', height = 4.5, width = 6.5)
-
-label_df <- data.frame('name'  =  c('temp_0', 'psal_0'),
-                       'label' = factor(c('Centered temperature (°C)',
-                                          'Centered salinity (Practical Salinity Units)'),
-                                        c('Centered temperature (°C)',
-                                          'Centered salinity (Practical Salinity Units)')))
-
-b <-ggplot(data = df_single_level %>%
-         pivot_longer(ends_with('_0')) %>%
-           left_join(label_df), aes(x = date, y = value)) + 
-  geom_point() + 
-  geom_line() + 
-  facet_wrap(~label, ncol = 1, scales = 'free_y') + 
-  labs(x = 'Date',
-       y = 'Centered temperature and salinity values at 150 decibars')+
-  theme_bw()
-ggsave(plot = b, 'images/argo_plot.png', height = 4.5, width = 6.5)
-library(patchwork)
-a+b
-
-dist_matrix <- matrix(df_single_level[['date']], nrow = nobs, ncol = nobs, byrow = F)  -
-  matrix(df_single_level[['date']], nrow = nobs, ncol = nobs, byrow = T) 
+nobs <- nrow(df_wide)
+response <- as.double(unlist(df_wide %>% dplyr::select(-profile, -date)))
+dist_matrix <- matrix(df_wide[['date']], nrow = nobs, ncol = nobs, byrow = F)  -
+  matrix(df_wide[['date']], nrow = nobs, ncol = nobs, byrow = T) 
 dist_upper_tri <- dist_matrix[upper.tri(dist_matrix, diag = T)]
-plot(response1)
-plot(response2)
-
-imaginary_covariance_matrix <- function(dist_matrix, dist_upper_tri, nu1, nu2, c11, 
-                                        c12, c22, a1, a2, nugget1, nugget2) {
-  cov_val11 <- sapply(dist_upper_tri, function(x) {
-    cross_cov(s = 0, t = x, nu = nu1, z_ij = c11, a  = a1)
-  })
-  cov_val22 <- sapply(dist_upper_tri, function(x) {
-    cross_cov(s = 0, t = x, nu = nu1, z_ij = c22, a  = a1)
-  })
-  cross_cov1 <- sapply(dist_matrix, function(x) {
-    cross_cov(s = 0, t = x, nu = nu1, z_ij = c12, a  = a1)
-  })
-  lt <- lower.tri(dist_matrix, diag = T)
-  ut <- upper.tri(dist_matrix, diag = T)
-  cov_mat1 <- dist_matrix
-  cov_mat1[ut] <- cov_val11
-  cov_mat1[lt] <- t(cov_mat1)[lt]
-  diag(cov_mat1) <- diag(cov_mat1) + nugget1
-
-  cov_mat2 <- dist_matrix
-  cov_mat2[ut] <- cov_val22
-  cov_mat2[lt] <- t(cov_mat2)[lt]
-  diag(cov_mat2) <- diag(cov_mat2) + nugget2
-  
-  cov_mat12 <- dist_matrix
-  cov_mat12[matrix(T, nrow = nrow(dist_matrix),
-                   ncol = ncol(dist_matrix))] <- cross_cov1
-  cov_mat_all <- rbind(cbind(cov_mat1, cov_mat12),
-                       cbind(t(cov_mat12), cov_mat2))
-}
 
 likelihood <- function(theta, response, dist_matrix, dist_upper_tri) {
+  K <- length(response) / nrow(dist_matrix)
   print(exp(theta))
-  Sigma <- matrix(nrow = 2, ncol = 2, 
-                  complex(real = c(exp(theta[1]), theta[3], theta[3], exp(theta[2])),
-                          imaginary = c(0, theta[4], -theta[4], 0)))
+  nu_vals <- exp(theta[1:K]);theta <- theta[-c(1:K)]
+  range_vals <- exp(theta[1:K]);theta <- theta[-c(1:K)]
+  nugget_vals <- exp(theta[1:K]);theta <- theta[-c(1:K)]
+  var_diag <- exp(theta[1:K]);theta <- theta[-c(1:K)]
+  var_offdiag <- theta
+  Sigma <- matrix(nrow = K, ncol = K, 0)
+  diag(Sigma) <- var_diag
+  Sigma[upper.tri(Sigma)] <- var_offdiag
+  lt <- lower.tri(dist_matrix, diag = T)
+  ut <- upper.tri(dist_matrix, diag = T)
   if (tail(eigen(Sigma, only.values = T)[['values']], 1) <= 0.0001) {
     return(10^6)
   }
-  cov_mat <- imaginary_covariance_matrix(dist_matrix, dist_upper_tri,
-                                              nu1 = exp(theta[5]), 
-                                              nu2 = exp(theta[5]),
-                                              c11 = exp(theta[1]), 
-                                              c22 = exp(theta[2]), 
-                                              c12 = complex(real = theta[3], 
-                                                            imaginary = theta[4]), 
-                                              a1 = exp(theta[6]), a2 = exp(theta[6]),
-                                         nugget1 = exp(theta[7]), 
-                                         nugget2 = exp(theta[8]))
+  
+  list_mat <- list()
+  for (i in 1:K) {
+    list_mat[[i]] <- list()
+    for (j in 1:K) {
+      if (j < i) {
+        next
+      } else if (i == j) {
+        cov_val <- sapply(dist_upper_tri, function(x) {
+          whitt_version(x, nu1= nu_vals[i], nu2 = nu_vals[j], 
+                        c11 = Sigma[i,i], c12 = Sigma[i,j], c2 = Sigma[j,j], 
+                        a1 = range_vals[i], a2 = range_vals[j])
+        })
+        cov_mat <- dist_matrix
+        cov_mat[ut] <- cov_val[1,]
+        cov_mat[lt] <- t(cov_mat)[lt]
+        diag(cov_mat) <- diag(cov_mat) + nugget_vals[i]
+        list_mat[[i]][[j]] <- cov_mat
+      } else {
+        cov_val <- sapply(dist_matrix, function(x) {
+          whitt_version(x, nu1= nu_vals[i], nu2 = nu_vals[j], 
+                        c11 = Sigma[i,i], c12 = Sigma[i,j], c2 = Sigma[j,j], 
+                        a1 = range_vals[i], a2 = range_vals[j])
+        })
+        cov_mat <- dist_matrix
+        cov_mat[matrix(T, nrow = nrow(dist_matrix),
+                         ncol = ncol(dist_matrix))] <- cov_val[2,]
+        list_mat[[i]][[j]] <- cov_mat
+      }
+    }
+  }
+  test_list_mat <- lapply(list_mat, function(x) {
+    test <- matrix(nrow = 110, ncol = 0)
+    for (i in 1:length(x)) {
+      if (length(x[[i]]) > 0) {
+        test <- cbind(test, x[[i]])
+      } else {
+        test <- cbind(test,  matrix(nrow = 110, ncol = 110))
+      }
+    }
+    return(test)
+  })
+  final_mat <- test_list_mat[[1]]
+  for (i in 2:length(test_list_mat)) {
+    final_mat <- rbind(final_mat, test_list_mat[[i]])
+  }
+  
   c_chol <- base::chol(cov_mat)
   v2 <- .Internal(backsolve(r = c_chol, x = response, 
                             k = ncol(c_chol), upper.tri = T, transpose = T))
   quad_form <- sum(v2^2)
   det_val <-  2* sum(log(diag(c_chol)))
-  print(  quad_form+ det_val)
+  print(quad_form+ det_val)
   quad_form+ det_val
 }
 
-response <- c(response1, response2)
-cov(cbind(response1, response2))
-cor(cbind(response1, response2))
 
-joint_optim <- optim(par = c(log(.6),log(.01), 0, 0, log(.51), log(.005),
-                             log(.06), log(.001)), fn = likelihood,
+K <- length(response) / nrow(dist_matrix)
+theta_nu <- runif(K)
+theta_range <- rep(.005, K)
+theta_nugget <- rep(.00001, K)
+theta_diag <- rep(.2, K)
+theta_offdiag <- rep(.02, (K * K  - K)/2)
+theta <- c(theta_nu, theta_range, theta_nugget, theta_diag, theta_offdiag)
+rm(theta)
+init_params <- c(rep(.55, K),
+                 rep(.005, K),
+                 rep(.0001, K),
+                 rep(.2, K),
+                 exp(rep(.02, K * (K-1)/2)))
+max_params  <- c(rep(2.5, K),
+                 rep(.03, K),
+                 rep(.02, K),
+                 rep(3, K),
+                 exp(rep(3, K * (K-1)/2)))
+min_params  <- c(rep(.02, K),
+                 rep(.000001, K),
+                 rep(.00000001, K),
+                 rep(.0001, K),
+                 exp(rep(-2, K * (K-1)/2)))
+
+
+joint_optim <- optim(par = log(init_params), fn = likelihood,
                      response = response, method = 'L-BFGS-B', 
-                     hessian = T, lower = c(log(.000002), log(.000002), -.5, -.5, log(.01),
-                                            log(.000005), log(.000002),
-                                            log(.000002)),
-                     upper = c(log(2), log(2), .5, .5, log(2), log(.03),
-                               log(2), log(2)), 
-                     control = list(parscale = c(1, 1, 1/50, 1/50, 1, 1, 1, 1)),
+                     hessian = T, lower = log(min_params),
+                     upper = log(max_params), 
+                    # control = list(parscale = c(1, 1, 1/50, 1/50, 1, 1, 1, 1)),
                      dist_matrix = dist_matrix, dist_upper_tri = dist_upper_tri)
 
 off_diag <- sqrt(1 - .2^2)
@@ -300,7 +267,6 @@ cov_mat <- imaginary_covariance_matrix(dist_matrix, dist_upper_tri,
                                                      imaginary = Im(Sigma[1,2])), 
                                        a1 = a, a2 = a, nugget1 = nugget1,
                                        nugget2 = nugget2)
-library(fields)
 image.plot(cov_mat)
 indexes_temp <- 1:nobs
 indexes_psal <- setdiff(1:(2 * nobs), indexes_temp)
@@ -323,7 +289,7 @@ r_indexes_add <- sample(nobs + 1:nobs, 10)
 indexes_use <- c(indexes_temp, r_indexes_add)
 pred_using_temp <- cov_mat[,indexes_use] %*% 
   solve(cov_mat[indexes_use, indexes_use], 
-                                  response[indexes_use])
+        response[indexes_use])
 plot(pred_using_temp[indexes_psal], response[indexes_psal])
 plot(pred_using_temp[indexes_temp], response[indexes_temp])
 sum( response[indexes_psal]^2)
@@ -340,6 +306,4 @@ sum( response[indexes_psal]^2)
 sum(( response[indexes_psal]- pred_using_psal[indexes_psal])^2)
 sum( response[indexes_temp]^2)
 sum(( response[indexes_temp]- pred_using_psal[indexes_temp])^2)
-
-
 
