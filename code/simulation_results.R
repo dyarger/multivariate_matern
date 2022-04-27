@@ -1,9 +1,8 @@
 library(tidyverse)
 ##### simulation with both imaginary and real ####
-load('results/simu_results_both.RData')
+load('results/simu_Results_both.RData')
 
 df_list <- list()
-hessian_diag <- theta_vals
 for (i in 1:length(simu_results)) {
   
   
@@ -18,7 +17,6 @@ for (i in 1:length(simu_results)) {
   
   
   
-  hessian_diag[i,] <- sqrt(diag(solve(simu_results[[i]][[1]]$hessian)))
   df_list[[i]] <- df1
 }
 
@@ -41,6 +39,13 @@ error_summary <- df %>%
             var = var(value)) %>%
   as.data.frame()
 
+error_summary <- df %>%
+  group_by(plot_labels, n, strat_lab) %>%
+  summarise(rmse = sqrt(mean((value - true_value)^2)),
+            bias = (mean(value) - mean(true_value)),
+            var = sd(value)) %>%
+  as.data.frame()
+
 error_summary
 
 
@@ -48,9 +53,6 @@ error_summary
 ###### from simulation with real entries #####
 
 load('results/simu_results_real.RData')
-
-table(sapply(simu_results, length))
-simu_results[sapply(simu_results, length)==1][1:10]
 df_list <- list()
 theta_vals <- matrix(nrow = length(simu_results), ncol = 5)
 theta_vals_no_trans <- theta_vals
@@ -59,8 +61,6 @@ theta_single_vals <- matrix(nrow = length(simu_results), ncol = 2)
 hessian_single_diag <- theta_single_vals
 theta_single2_vals <- theta_single_vals
 for (i in 1:length(simu_results)) {
-  
-  
   df1 <- data.frame(simu = i, parameter = c('Sigma11', 'Sigma22', 'Sigma12',
                                             'nu1', 'nu2'),
                     type = 'joint',
@@ -170,8 +170,6 @@ plot_labels <- data.frame(parameter = c('Sigma11', 'Sigma22', 'Sigma12',
 strat_labels <- data.frame(type = c('init', 'joint', 'single'), 
                            strat_lab = c('c)', 'a)', 'b)'))
 
-
-library(dplyr)
 df <- dplyr::bind_rows(df_list) %>%
   left_join(true_values) %>% left_join(plot_labels) %>% left_join(strat_labels)
 
@@ -181,7 +179,6 @@ error_summary <- df %>%
             bias = (mean(value) - mean(true_value))^2,
             var = var(value)) %>%
   as.data.frame()
-library(ggplot2)
 ggplot(data = error_summary, aes(x = n, y = rmse, color = strat_lab, linetype = strat_lab))+
   geom_point()+
   geom_line() + 

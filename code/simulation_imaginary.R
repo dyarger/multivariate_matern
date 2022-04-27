@@ -80,9 +80,9 @@ likelihood_nu_only <- function(theta, response, locs, estimated_params) {
   cov_mat <- imaginary_covariance_matrix_lags(locs, 
                                               nu1 = exp(theta[1]), 
                                               nu2 = exp(theta[1]),
-                                              c11 = exp(estimated_params[1]), 
-                                              c2 = exp(estimated_params[2]), 
-                                              c12 = exp(estimated_params[3]), a1 = 1,
+                                              c11 = estimated_params[1], 
+                                              c2 = estimated_params[2], 
+                                              c12 = estimated_params[3], a1 = 1,
                                               a2 = 1)
   n_obs <- length(locs)
   c_chol <- base::chol(cov_mat)

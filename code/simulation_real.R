@@ -24,6 +24,9 @@ likelihood <- function(theta, response, locs) {
                                          c12 = theta[3], a1 = 1,
                                          a2 = 1)
   c_chol <- base::chol(cov_mat)
+  # image.plot(cov_mat[1:100, 1:100])
+  # image.plot(cov_mat[101:200, 1:100])
+  # isSymmetric(cov_mat[101:200, 1:100])
   v2 <- .Internal(backsolve(r = c_chol, x = response, 
                             k = ncol(c_chol), upper.tri = T, transpose = T))
   quad_form <- sum(v2^2)
@@ -75,26 +78,6 @@ likelihood_joint_only <- function(theta, response, locs, estimated_params) {
   quad_form+ det_val
 }
 
-
-likelihood_nu_only <- function(theta, response, locs, estimated_params) {
-  cov_mat <- whittaker_covariance_matrix_lags(locs, 
-                                              nu1 = exp(theta[1]), 
-                                              nu2 = exp(theta[2]),
-                                              c11 = exp(estimated_params[1]), 
-                                              c2 = exp(estimated_params[2]), 
-                                              c12 = exp(estimated_params[3]), a1 = 1,
-                                              a2 = 1)
-  n_obs <- length(locs)
-  diag(cov_mat) <- diag(cov_mat) + 10^-4
-  c_chol <- base::chol(cov_mat)
-  v2 <- .Internal(backsolve(r = c_chol, x = response, 
-                            k = n_obs, upper.tri = T, transpose = T))
-  quad_form <- sum(v2^2)
-  det_val <-  2* sum(log(diag(c_chol)))
-  quad_form+ det_val
-}
-
-
 estimate_from_simulation <- function(array_id, simulations, locs, simu_info) {
   print(array_id)
   n <- simu_info[['n']][array_id]
@@ -134,17 +117,9 @@ estimate_from_simulation <- function(array_id, simulations, locs, simu_info) {
                             response = response, method = 'L-BFGS-B', 
                             hessian = T, lower = -2,
                             upper =2, locs = locs)
-  
-  AA_star_mom <- crossprod(cbind(simulations[['var1']], simulations[['var2']]))/n
-  
-  joint_optim_mom <- optim(par = c(log(.51),log(.51)), fn = likelihood_nu_only, estimated_params = 
-                             c(AA_star_mom[1,1], AA_star_mom[2,2], AA_star_mom[1,2]),
-                           response = response, method = 'L-BFGS-B', 
-                           hessian = T, lower = c(-2,-2),
-                           upper = c(.25,.25), locs = locs)
+
   print('Done')
-  list(joint_optim, single_optim1, single_optim2, joint_optim_init, joint_optim_seq, 
-       AA_star_mom, joint_optim_mom)
+  list(joint_optim, single_optim1, single_optim2, joint_optim_init, joint_optim_seq)
 }
 simu_results <- mclapply(1:nrow(simu_info), estimate_from_simulation, 
                          simulations = simulations, locs = locs,
