@@ -2,8 +2,10 @@
 ## Covariance and plotting
 
 matern_cov <- function(s,t, nu, a) {
-  if (t-s == 0) {
+  if (t-s == 0 & a == 1) {
     return(gamma(nu)/gamma(nu + 1/2) * sqrt(pi))
+  } else if(t-s == 0) {
+    t <- -s + 10^-18
   }
   (2*pi^(1/2) * abs(t-s)^nu)/( (2*a)^(nu) * gamma(nu + 1/2)) * besselK(a*abs(t-s), nu = nu) 
 }
@@ -26,6 +28,7 @@ cross_cov <- function(s,t, nu, z_ij, a) {
   Re(z_ij) * matern_cov(s,t,nu, a) - 
     Im(z_ij) * struve_version(s,t,nu, a)
 }
+
 struve <- function(z, nu_eval) {
   if (nu_eval == -1/2) {
     return(sqrt(2/(pi * z)) * sinh(z))
@@ -142,30 +145,37 @@ whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
     besselK(x = a1 * abs(h), nu = nu1)
   p22 <- c2* (2*sqrt(pi)/(gamma(nu2 + .5)))*((abs(h))^nu2) * (2*a2)^(-nu2) * 
     besselK(x = a2 * abs(h), nu = nu2)
-  if (nu1 == nu2) {
-    p12 <- c12 * (abs(h))^nu2 * besselK(x = abs(h), nu = nu2)
+  if (nu1 == nu2 & a1 == a2) {
+#    p12 <- c12 * (abs(h))^nu2 * besselK(x = abs(h), nu = nu2)
+    p12 <- c12* (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs( h))^nu1) * (2*a1)^(-nu1) * 
+      besselK(x = a1 * abs(h), nu = nu1)
     if (h == 0) {
-      p12 <- c12 * 1e-10^nu1 * besselK(x = 1e-10, nu = nu1)
-      p11 <- c11 * 1e-10^nu1 * (2*a1)^(-nu1) * sqrt(pi)* (2/( gamma(nu1 + .5)))* besselK(x = 1e-10, nu = nu1)
-      p22 <- c2 * 1e-10^nu2 * (2*a2)^(-nu2) *sqrt(pi)* (2/(gamma(nu2 + .5))) * besselK(x = 1e-10, nu = nu2)
+      p12 <- c12* (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs( 1e-10))^nu1) * (2*a1)^(-nu1) * 
+        besselK(x = a1 * abs( 1e-10), nu = nu1)
+      p11 <- c11* (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs( 1e-10))^nu1) * (2*a1)^(-nu1) * 
+        besselK(x = a1 * abs( 1e-10), nu = nu1)
+      p22 <- c2* (2*sqrt(pi)/(gamma(nu2 + .5)))*((abs( 1e-10))^nu2) * (2*a2)^(-nu2) * 
+        besselK(x = a2 * abs( 1e-10), nu = nu2)
     }
   } else if (nu1 + nu2 == round(nu1 + nu2)) { 
     p12 <- 0
   } else if(h == 0) {
-    p11 <- c11 * 1e-10^nu1 * (2*a1)^(-nu1) * sqrt(pi)* (2/( gamma(nu1 + .5)))* besselK(x = 1e-10, nu = nu1)
+    p11 <- c11* (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs( 1e-10))^nu1) * (2*a1)^(-nu1) * 
+      besselK(x = a1 * abs( 1e-10), nu = nu1)
+   # p11 <- c11 * 1e-10^nu1 * (2*a1)^(-nu1) * sqrt(pi)* (2/( gamma(nu1 + .5)))* besselK(x = 1e-10, nu = nu1)
     p22 <- c2 * 1e-10^nu2 * (2*a2)^(-nu2) *sqrt(pi)* (2/(gamma(nu2 + .5))) * besselK(x = 1e-10, nu = nu2)
     p12 <- 2* pi*c12 * 1/gamma(nu2 + 1/2) * abs(1e-10)^(nu1/2 + nu2/2 - 1/2)* 
       fAsianOptions::whittakerW(x = (a1 + a2)*abs(1e-10),kappa = -nu1/2 + nu2/2,
-                                mu = - (nu1+nu2)/2 , ip = 50) *(a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*
-      exp((a1 - a2)/2 *1e-10) 
+                                mu = - (nu1+nu2)/2 , ip = 10) *
+      (a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*exp((a1 - a2)/2 *1e-10) 
   } else if (h < 0) {
     p12 <- 2* pi *c12 * 1/gamma(nu1 + 1/2) * abs(h)^(nu1/2 + nu2/2 - 1/2)* (a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*
       exp((a1 - a2)/2 * h) * 
-      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h),  kappa = nu1/2 - nu2/2, mu = - (nu1+nu2)/2 , ip = 50)
+      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h),  kappa = nu1/2 - nu2/2, mu = - (nu1+nu2)/2 , ip = 10)
   } else {
     p12 <- 2* pi *c12 * 1/gamma(nu2 + 1/2) * abs(h)^(nu1/2 + nu2/2 - 1/2)* (a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*
       exp((a1 - a2)/2 * h) *  
-      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h), kappa = -nu1/2 + nu2/2,mu = - (nu1+nu2)/2 , ip = 50)
+      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h), kappa = -nu1/2 + nu2/2,mu = - (nu1+nu2)/2 , ip = 10)
   }
   return(c(p11, Re(p12),p22))
 }
