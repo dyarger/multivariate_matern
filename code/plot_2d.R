@@ -1,18 +1,17 @@
 
 library(ggplot2)
 library(scales)
-library(parallel)
 theme_set(theme_bw())
 spatial_integrate <- function(h,d, a_1, a_2, nu_1, nu_2) {
   spec_dens_single <- function(x, h, d, a_1, a_2, nu_1, nu_2) {
-    Re(besselJ(h*x, d/2 - 1) * x^(-(d/2 - 1)) * h^(-(d/2 - 1)) * (a_1 + complex(imaginary = x))^(-nu_1-d/2)*
+    Re(besselJ(h*x, d/2 - 1) * x^(-(d/2 - 1)) * (a_1 + complex(imaginary = x))^(-nu_1-d/2)*
       (a_2 - complex(imaginary = x))^(-nu_2-d/2)) * x^(d-1)
   }
   test_integrate <- integrate(lower = .0001, upper = 1000, 
                               f = spec_dens_single,
                               h = h, d = d, a_1 = a_1, a_2 = a_2, nu_1 = nu_1, 
                               nu_2 = nu_2,subdivisions = 2000)
-  (2 * pi)^(d/2) *h^(-d/2 + 1) * test_integrate[['value']]
+  (2 * pi)^(d/2) *h^(-d/2 + 1) * test_integrate[['value']] #/    (a_1^(nu_1) * a_2^(nu_2))
 }
 a_1 <- a_2 <- 1
 d <- 2
@@ -27,20 +26,93 @@ df <- data.frame(lag_seq,
                  value = c(res, res2, res3, res4),
                  nu1 = rep(c(.5, .5, 1, .75), each = length(lag_seq)),
                  nu2 = rep(c(.5, 1, 1, .75), each = length(lag_seq)), 
-                 nu_label = rep(c('nu[1]=0.2 nu[2]=0.2', 'nu[1]=0.2~nu[2]=0.5', 
-                                  'nu[1]=0.5~nu[2]=0.5',  'nu[1]=0.5~nu[2]=0.5'), each = length(lag_seq)))
+                 nu_label = rep(c('nu[j]=0.2 nu[k]=0.2', 'nu[j]=0.2~nu[k]=0.5', 
+                                  'nu[j]=0.5~nu[k]=0.5',  'nu[j]=0.5~nu[k]=0.5'), each = length(lag_seq)))
 
 ggplot(data = df, aes(x = lag_seq, y = value, 
                       color = paste0(nu1, ', ', nu2), 
                       linetype = paste0(nu1, ', ', nu2))) + 
   geom_line() + 
   labs(x = 'Lags', y = 'Cross-covariance function value', #color = 'Parameters',
-       linetype = expression(paste('Values of ', nu[1], ', ', nu[2])),
-       color = expression(paste('Values of ', nu[1], ', ', nu[2])))+
+       linetype = expression(paste('Values of ', nu[j], ', ', nu[k])),
+       color = expression(paste('Values of ', nu[j], ', ', nu[k])))+
   theme(legend.position = 'bottom') + 
   guides(linetype=  guide_legend(nrow = 2),
          color=  guide_legend(nrow = 2))
 ggsave('images/symmetric_spat.png', height = 4, width = 4)
+
+lag_seq <- seq(0, 5, by = .005)
+res <- sapply(lag_seq, spatial_integrate, d = d, a_1 = a_1, a_2 = a_2, nu_1 = .5, nu_2 = .25)
+res2 <- sapply(lag_seq, spatial_integrate, d = d, a_1 = a_1, a_2 = a_2, nu_1 = .5, nu_2 = .75)
+res3 <- sapply(lag_seq, spatial_integrate, d = d, a_1 = a_1, a_2 = a_2, nu_1 = .5, nu_2 = 1.25)
+res4 <- sapply(lag_seq, spatial_integrate, d = d, a_1 = a_1, a_2 = a_2, nu_1 = .5, nu_2 = 1.75)
+df <- data.frame(lag_seq, 
+                 value = c(res, res2, res3, res4),
+                 nu1 = rep(c(.5, .5, .5, .5), each = length(lag_seq)),
+                 nu2 = rep(c(.25, .75, 1.25, 1.75), each = length(lag_seq)), 
+                 nu_label = rep(c('nu[2]=0.25', 'nu[2]=0.75', 
+                                  'nu[2]=1.25',  'nu[2]=1.75'), each = length(lag_seq)))
+
+ggplot(data = df, aes(x = lag_seq, y = value, 
+                      color = as.character(nu2), 
+                      linetype = as.character( nu2))) + 
+  geom_line() + 
+  labs(x = 'Lags', y = 'Cross-covariance function value', #color = 'Parameters',
+       linetype = expression(paste('Values of ', nu[k])),
+       color = expression(paste('Values of ', nu[k])))+
+  theme(legend.position = 'bottom') + 
+  guides(linetype=  guide_legend(nrow = 2),
+         color=  guide_legend(nrow = 2))
+ggsave('images/symmetric_spat2.png', height = 4, width = 4)
+
+lag_seq <- seq(0, 5, by = .005)
+res <- sapply(lag_seq, spatial_integrate, d = d, a_1 = .2, a_2 = a_2, nu_1 = .5, nu_2 = .5)
+res2 <- sapply(lag_seq, spatial_integrate, d = d, a_1 = .5, a_2 = a_2, nu_1 = .5, nu_2 = .5)
+res3 <- sapply(lag_seq, spatial_integrate, d = d, a_1 = 1, a_2 = a_2, nu_1 = .5, nu_2 = .5)
+res4 <- sapply(lag_seq, spatial_integrate, d = d, a_1 = 1.5, a_2 = a_2, nu_1 = .5, nu_2 = .5)
+res5 <- sapply(lag_seq, spatial_integrate, d = d, a_1 = 1.8, a_2 = a_2, nu_1 = .5, nu_2 = .5)
+df <- data.frame(lag_seq, 
+                 value = c(res, res2, res3, res4, res5),
+                 nu1 = rep(c(.5, .5, .5, .5, .5), each = length(lag_seq)),
+                 nu2 = rep(c(.2, .5, 1, 1.5, 1.8), each = length(lag_seq)), 
+                 nu_label = rep(c('nu[2]=0.25', 'nu[2]=0.75', 
+                                  'nu[2]=1.25',  'nu[2]=1.75', ''), each = length(lag_seq)))
+
+ggplot(data = df, aes(x = lag_seq, y = value, 
+                      color = as.character(nu2), 
+                      linetype = as.character( nu2))) + 
+  geom_line() + 
+  labs(x = 'Lags', y = 'Cross-covariance function value', #color = 'Parameters',
+       linetype = expression(paste('Values of ', a[k])),
+       color = expression(paste('Values of ', a[k])))+
+  theme(legend.position = 'bottom') + 
+  guides(linetype=  guide_legend(nrow = 2),
+         color=  guide_legend(nrow = 2))
+ggsave('images/symmetric_spat_a.png', height = 4, width = 4)
+
+
+# test imaginary part?
+
+spatial_integrate <- function(h,d, a_1, a_2, nu_1, nu_2) {
+  spec_dens_single <- function(x, h, d, a_1, a_2, nu_1, nu_2) {
+    (besselJ(h*x, d/2 - 1) * x^(-(d/2 - 1)) * (a_1 + complex(imaginary = x))^(-nu_1-d/2)*
+         (a_2 - complex(imaginary = x))^(-nu_2-d/2)) * x^(d-1)
+  }
+  test_integrate <- integrate(lower = .0001, upper = 1000, 
+                              f = spec_dens_single,
+                              h = h, d = d, a_1 = a_1, a_2 = a_2, nu_1 = nu_1, 
+                              nu_2 = nu_2,subdivisions = 2000)
+  (2 * pi)^(d/2) *h^(-d/2 + 1) * test_integrate[['value']] #/    (a_1^(nu_1) * a_2^(nu_2))
+}
+a_1 <- a_2 <- 1
+d <- 2
+(spec_dens_single(x = 1, h = 1, d = 2, a_1 = 1, a_2 = 1, nu_1 = .4, nu_2 = .78))
+
+
+lag_seq <- seq(0, 5, by = .005)
+res <- sapply(lag_seq, spatial_integrate, d = d, a_1 = a_1, a_2 = a_2, nu_1 = .5, nu_2 = .5)
+
+
 
 spatial_integrate_d2 <- function(h, a_1, a_2, nu_1, nu_2, e_1, e_2, Delta, approx_seq) {
   spec_dens_theta <- function(x, h, e_1, e_2, Delta) {
@@ -79,10 +151,7 @@ nu_2 <- nu_1 <- .5
 lag_seq <- seq(-1, 1, by = .05)
 grid <- expand.grid(lag_seq, 0)
 
-approx_seq <- c(seq(.0001, 5, by = .1),
-                seq(5, 10, by = .2), 
-                seq(10, 30, by = 1),
-                seq(35, 1000, by = 5))
+approx_seq <- exp(seq(-10, 7, length.out = 300))
 Delta <- function(theta_x, theta_y, entry_1, entry_2) {
   1
 }
@@ -103,43 +172,44 @@ Delta <- function(theta_x, theta_y, entry_1, entry_2) {
   complex(imaginary = sign(theta_x) * .3)
 }
 
-lag_seq <- seq(-3, 3, by = .05)
+lag_seq <- seq(-3, 3, by = .025)
 grid <- expand.grid(lag_seq, lag_seq)
 res <- lapply(1:nrow(grid), function(x, a_1, a_2, nu_1, nu_2, e_1, e_2,
                                      Delta, approx_seq) {
   h = as.double(grid[x,])
-  print(x)
-  print(h)
+  if (x %% 100 == 0) {
+    print(x)
+    print(h)
+  }
   spatial_integrate_d2(h = h, a_1, a_2, nu_1 = nu_1, nu_2 = nu_2, e_1 = e_1, e_2 = e_2, Delta = Delta, approx_seq = approx_seq)
 }, a_1 = a_1, a_2 = a_2, nu_1 = nu_1, nu_2 = nu_2, e_1 = e_1, e_2 = e_2, Delta = Delta,approx_seq = approx_seq
-#,mc.cores = 3, mc.preschedule = T
 )
 res_mat <- matrix( nrow = length(lag_seq), ncol = length(lag_seq), unlist(res))
 fields::image.plot(res_mat)
 
 grid_vals <- data.frame(grid, res_vals = as.double(unlist(res)))
+save(grid_vals, approx_seq, file = paste0('results/asymmetric_2d_', length(approx_seq), '.RData'))
 ggplot(data = grid_vals) + 
   geom_tile(aes(x = Var1, y = Var2, fill = res_vals)) + 
   scale_fill_gradient2() + 
   labs(x = expression(t[1]), y = expression(t[2]),
        fill = 'Cross\nCovariance') + 
   theme(legend.position = 'bottom')
-ggsave('images/asymmetric_spat.png', height = 4, width = 4)
+ggsave(paste0('images/asymmetric_2d_', length(approx_seq), '.png'), height = 4, width = 4)
 
 Delta <- function(theta_x, theta_y, entry_1, entry_2) {
   1
 }
 
-lag_seq <- seq(-2, 2, by = .05)
-grid <- expand.grid(lag_seq, lag_seq)
 res <- lapply(1:nrow(grid), function(x, a_1, a_2, nu_1, nu_2, e_1, e_2,
                                        Delta, approx_seq) {
   h = as.double(grid[x,])
-  print(x)
-  print(h)
+  if (x %% 100 == 0) {
+    print(x)
+    print(h)
+  }
   spatial_integrate_d2(h = h, a_1, a_2, nu_1 = nu_1, nu_2 = nu_2, e_1 = e_1, e_2 = e_2, Delta = Delta, approx_seq = approx_seq)
 }, a_1 = a_1, a_2 = a_2, nu_1 = nu_1, nu_2 = nu_2, e_1 = 1/4, e_2 = e_2, Delta = Delta,approx_seq = approx_seq
-#,mc.cores = 3, mc.preschedule = T
 )
 res_mat <- matrix( nrow = length(lag_seq), ncol = length(lag_seq), unlist(res))
 fields::image.plot(res_mat)
@@ -151,22 +221,21 @@ ggplot(data = grid_vals) +
   labs(x = expression(t[1]), y = expression(t[2]),
        fill = 'Cross\nCovariance') + 
   theme(legend.position = 'bottom')
-ggsave('images/asymmetric_spat_e.png', height = 4, width = 4)
-
+ggsave(paste0('images/asymmetric_2d_E_', length(approx_seq), '.png'), height = 4, width = 4)
+save(grid_vals, approx_seq, file = paste0('results/asymmetric_2d_E_', length(approx_seq), '.RData'))
 
 Delta <- function(theta_x, theta_y, entry_1, entry_2) {
   sign(theta_x)*sign(theta_y) * .3
 }
 
-lag_seq <- seq(-2, 2, by = .05)
-grid <- expand.grid(lag_seq, lag_seq)
-res <- mclapply(1:nrow(grid), function(x, a_1, a_2, nu_1, nu_2, e_1, e_2,
+res <- lapply(1:nrow(grid), function(x, a_1, a_2, nu_1, nu_2, e_1, e_2,
                                        Delta, approx_seq) {
   h = as.double(grid[x,])
-  print(h)
-  spatial_test_d2(h = h, a_1, a_2, nu_1 = nu_1, nu_2 = nu_2, e_1 = e_1, e_2 = e_2, Delta = Delta, approx_seq = approx_seq)
+  if (x %% 100 == 0) {
+    print(x)
+  }
+  spatial_integrate_d2(h = h, a_1, a_2, nu_1 = nu_1, nu_2 = nu_2, e_1 = e_1, e_2 = e_2, Delta = Delta, approx_seq = approx_seq)
 }, a_1 = a_1, a_2 = a_2, nu_1 = nu_1, nu_2 = nu_2, e_1 = e_1, e_2 = e_2, Delta = Delta,approx_seq = approx_seq
-,mc.cores = 3, mc.preschedule = T
 )
 res_mat <- matrix( nrow = length(lag_seq), ncol = length(lag_seq), unlist(res))
 fields::image.plot(res_mat)
@@ -178,17 +247,5 @@ ggplot(data = grid_vals) +
   labs(x = expression(t[1]), y = expression(t[2]),
        fill = 'Cross\nCovariance') + 
   theme(legend.position = 'bottom')
-ggsave('asymmetric_spat_theta_weird.png', height = 4, width = 4)
-
-
-
-
-
-
-
-
-
-
-
-
-
+ggsave(paste0('images/asymmetric_2d_quadrant_', length(approx_seq), '.png'), height = 4, width = 4)
+save(grid_vals, approx_seq, file = paste0('results/asymmetric_2d_quadrant_', length(approx_seq), '.RData'))
