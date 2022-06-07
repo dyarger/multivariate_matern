@@ -13,9 +13,13 @@ simu_info <- data.frame(expand.grid('simu' = 1:n_simu,
                         seeds)
 
 likelihood <- function(theta, response, locs) {
-  if ((abs(theta[3]) + abs(theta[4])) > sqrt(exp(theta[2])) * sqrt(exp(theta[1]))) {
+  Sigma <- matrix(nrow = 2, ncol = 2, 
+                  complex(real = c(exp(theta[1]), theta[3], theta[3], exp(theta[2])),
+                          imaginary = c(0, theta[4], -theta[4], 0)))
+  if (tail(eigen(Sigma, only.values = T)[['values']], 1) <= 0) {
     return(10^6)
   }
+  
   cov_mat <- imaginary_covariance_matrix_lags(locs, 
                                               nu1 = exp(theta[5]), 
                                               nu2 = exp(theta[5]),

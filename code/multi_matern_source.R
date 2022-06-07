@@ -163,7 +163,9 @@ whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
     p11 <- c11* (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs( 1e-10))^nu1) * (2*a1)^(-nu1) * 
       besselK(x = a1 * abs( 1e-10), nu = nu1)
    # p11 <- c11 * 1e-10^nu1 * (2*a1)^(-nu1) * sqrt(pi)* (2/( gamma(nu1 + .5)))* besselK(x = 1e-10, nu = nu1)
-    p22 <- c2 * 1e-10^nu2 * (2*a2)^(-nu2) *sqrt(pi)* (2/(gamma(nu2 + .5))) * besselK(x = 1e-10, nu = nu2)
+    #p22 <- c2 * 1e-10^nu2 * (2*a2)^(-nu2) *sqrt(pi)* (2/(gamma(nu2 + .5))) * besselK(x = 1e-10, nu = nu2)
+    p22 <- c2* (2*sqrt(pi)/(gamma(nu2 + .5)))*((abs( 1e-10))^nu2) * (2*a2)^(-nu2) * 
+      besselK(x = a2 * abs( 1e-10), nu = nu2)
     p12 <- 2* pi*c12 * 1/gamma(nu2 + 1/2) * abs(1e-10)^(nu1/2 + nu2/2 - 1/2)* 
       fAsianOptions::whittakerW(x = (a1 + a2)*abs(1e-10),kappa = -nu1/2 + nu2/2,
                                 mu = - (nu1+nu2)/2 , ip = 10) *
@@ -244,3 +246,41 @@ simulate_manually <- function(cholesky, n_simu, locs) {
                            t = locs, 
                            simulation = rep(1:n_simu, each = length(locs)))
 }
+
+
+norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, norm_type = 'A') {
+  if (norm_type == 'A') {
+    (a_1 + a_2)^(nu_1 + nu_2)  /2/pi/gamma(nu_1 + nu_2) * gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
+  } else if (norm_type == 'B') {
+    (2*a_1)^(nu_1) * (2*a_2)^(nu_2) /2/pi/sqrt(gamma(2*nu_1)*gamma(2 * nu_2)) * 
+      gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
+  } else if (norm_type == 'C') {
+    a_1^(nu_1 + 1/2) * a_2^(nu_2 + 1/2) /2/pi
+  } else if (norm_type == 'D') {
+    (a_1)^(nu_1) * (a_2)^(nu_2)*
+      sqrt(gamma(nu_1 + 1/2)) * sqrt(gamma(nu_2 + 1/2))/pi^(1/2)/sqrt(gamma(nu_1)*gamma(nu_2))
+  }
+}
+
+
+full_cross_cov_single <- function(h, nu, a, realp, imp, norm_type = 'D') {
+  -imp * plot_function( h, nu= nu, a = a)* 
+    2^(-nu) * pi^(3/2)/cos(nu * pi)/gamma(nu + .5)*
+    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = a, a_2 = a, norm_type = norm_type)  +
+    realp *  whitt_version( h, nu1 = nu, nu2 = nu,c2 = 1,c11 = 1, c12 = 1, a1 = a, a2 = a)[2]*
+                      norm_constant(nu_1 = nu, nu_2 = nu, a_1 = a, a_2 = a, norm_type = norm_type)
+}
+
+whitt_only_single <- function(h, nu1, nu2, a1, a2, realp, imp, norm_type = 'D', which_val = 2) {
+  realp *  whitt_version( h, nu1 = nu1, nu2 = nu2,c2 = 1,c11 = 1, c12 = 1, a1 = a1, a2 = a2)[which_val]*
+    norm_constant(nu_1 = nu1, nu_2 = nu2, a_1 = a1, a_2 = a2, norm_type = norm_type)
+}
+
+plot_function <- function(h,nu, a = 1) {
+  if(h == 0) {
+    return(0)
+  }
+  sign(h) * (abs(h)/a)^nu*
+    (besselI(a*abs(h), nu = nu) - struve(a*abs(h), -nu))
+}
+
