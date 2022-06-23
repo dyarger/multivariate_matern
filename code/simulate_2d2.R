@@ -116,13 +116,13 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   geom_raster()+
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
-  labs(fill = 'Simulated value')+
-  theme(legend.position = 'top',
+  labs(fill = 'Simulated\nvalue')+
+  theme(legend.position = 'left',
         strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.width = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_1_ggplot.png', height = 4.5, width = 7, dpi = 150)
+ggsave(filename = 'images/simu_1_ggplot.png', height = 4, width = 8.5, dpi = 150)
 
 
 
@@ -149,13 +149,13 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   geom_raster()+
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
-  labs(fill = 'Simulated value')+
-  theme(legend.position = 'top',
+  labs(fill = 'Simulated\nvalue')+
+  theme(legend.position = 'left',
         strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.width = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_3_ggplot.png', height = 4.5, width = 7, dpi = 150)
+ggsave(filename = 'images/simu_3_ggplot.png', height = 4, width = 8.5, dpi = 150)
 
 
 
@@ -209,13 +209,13 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   geom_raster()+
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
-  labs(fill = 'Simulated value')+
-  theme(legend.position = 'top',
+  labs(fill = 'Simulated\nvalue')+
+  theme(legend.position = 'left',
         strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.width = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_5_ggplot.png', height = 4.5, width = 7, dpi = 150)
+ggsave(filename = 'images/simu_5_ggplot.png', height = 4, width = 8.5, dpi = 150)
 
 
 
@@ -255,13 +255,13 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   geom_raster()+
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
-  labs(fill = 'Simulated value')+
-  theme(legend.position = 'top',
+  labs(fill = 'Simulated\nvalue')+
+  theme(legend.position = 'left',
         strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.width = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_7_ggplot.png', height = 4.5, width = 7, dpi = 150)
+ggsave(filename = 'images/simu_7_ggplot.png', height = 4, width = 8.5, dpi = 150)
 
 
 
@@ -291,13 +291,13 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   geom_raster()+
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
-  labs(fill = 'Simulated value')+
-  theme(legend.position = 'top',
+  labs(fill = 'Simulated\nvalue')+
+  theme(legend.position = 'left',
         strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.width = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_9_ggplot.png', height = 4.5, width = 7, dpi = 150)
+ggsave(filename = 'images/simu_9_ggplot.png', height = 4, width = 8.5, dpi = 150)
 
 
 
