@@ -98,11 +98,11 @@ nu2 <- .8
 AA_star <- matrix(nrow = 2, ncol = 2, complex(real = c(1,.95,.95,1),
                                               imaginary = c(0, 0, 0, 0))) 
 cov_val1 <- sapply(1:nrow(grid_unique), function(x) {
-  whitt_only_single(h = grid_unique$lag[x], nu1 = nu1, nu2 = nu2, a1 = 1, a2 =1, 
+  whitt_only_single(h = grid_unique$lag[x], nu1 = nu1, nu2 = nu1, a1 = 1, a2 =1, 
                     realp = Re(AA_star[1,1]), imp = Im(AA_star[1,1]), which_val = 1)
 })
 cov_val2 <- sapply(1:nrow(grid_unique), function(x) {
-  whitt_only_single(h = grid_unique$lag[x], nu1 = nu1, nu2 = nu2, a1 = 1, a2 =1, 
+  whitt_only_single(h = grid_unique$lag[x], nu1 = nu2, nu2 = nu2, a1 = 1, a2 =1, 
                     realp = Re(AA_star[2,2]), imp = Im(AA_star[2,2]), which_val = 3)
 })
 cov_val12 <- sapply(1:nrow(grid_unique), function(x) {

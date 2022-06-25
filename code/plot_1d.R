@@ -72,7 +72,7 @@ full_function <- function(plot_seq, nu1, nu2, a1, a2, norm_type = 'A') {
            norm_constant(nu_1 = nu1, nu_2 = nu2, a_1 = a1, a_2 = a2, norm_type = norm_type))[2,]
 }
 
-whitt_vals <- sapply(nu_vals, full_function, plot_seq = plot_seq, nu1 = .5, a1 = 1, a2 = 1, norm_type = 'A')
+whitt_vals <- sapply(nu_vals, full_function, plot_seq = plot_seq, nu2 = .5, a1 = 1, a2 = 1, norm_type = 'A')
 
 
 df <- data.frame(plot_seq, 
@@ -83,45 +83,45 @@ library(ggplot2)
 theme_set(theme_bw())
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line() + 
-  labs(x = 'Lags', y = 'Cross-covariance function', color = expression(nu[k]),
-       linetype = expression(nu[k]))#+
+  labs(x = 'Lags', y = 'Cross-covariance function', color = expression(nu[j]),
+       linetype = expression(nu[j]))#+
   #theme(legend.position = 'bottom')
 ggsave('images/example_fun_whittaker_norm_A.png', height = 3, width = width)
 
 whitt_vals <- sapply(nu_vals, full_function, plot_seq = plot_seq, 
-                     nu1 = .5, a1 = 1, a2 = 1, norm_type = 'D')
+                     nu2 = .5, a1 = 1, a2 = 1, norm_type = 'D')
 df <- data.frame(plot_seq, 
                  value = as.double(whitt_vals),
                  nu = rep(nu_vals, each = length(plot_seq)))
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line() + 
-  labs(x = 'Lags', y = 'Cross-covariance function', color = expression(nu[k]),
-       linetype = expression(nu[k]))#+
+  labs(x = 'Lags', y = 'Cross-covariance function', color = expression(nu[j]),
+       linetype = expression(nu[j]))#+
   #theme(legend.position = 'bottom')
 ggsave('images/example_fun_whittaker_norm_B.png', height = 3, width = width)
 
 avals <- c(.2, .5, 1, 2)
 whitt_vals <- sapply(avals, full_function, plot_seq = plot_seq, 
-                     nu1 = 1.2, nu2 = 1.2, a1 = 1, norm_type = 'A')
+                     nu1 = 1.2, nu2 = 1.2, a2 = 1, norm_type = 'A')
 df <- data.frame(plot_seq, 
                  value = as.double(whitt_vals),
                  a = rep(avals, each = length(plot_seq)))
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(a), linetype = factor(a))) + 
   geom_line() + 
-  labs(x = 'Lags', y = 'Cross-covariance function', color = expression(a[k]),
-       linetype = expression(a[k]))#+
+  labs(x = 'Lags', y = 'Cross-covariance function', color = expression(a[j]),
+       linetype = expression(a[j]))#+
   #theme(legend.position = 'bottom')
 ggsave('images/example_fun_whittaker_a_norm_A.png', height = 3, width = width)
 
 whitt_vals <- sapply(avals, full_function, plot_seq = plot_seq, 
-                     nu1 = 1.2, nu2 = 1.2, a1 = 1, norm_type = 'D')
+                     nu1 = 1.2, nu2 = 1.2, a2 = 1, norm_type = 'D')
 df <- data.frame(plot_seq, 
                  value = as.double(whitt_vals),
                  a = rep(avals, each = length(plot_seq)))
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(a), linetype = factor(a))) + 
   geom_line() + 
-  labs(x = 'Lags', y = 'Cross-covariance function', color = expression(a[k]),
-       linetype = expression(a[k]))#+
+  labs(x = 'Lags', y = 'Cross-covariance function', color = expression(a[j]),
+       linetype = expression(a[j]))#+
  # theme(legend.position = 'bottom')
 ggsave('images/example_fun_whittaker_a_norm_B.png', height = 3, width = width)
 
@@ -156,17 +156,17 @@ ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = fa
 ggsave('images/example_combination_function.png', height = 3, width = width)
 
 spec_dens <- function(r, h, nu1, nu2, a1 = 1, a2 = 1, re_z, im_z) {
-  val <- exp(complex(imaginary = -h * r)) *
+  val <- exp(complex(imaginary = h * r)) *
     complex(real = a1, imaginary = r)^(-nu1 - 1/2) *
     complex(real = a2, imaginary = -r)^(-nu2 - 1/2) * 
-    complex(real = re_z, imaginary = -sign(r) * im_z)
+    complex(real = re_z, imaginary = sign(r) * im_z)
   Re(val)
 }
 re_z <- .4
 im_z <- .5
 a1 <- 1
 a2 <- 1
-nu1 <- .5
+nu2 <- .5
 limits <- 300
 subdivisions <- 4000
 nu_vals <- c(.3, 1.5, 2.5, .8)
@@ -180,10 +180,10 @@ full_function <- function(plot_seq, nu1, nu2, a1, a2, re_z, im_z, limits, subdiv
         a_1 = a1, a_2 = a2, norm_type = 'D')
   })
 }
-test25 <- full_function(plot_seq, nu1, nu2 = nu_vals[1], a1, a2, re_z, im_z, limits, subdivisions, norm_type = 'D')
-test15 <- full_function(plot_seq, nu1, nu2 = nu_vals[2], a1, a2, re_z, im_z, limits, subdivisions, norm_type = 'D')
-test250 <- full_function(plot_seq, nu1, nu2 = nu_vals[3], a1, a2, re_z, im_z, limits, subdivisions, norm_type = 'D')
-test8 <- full_function(plot_seq, nu1, nu2 = nu_vals[4], a1, a2, re_z, im_z, limits, subdivisions, norm_type = 'D')
+test25 <- full_function(plot_seq, nu2, nu1 = nu_vals[1], a1, a2, re_z, im_z, limits, subdivisions, norm_type = 'D')
+test15 <- full_function(plot_seq, nu2, nu1 = nu_vals[2], a1, a2, re_z, im_z, limits, subdivisions, norm_type = 'D')
+test250 <- full_function(plot_seq, nu2, nu1 = nu_vals[3], a1, a2, re_z, im_z, limits, subdivisions, norm_type = 'D')
+test8 <- full_function(plot_seq, nu2, nu1 = nu_vals[4], a1, a2, re_z, im_z, limits, subdivisions, norm_type = 'D')
 
 df <- data.frame(plot_seq = plot_seq, 
                  value = c(test25,  test15, test250, test8),
@@ -192,15 +192,15 @@ df <- data.frame(plot_seq = plot_seq,
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line() + 
   labs(x = 'Lags', y = 'Cross-covariance function value',
-       color = expression(nu[k]),
-       linetype = expression(nu[k]))
+       color = expression(nu[j]),
+       linetype = expression(nu[j]))
 ggsave('images/comb_varying_nu.png', height = 3, width = width)
 
-nu1 <- 1.25
+nu2 <- 1.25
 nu_vals <- c(.25, .75,  1.25, 2.25, 3.25)
 rm(re_z);rm(im_z)
 test_vals <- sapply(nu_vals, function(x) {
-  full_function(plot_seq, nu1, nu2 = x, a1, a2, re_z = 0, im_z = 1, 
+  full_function(plot_seq, nu2, nu1 = x, a1, a2, re_z = 0, im_z = 1, 
                 limits = 40, subdivisions = 1000, norm_type = 'D')
 })
 
@@ -210,13 +210,13 @@ df <- data.frame(plot_seq,
 
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line() + 
-  labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(nu[k]),
-       linetype = expression(nu[k]))
+  labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(nu[j]),
+       linetype = expression(nu[j]))
 ggsave('images/im_varying_nu.png', height = 3, width = width)
 
 a_vals <- c(.2, .5, 1, 1.5, 2)
 test_vals <- sapply(a_vals, function(x) {
-  full_function(plot_seq, nu1 = 1.25, nu2 = 1.25, a1 = 1, a2 = x, re_z = 0, im_z = 1, 
+  full_function(plot_seq, nu1 = 1.25, nu2 = 1.25, a1 = x, a2 = 1, re_z = 0, im_z = 1, 
                 limits = 50, subdivisions = 1000, norm_type = 'D')
 })
 
@@ -226,7 +226,7 @@ df <- data.frame(plot_seq,
 
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line() + 
-  labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(a[k]),
-       linetype = expression(a[k]))
+  labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(a[j]),
+       linetype = expression(a[j]))
 ggsave('images/im_varying_a.png', height = 3, width = width)
 

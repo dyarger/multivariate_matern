@@ -171,13 +171,13 @@ whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
                                 mu = - (nu1+nu2)/2 , ip = 10) *
       (a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*exp((a1 - a2)/2 *1e-10) 
   } else if (h < 0) {
-    p12 <- 2* pi *c12 * 1/gamma(nu1 + 1/2) * abs(h)^(nu1/2 + nu2/2 - 1/2)* (a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*
-      exp((a1 - a2)/2 * h) * 
-      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h),  kappa = nu1/2 - nu2/2, mu = - (nu1+nu2)/2 , ip = 10)
-  } else {
     p12 <- 2* pi *c12 * 1/gamma(nu2 + 1/2) * abs(h)^(nu1/2 + nu2/2 - 1/2)* (a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*
-      exp((a1 - a2)/2 * h) *  
-      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h), kappa = -nu1/2 + nu2/2,mu = - (nu1+nu2)/2 , ip = 10)
+      exp((a1 - a2)/2 * -h) * 
+      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h),  kappa = -nu1/2 + nu2/2, mu = (nu1+nu2)/2 , ip = 10)
+  } else {
+    p12 <- 2* pi *c12 * 1/gamma(nu1 + 1/2) * abs(h)^(nu1/2 + nu2/2 - 1/2)* (a1 + a2)^(-nu1/2 - nu2/2 - 1/2)*
+      exp((a1 - a2)/2 * -h) *  
+      fAsianOptions::whittakerW(x = (a1 + a2)*abs(h), kappa = nu1/2 - nu2/2,mu = (nu1+nu2)/2 , ip = 10)
   }
   return(c(p11, Re(p12),p22))
 }
@@ -185,7 +185,7 @@ whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
 whittaker_covariance_matrix <- function(locs, nu1, nu2, c11, c12, c2, a1,a2) {
   grid <- expand.grid(locs, locs)
   cov_val <- sapply(1:nrow(grid), function(x) {
-    whitt_version(grid[['Var1']][x]-grid[['Var2']][x], nu1= nu1, nu2 = nu2, c11 = c11, c12 = c12, c2 = c2)
+    whitt_version(grid[['Var2']][x]-grid[['Var1']][x], nu1= nu1, nu2 = nu2, c11 = c11, c12 = c12, c2 = c2)
   })
   cov_mat1 <- matrix(cov_val[1,], nrow = length(locs))
   cov_mat2 <- matrix(cov_val[3,], nrow = length(locs))
@@ -248,7 +248,7 @@ simulate_manually <- function(cholesky, n_simu, locs) {
 }
 
 
-norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, norm_type = 'A') {
+norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, norm_type = 'D') {
   if (norm_type == 'A') {
     (a_1 + a_2)^(nu_1 + nu_2)  /2/pi/gamma(nu_1 + nu_2) * gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
   } else if (norm_type == 'B') {

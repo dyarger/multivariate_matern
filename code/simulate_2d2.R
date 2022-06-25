@@ -171,7 +171,6 @@ h_fun3 <- function(h, a1, a2, nu1, nu2, d = 2) {
         (a2 + complex(imaginary = -sqrt(sum(h^2))))^(nu2 + d/2)*
         a1^(nu1) *a2^(nu2) * sqrt(gamma(nu1 + d/2)*gamma(nu2 + d/2)) /sqrt(gamma(nu1)*gamma(nu2)) / pi^(d/2)
     }
-    
   } else {
     if (h[2] > 0) {
       complex(real = -0.97)/(a1 + complex(imaginary = - sqrt(sum(h^2))))^(nu1 + d/2)/ 

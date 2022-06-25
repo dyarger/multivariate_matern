@@ -257,7 +257,7 @@ ggsave('images/cc_fun_2d_3_psi.png', height = 4, width = 5.1, dpi = 150)
 
 
 Delta <- function(theta_x, theta_y, entry_1, entry_2) {
-  complex(imaginary = sign(theta_x) * sign(theta_y) * .97)
+  complex(real = sign(theta_x) * sign(theta_y) * .97)
 }
 
 res <- sapply(1:nrow(grid), function(x, a_1, a_2, nu_1, nu_2, Delta, Psi,  approx_grid, 
