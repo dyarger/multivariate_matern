@@ -208,7 +208,7 @@ isSymmetric(test_mat)
 
 # log likelihood as function of parameters
 ll_fun <- function(par, dist_tens_mat, response, grid_info) {
-  print(exp(par[1:8]))
+  #print(exp(par[1:8]))
   nu1 <- exp(par[1]); nu2 <- exp(par[2])
   a1 <- exp(par[3]); a2 <- exp(par[4])
   nugget1 <- exp(par[5]); nugget2 <- exp(par[6])
@@ -225,8 +225,7 @@ ll_fun <- function(par, dist_tens_mat, response, grid_info) {
   chol_mat <- base::chol(cov_mat)
   ll_val <- -nrow(cov_mat)/2 * log(2 * pi) - 1/2 * sum(backsolve(chol_mat, response, transpose = T)^2) - 
       sum(log(diag(chol_mat)))
-  print(ll_val)
-  
+  #print(ll_val)
   - ll_val
 }
 
@@ -242,6 +241,7 @@ test_optim <- optim(
   control = list(parscale = c(rep(1, 8), .1))
 )
 
+test_optim
 par <- test_optim$par
 (nu1 <- exp(par[1]))
 (nu2 <- exp(par[2]))
@@ -253,13 +253,11 @@ par <- test_optim$par
 (Sigma11 <- exp(par[7]))
 (Sigma22 <- exp(par[8]))
 (Sigma12re <- par[9]*sqrt(Sigma11)*sqrt(Sigma22))
-(Sigma12im <- par[10]*sqrt(Sigma11)*sqrt(Sigma22))
 par[9]
-par[10]
 
 
 ll_fun_psi_real <- function(par, dist_tens_mat, response, grid_info) {
-  print(exp(par[1:8]))
+  #print(exp(par[1:8]))
   nu1 <- exp(par[1]); nu2 <- exp(par[2])
   a1 <- exp(par[3]); a2 <- exp(par[4])
   nugget1 <- exp(par[5]); nugget2 <- exp(par[6])
@@ -282,22 +280,20 @@ ll_fun_psi_real <- function(par, dist_tens_mat, response, grid_info) {
   chol_mat <- base::chol(cov_mat)
   ll_val <- -nrow(cov_mat)/2 * log(2 * pi) - 1/2 * sum(backsolve(chol_mat, response, transpose = T)^2) - 
     sum(log(diag(chol_mat)))
-  print(ll_val)
-  
+  #print(ll_val)
   - ll_val
 }
 
 test_optim_real <- optim(
   par = c(log(c(.5, .5, .01, .01, 100, 20, var(weather$pres), var(weather$temp))), .01, 0, 0),
   fn = ll_fun_psi_real, dist_tens_mat = dist_tens_mat, response = response, 
-  lower = c(log(c(.001, .001, 10^-6, 10^-6, 10^-6, 10^-6, 10^-6, 10^-6)), -1, -pi),
-  upper = c(log(c(5, 5, NA, NA, NA, NA, NA, NA)), 1, pi),
+  lower = c(log(c(.001, .001, 10^-6, 10^-6, 10^-6, 10^-6, 10^-6, 10^-6)), -1, NA, NA),
+  upper = c(log(c(5, 5, NA, NA, NA, NA, NA, NA)), 1, NA, NA),
   method = 'L-BFGS-B',
   grid_info = grid_info,
-  control = list(parscale = c(rep(1, 8), .1, .1))
+  control = list(parscale = c(rep(1, 8), .1, .1, .1))
 )
-
-
+test_optim_real
 par <- test_optim_real$par
 (nu1 <- exp(par[1]))
 (nu2 <- exp(par[2]))
@@ -310,67 +306,20 @@ par <- test_optim_real$par
 (Sigma22 <- exp(par[8]))
 (Sigma12re <- par[9]*sqrt(Sigma11)*sqrt(Sigma22))
 par[9]
-par[10]
-
-# only psi
-ll_fun_only_psi <- function(par, par_use, dist_tens_mat, response, grid_info) {
-  print(par)
-  nu1 <- exp(par_use[1]); nu2 <- exp(par_use[2])
-  a1 <- exp(par_use[3]); a2 <- exp(par_use[4])
-  nugget1 <- exp(par_use[5]); nugget2 <- exp(par_use[6])
-  Sigma11 <- exp(par_use[7]); Sigma22 <- exp(par_use[8])
-  Sigma12 <- par_use[9]*sqrt(Sigma11)*sqrt(Sigma22)
-  theta_star <- atan2(par[2], par[1])
-  # test_fun <- function(theta) {
-  #   ifelse(theta %% (2*pi) < pi,
-  #          theta %% (2*pi),
-  #          theta %% (2*pi) - 2 * pi)
-  # }
-  
-  #theta_star <- test_fun(par)
-  Psi_fun <- function(theta) {
-    if (theta_star < 0) {
-      ifelse(theta > theta_star & theta < theta_star + pi, 1, -1)
-    } else {
-      ifelse(theta > theta_star | theta < theta_star - pi, 1, -1)
-    }
-  }
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
-                                     Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
-                                                       function(x) Sigma12),
-                                     Psi_list = replicate(3, Psi_fun),
-                                     dist_tens_mat = dist_tens_mat, grid_info = grid_info,
-                                     nugget1 = nugget1, nugget2 = nugget2)
-  chol_mat <- base::chol(cov_mat)
-  ll_val <- -nrow(cov_mat)/2 * log(2 * pi) - 1/2 * sum(backsolve(chol_mat, response, transpose = T)^2) - 
-    sum(log(diag(chol_mat)))
-  print(ll_val)
-  
-  - ll_val
-}
-test_optim_only_psi <- optim(
-  par = c(0, 0),
-  fn = ll_fun_only_psi, dist_tens_mat = dist_tens_mat, response = response, 
-  # lower = -pi,
-  # upper = pi,
-  par_use = test_optim_real$par,
-  method = 'L-BFGS-B',
-  grid_info = grid_info
-)
-
+atan2(par[11],par[10])
 
 
 
 # with an imaginary entry
 ll_fun_psi_im <- function(par, dist_tens_mat, response, grid_info) {
-  print(exp(par[1:8]))
+  #print(exp(par[1:8]))
   nu1 <- exp(par[1]); nu2 <- exp(par[2])
   a1 <- exp(par[3]); a2 <- exp(par[4])
   nugget1 <- exp(par[5]); nugget2 <- exp(par[6])
   Sigma11 <- exp(par[7]); Sigma22 <- exp(par[8])
   Sigma12 <- par[9]*sqrt(Sigma11)*sqrt(Sigma22)
-  theta_star <- par[10]
-  Sigma12im <- par[11]*sqrt(Sigma11)*sqrt(Sigma22)
+  Sigma12im <- par[10]*sqrt(Sigma11)*sqrt(Sigma22)
+  theta_star <- atan2(par[12], par[11])
   Psi_fun <- function(theta) {
     if (theta_star < 0) {
       ifelse(theta > theta_star & theta < theta_star + pi, 1, -1)
@@ -388,20 +337,35 @@ ll_fun_psi_im <- function(par, dist_tens_mat, response, grid_info) {
   chol_mat <- base::chol(cov_mat)
   ll_val <- -nrow(cov_mat)/2 * log(2 * pi) - 1/2 * sum(backsolve(chol_mat, response, transpose = T)^2) - 
     sum(log(diag(chol_mat)))
-  print(ll_val)
-  
+  #print(ll_val)
   - ll_val
 }
 
 test_optim_im <- optim(
-  par = c(log(c(.5, .5, .01, .01, 100, 20, var(weather$pres), var(weather$temp))), .01, 0, .01),
+  par = c(log(c(.5, .5, .01, .01, 100, 20, var(weather$pres), var(weather$temp))), .01, .01, 0, 0),
   fn = ll_fun_psi_im, dist_tens_mat = dist_tens_mat, response = response, 
-  lower = c(log(c(.001, .001, 10^-6, 10^-6, 10^-6, 10^-6, 10^-6, 10^-6)), -1, -pi, -1),
-  upper = c(log(c(5, 5, NA, NA, NA, NA, NA, NA)), 1, pi, 1),
+  lower = c(log(c(.001, .001, 10^-6, 10^-6, 10^-6, 10^-6, 10^-6, 10^-6)), -1, -1, NA, NA),
+  upper = c(log(c(5, 5, NA, NA, NA, NA, NA, NA)), 1, 1, NA, NA),
   method = 'L-BFGS-B',
   grid_info = grid_info,
-  control = list(parscale = c(rep(1, 8), .1, .1, .1))
+  control = list(parscale = c(rep(1, 8), .1, .1, .1, .1))
 )
+test_optim_im
+par <- test_optim_im$par
+(nu1 <- exp(par[1]))
+(nu2 <- exp(par[2]))
+(a1 <- exp(par[3]))
+(a2 <- exp(par[4]))
+
+(nugget1 <-  exp(par[5]))
+(nugget2 <-  exp(par[6]))
+(Sigma11 <- exp(par[7]))
+(Sigma22 <- exp(par[8]))
+(Sigma12re <- par[9]*sqrt(Sigma11)*sqrt(Sigma22))
+(Sigma12im <- par[10]*sqrt(Sigma11)*sqrt(Sigma22))
+par[9]
+par[10]
+atan2(par[12],par[11])
 
 # independent Matern
 construct_entire_matrix_independent <- function(nu1, nu2, a1, a2, 
@@ -415,11 +379,11 @@ construct_entire_matrix_independent <- function(nu1, nu2, a1, a2,
                          Psi = Psi_list[[2]], Delta = Delta_list[[2]],
                          grid_info = grid_info, dist_tens_mat)
   diag(C2) <- diag(C2) + nugget2
-  as.matrix(bdiag(C1, C2))
+  as.matrix(Matrix::bdiag(C1, C2))
 }
 
 ll_fun_ind <- function(par, dist_tens_mat, response, grid_info) {
-  print(exp(par[1:8]))
+  #print(exp(par[1:8]))
   nu1 <- exp(par[1]); nu2 <- exp(par[2])
   a1 <- exp(par[3]); a2 <- exp(par[4])
   nugget1 <- exp(par[5]); nugget2 <- exp(par[6])
@@ -434,8 +398,7 @@ ll_fun_ind <- function(par, dist_tens_mat, response, grid_info) {
   chol_mat <- base::chol(cov_mat)
   ll_val <- -nrow(cov_mat)/2 * log(2 * pi) - 1/2 * sum(backsolve(chol_mat, response, transpose = T)^2) - 
     sum(log(diag(chol_mat)))
-  print(ll_val)
-  
+  #print(ll_val)
   - ll_val
 }
 
@@ -448,11 +411,25 @@ test_optim_ind <- optim(
   grid_info = grid_info,
   control = list(parscale = rep(1, 8))
 )
+test_optim_ind
+par <- test_optim_ind$par
+(nu1 <- exp(par[1]))
+(nu2 <- exp(par[2]))
+(a1 <- exp(par[3]))
+(a2 <- exp(par[4]))
+
+(nugget1 <-  exp(par[5]))
+(nugget2 <-  exp(par[6]))
+(Sigma11 <- exp(par[7]))
+(Sigma22 <- exp(par[8]))
+
+
+
 
 # single correlation function
 # independent Matern
 ll_fun_single <- function(par, dist_tens_mat, response, grid_info) {
-  print(exp(par[1:8]))
+  #print(exp(par[1:7]))
   nu1 <- exp(par[1]); a1 <- exp(par[2])
   nugget1 <- exp(par[3]); nugget2 <- exp(par[4])
   Sigma11 <- exp(par[5]); Sigma22 <- exp(par[6])
@@ -467,7 +444,7 @@ ll_fun_single <- function(par, dist_tens_mat, response, grid_info) {
   chol_mat <- base::chol(cov_mat)
   ll_val <- -nrow(cov_mat)/2 * log(2 * pi) - 1/2 * sum(backsolve(chol_mat, response, transpose = T)^2) - 
     sum(log(diag(chol_mat)))
-  print(ll_val)
+  #print(ll_val)
   
   - ll_val
 }
@@ -481,6 +458,17 @@ test_optim_single <- optim(
   grid_info = grid_info,
   control = list(parscale = c(rep(1, 6), .1))
 )
+test_optim_single
+par <- test_optim_single$par
+(nu1 <- exp(par[1]))
+(a1 <- exp(par[2]))
+
+(nugget1 <-  exp(par[3]))
+(nugget2 <-  exp(par[4]))
+(Sigma11 <- exp(par[5]))
+(Sigma22 <- exp(par[6]))
+par[7]
+
 
 # bivariate Matern
 construct_matrix_mm <- function(nu1, nu2, nu12, a1, a2, a12,
@@ -502,7 +490,7 @@ construct_matrix_mm <- function(nu1, nu2, nu12, a1, a2, a12,
 
 # log likelihood as function of parameters
 ll_fun_mm <- function(par, dist_tens_mat, response, grid_info) {
-  print(exp(par[1:10]))
+  #print(exp(par[1:10]))
   nu1 <- exp(par[1]); nu2 <- exp(par[2]); nu12 <- exp(par[3])
   a1 <- exp(par[4]); a2 <- exp(par[5]); a12 <- exp(par[6])
   nugget1 <- exp(par[7]); nugget2 <- exp(par[8])
@@ -520,7 +508,7 @@ ll_fun_mm <- function(par, dist_tens_mat, response, grid_info) {
   chol_mat <- base::chol(cov_mat)
   ll_val <- -nrow(cov_mat)/2 * log(2 * pi) - 1/2 * sum(backsolve(chol_mat, response, transpose = T)^2) - 
     sum(log(diag(chol_mat)))
-  print(ll_val)
+  #print(ll_val)
   
   - ll_val
 }
@@ -535,7 +523,24 @@ test_optim_mm <- optim(
   control = list(parscale = c(rep(1, 10), .1))
 )
 
+test_optim_mm
+par <- test_optim_mm$par
+(nu1 <- exp(par[1]))
+(nu2 <- exp(par[2]))
+(nu12 <- exp(par[3]))
+(a1 <- exp(par[4]))
+(a2 <- exp(par[5]))
+(a12 <- exp(par[6]))
 
+(nugget1 <-  exp(par[7]))
+(nugget2 <-  exp(par[8]))
+(Sigma11 <- exp(par[9]))
+(Sigma22 <- exp(par[10]))
+par[11]
+
+
+save(test_optim, test_optim_im, test_optim_ind, test_optim_single, test_optim_mm, test_optim_real,
+     file = 'pres_temp_spectral_results.RData')
 
 
 # comparison models
