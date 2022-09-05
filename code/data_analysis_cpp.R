@@ -52,7 +52,7 @@ return fvals;
 
 spec_dens_cpp <- function(x, d, a_1, a_2, nu_1, nu_2) {
   y <- complex(imaginary = x, length.out = length(x))
-  Re((a_1 + y)^(-nu_1-d/2)*(a_2 - y)^(-nu_2-d/2)) *
+  Re((a_1 + y)^(-nu_1 - d/2)*(a_2 - y)^(-nu_2 - d/2)) *
     x^(d/2 - 1)
 }
 

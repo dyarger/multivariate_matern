@@ -23,14 +23,14 @@ fft_2d <- function(n_points = 2^10, x_max = 10, nu1 = .5, nu2 = .5, a1 = 1, a2 =
   tv_mat <- matrix(nrow = length(freq_points), ncol = length(freq_points), tv)
   phase_factor <- 1/(2*pi)  * 
     exp(complex(imaginary = rowSums(cbind(freq_grid[['x']][1], freq_grid[['y']][1]) * 2 * pi *
-                  (expand.grid((1:length(freq_points)) /(delta_t * length(freq_points)), 
-                               (1:length(freq_points)) /(delta_t * length(freq_points))) ))))
+                  (expand.grid((1:length(freq_points)) / (delta_t * length(freq_points)), 
+                               (1:length(freq_points)) / (delta_t * length(freq_points))) ))))
   phase_factor_mat <- matrix(nrow = length(freq_points), ncol = length(freq_points),
                              phase_factor)
   ff_res <- armafft(tv_mat)
   p <- ncol(ff_res)/2
   ff_res_adj <- cbind(rbind(ff_res[(p+1):(2*p),(p+1):(2*p)], ff_res[1:p,(p+1):(2*p)]),
-                      rbind(ff_res[(p+1):(2*p),1:p], ff_res[1:p,1:p])) * -phase_factor_mat
+                      rbind(ff_res[(p+1):(2*p),1:p], ff_res[1:p,1:p])) * - phase_factor_mat
   x_vals <- x_vals - (x_vals[length(x_vals)] - x_vals[1]) /2
   cbind(expand.grid(x_vals, x_vals), 'val' = (length(x_vals))^(2)*
           as.double(Re(ff_res_adj) * norm_constant(nu1, nu2, a1, a2)) * 2/pi/x_max^2/ 0.01026171)
