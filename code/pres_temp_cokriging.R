@@ -239,15 +239,15 @@ do_cokriging <- function(cov_mat, folds, n, response1, response2) {
     response1_have <- response1[r_have]
     response1_out <- response1[r_ind]
     
-    cov_mat_11 <- cov_mat[c(r_have, (n+1):(2*n)), c(r_have, (n+1):(2*n))]
-    cov_mat_12 <- cov_mat[c(r_have, (n+1):(2*n)), r_ind]
+    cov_mat_11 <- cov_mat[c(r_have, (n + 1):(2*n)), c(r_have, (n + 1):(2*n))]
+    cov_mat_12 <- cov_mat[c(r_have, (n + 1):(2*n)), r_ind]
     cov_mat_22 <- cov_mat[r_ind, r_ind]
     
     cov_mat_11_single <- cov_mat[r_have, r_have]
     cov_mat_12_single <- cov_mat[r_have, r_ind]
     
-    cov_mat_11_none <- cov_mat[(n+1):(2*n), (n+1):(2*n)]
-    cov_mat_12_none <- cov_mat[(n+1):(2*n), r_ind]
+    cov_mat_11_none <- cov_mat[(n + 1):(2*n), (n + 1):(2*n)]
+    cov_mat_12_none <- cov_mat[(n + 1):(2*n), r_ind]
     
     pred <- t(cov_mat_12) %*% solve(cov_mat_11, c(response1_have, response2))
     var_est <- cov_mat_22 - t(cov_mat_12) %*% solve(cov_mat_11,cov_mat_12)
@@ -387,11 +387,11 @@ cokriging_fix <- do_cokriging(test_mat_fix, folds, n, response1, response2)
 cokriging_single <- do_cokriging(test_mat_single, folds, n, response1, response2)
 cokriging_mm <- do_cokriging(test_mat_mm, folds, n, response1, response2)
 folds_n <- as.vector(table(folds))
-apply(cokriging_single[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_mm[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_fix[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_real[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_im[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
+apply(cokriging_single[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_mm[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_fix[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_real[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_im[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
 
 
 nfolds <- n
@@ -403,18 +403,18 @@ cokriging_fix <- do_cokriging(test_mat_fix, folds, n, response1, response2)
 cokriging_single <- do_cokriging(test_mat_single, folds, n, response1, response2)
 cokriging_mm <- do_cokriging(test_mat_mm, folds, n, response1, response2)
 folds_n <- rep(1, n)
-apply(cokriging_single[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_mm[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_fix[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_real[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_im[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
+apply(cokriging_single[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_mm[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_fix[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_real[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_im[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
 
 switch_variables <- function(test_mat, n) {
   test_mat2 = test_mat
-  test_mat2[1:n, 1:n] = test_mat[(n+1):(2*n), (n+1):(2*n)]
-  test_mat2[(n+1):(2*n), (n+1):(2*n)] = test_mat[1:n, 1:n]
-  test_mat2[(n+1):(2*n), 1:n] = t(test_mat2[(n+1):(2*n), 1:n])
-  test_mat2[1:n, (n+1):(2*n)] = t(test_mat2[1:n, (n+1):(2*n)])
+  test_mat2[1:n, 1:n] = test_mat[(n + 1):(2*n), (n + 1):(2*n)]
+  test_mat2[(n + 1):(2*n), (n + 1):(2*n)] = test_mat[1:n, 1:n]
+  test_mat2[(n + 1):(2*n), 1:n] = t(test_mat2[(n + 1):(2*n), 1:n])
+  test_mat2[1:n, (n + 1):(2*n)] = t(test_mat2[1:n, (n + 1):(2*n)])
   test_mat2
 }
 
@@ -427,11 +427,11 @@ cokriging_im <- do_cokriging(switch_variables(test_mat_im, n), folds, n, respons
 cokriging_fix <- do_cokriging(switch_variables(test_mat_fix, n), folds, n, response2, response1)
 cokriging_single <- do_cokriging(switch_variables(test_mat_single, n), folds, n, response2, response1)
 cokriging_mm <- do_cokriging(switch_variables(test_mat_mm, n), folds, n, response2, response1)
-apply(cokriging_single[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_mm[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_fix[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_real[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_im[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
+apply(cokriging_single[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_mm[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_fix[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_real[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_im[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
 
 nfolds <- 5
 set.seed(12)
@@ -442,11 +442,11 @@ cokriging_im <- do_cokriging(switch_variables(test_mat_im, n), folds, n, respons
 cokriging_fix <- do_cokriging(switch_variables(test_mat_fix, n), folds, n, response2, response1)
 cokriging_single <- do_cokriging(switch_variables(test_mat_single, n), folds, n, response2, response1)
 cokriging_mm <- do_cokriging(switch_variables(test_mat_mm, n), folds, n, response2, response1)
-apply(cokriging_single[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_mm[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_fix[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_real[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
-apply(cokriging_im[[1]], 2, function(x) sqrt(sum(x * folds_n)/ sum(folds_n)))
+apply(cokriging_single[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_mm[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_fix[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_real[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
+apply(cokriging_im[[1]], 2, function(x) sqrt(sum(x * folds_n) / sum(folds_n)))
 
 
 

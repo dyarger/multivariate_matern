@@ -108,7 +108,7 @@ for (i in 1:dim(dist_tens)[1]) {
                                                       reference_location[2]), 
                                                 cbind(locs[j,1],
                                                       reference_location[2]))
-    if (locs[i,1] <locs[j,1]) {
+    if (locs[i,1] < locs[j,1]) {
       dist_long_prelim <- -dist_long_prelim
     }
     
@@ -179,7 +179,7 @@ image_mat <- fft_2d(grid_info = grid_info, nu1 = 1.5, nu2 = 1.5,
          .97 * complex(imaginary = sign(x))
        })
 ggplot(data = image_mat %>% filter(Var1 > -1, Var1 < 1, Var2 > -1, Var2 < 1)) +
-  geom_tile(aes(x = Var1, y =Var2, fill = val))+
+  geom_tile(aes(x = Var1, y = Var2, fill = val)) +
   scale_fill_gradient2()
 
 
@@ -189,7 +189,7 @@ test_mat2 <-
 mvtnorm::dmvnorm(Y, sigma = test_mat, log = T)
 cor(Y[1:n],Y[-c(1:n)])
 ggplot(data = as.data.frame(cbind(rbind(locs, locs), as.vector(Y), type = rep(c(1,2), each = n)))) +
-  geom_point(aes(x = V1, y =V2, color = Y))+
+  geom_point(aes(x = V1, y = V2, color = Y)) +
   facet_wrap(~type) +
   scale_color_gradient2()
 
@@ -303,9 +303,6 @@ ll_fun_psi_im <- function(par, dist_tens_mat, response, grid_info) {
   Sigma11 <- exp(par[7]); Sigma22 <- exp(par[8])
   Sigma12im <- par[9]*sqrt(Sigma11)*sqrt(Sigma22)
   theta_star <- atan2(par[11], par[10])
-  # Sigma12 <- par[9]*sqrt(Sigma11)*sqrt(Sigma22)
-  # Sigma12im <- par[10]*sqrt(Sigma11)*sqrt(Sigma22)
-  # theta_star <- atan2(par[12], par[11])
   Psi_fun <- function(theta) {
     if (theta_star < 0) {
       ifelse(theta > theta_star & theta < theta_star + pi, 1, -1)
@@ -328,7 +325,6 @@ ll_fun_psi_im <- function(par, dist_tens_mat, response, grid_info) {
 }
 
 test_optim_im <- optim(
-  #par = c(test_optim_real$par[1:9], 0, test_optim_real$par[10:11]),
   par = c(log(c(nu1_init, nu2_init, a1_init, a2_init, nugget1_init, nugget2_init, 
                            Sigma11_init, Sigma22_init)), cor_im_init, .1, .1),
   fn = ll_fun_psi_im, dist_tens_mat = dist_tens_mat, response = Y, 
@@ -595,13 +591,6 @@ df_all <- rbind(cbind(df_fix, type = 'theta_star_fixed'),
                 cbind(df_single, type = 'single'))
 
 
-
-save(test_optim, test_optim_im, test_optim_ind, test_optim_single, test_optim_mm, test_optim_real,
-     df_all,
-     file = 'pres_temp_spectral_results_10_final.RData')
-
-#load('pres_temp_spectral_results_11.RData')
-
 df_params <- data.frame(type = c('theta_star_fixed', 'real', 'imaginary', 'multi_matern', 'single'),
                         var1 = exp(c(test_optim$par[7], test_optim_real$par[7],
                                      test_optim_im$par[7], test_optim_mm$par[9],
@@ -651,22 +640,20 @@ ggplot(data = df_all %>%
   geom_raster() + 
   facet_wrap(~type) + 
   scale_fill_gradientn(colors = rev(rainbow(10))) +
-  #scale_fill_gradient2() +
   labs(x = 'Dimension 1', y = 'Dimension 2',
        fill = 'Cross-\ncovariance') +
   coord_equal() + 
   theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-
 
 labels <- data.frame(type = c('real', 'imaginary', 'multi_matern', 'single', 'theta_star_fixed'),
                      label = factor(c('TPMM w/ real directional measure',
                                       'TPMM w/ complex directional measure',
                                       'MM of Gnieting et al. (2010)',
                                       'Single covariance function',
-                                      'TPMM w/ psi fixed'),
+                                      'TPMM w/ phi fixed'),
                                     levels = c('Single covariance function',
                                                'MM of Gnieting et al. (2010)',
-                                               'TPMM w/ psi fixed', 
+                                               'TPMM w/ phi fixed', 
                                                'TPMM w/ real directional measure',
                                                'TPMM w/ complex directional measure')))
 
@@ -676,9 +663,7 @@ ggplot(data = df_all %>%
   geom_raster() + 
   facet_wrap(~label) + 
   scale_fill_gradientn(colors = rev(rainbow(10))) +
-  #scale_fill_gradient2() +
   labs(x = 'Zonal distance (km)', y = 'Meridional distance (km)',
        fill = 'Cross-\ncovariance') +
   coord_equal() + 
   theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-ggsave('cov_fun_comparison_data.png', height = 6, width = 9)
