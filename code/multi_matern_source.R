@@ -54,90 +54,7 @@ plot_cov <- function(plot_seq =  seq(-5, 5, by = .2), AA_star, nu) {
   par(mfrow = params)
 }
 
-# simulation
 
-H <- function(omega,i,j, AA_star, nu) {
-  AA_star_conj <- Conj(AA_star)
-  if (omega >= 0) {
-    H11 <- sqrt( (1 + omega^2)^(-nu - 1/2) *  AA_star[1,1])
-    if (i == 1 & j == 1) {
-      return(H11)
-    } else if (i == 2 & j == 1) {
-      H21 <- (1 + omega^2)^(-nu - 1/2) * AA_star[2,1] / H11
-      return(H21)
-    } else if (i == 2 & j == 2) {
-      H21 <- (1 + omega^2)^(-nu - 1/2) * AA_star[2,1] / H11
-      return(sqrt((1 + omega^2)^(-nu - 1/2) * AA_star[2,2] -
-                    abs(H21)^2))
-    }
-  } else {
-    H11 <- sqrt( (1 + omega^2)^(-nu - 1/2) *  AA_star_conj[1,1])
-    if (i == 1 & j == 1) {
-      return(H11)
-    } else if (i == 2 & j == 1) {
-      H21 <- (1 + omega^2)^(-nu - 1/2) * AA_star_conj[2,1] / H11
-      return(H21)
-    } else if (i == 2 & j == 2) {
-      H21 <- (1 + omega^2)^(-nu - 1/2) * AA_star_conj[2,1] / H11
-      return(sqrt((1 + omega^2)^(-nu - 1/2) * AA_star_conj[2,2] -
-                    abs(H21)^2))
-    }
-  }
-}
-
-gamma_fun <- function(omega, i,j, AA_star, nu) {
-  abs(H(omega,i,j,AA_star, nu))/abs(H(omega, j,j,AA_star, nu))
-}
-
-theta_fun <- function(omega, i,j, AA_star, nu) {
-  atan2(Im(H(omega, i,j,AA_star, nu)),Re(H(omega,i,j,AA_star,nu)))
-}
-
-sigmaj2 <- function(j,AA_star,nu) {
-  if (j == 1) {
-    return(sqrt(pi) * gamma(nu) / gamma(nu + 1/2) * (abs(AA_star)[1,1]))
-  } else if (j == 2) {
-    val1 <- abs(AA_star[2,2] - abs(AA_star[2,1]^2 / AA_star[1,1])  )
-    val2 <- abs(AA_star[2,2] - abs(Conj(AA_star)[2,1]^2 / Conj(AA_star)[1,1])  )
-    sqrt(pi) * gamma(nu)/2 / gamma(nu + 1/2) * (val1 + val2)
-  }
-}
-
-
-gj <- function(omega, j, AA_star, nu, sigma_vec) {
-  abs(H(omega, j,j,AA_star,nu))^2/sigma_vec[j]
-}
-
-generate_samples <- function(n_samples, nu) {
-  (1/sqrt(2*nu)) * rt(n_samples, df = 2*nu)
-}
-
-sim_bivariate <- function(AA_star, nu, t_eval = seq(-5, 5, by = .02), N) {
-  phi <- matrix(ncol = 2, nrow = N, runif(n = 2 * N, min = 0, max = 2*pi))
-  sigma_vec <- c(sigmaj2(1,AA_star,nu), sigmaj2(2,AA_star,nu))
-  
-  omega_ij <- matrix(ncol = 2, nrow = N, generate_samples(2*N,nu = nu))
-  if (sum(is.na(omega_ij)) > 0) {
-    print('increase n_samples, few samples accepted')
-    stop()
-  }
-  f1 <- sqrt(sigma_vec[1] * 2/N) * sapply(t_eval, compute_marginal, omega = omega_ij[,1], phi = phi[,1])
-  cross_vec <- sapply(omega_ij[,1], gamma_fun, i = 2, j = 1, AA_star = AA_star, nu = nu)
-  theta_eval <- sapply(omega_ij[,1], theta_fun, i = 2, j = 1, AA_star = AA_star, nu = nu)
-  f2 <- sqrt(sigma_vec[1] * 2/N) * sapply(t_eval, compute_marginal_cross, omega = omega_ij[,1], phi = phi[,1],
-                                          c_vec = cross_vec,
-                                          theta = theta_eval) +
-    sqrt(sigma_vec[2] * 2/N) * sapply(t_eval, compute_marginal, omega = omega_ij[,2], phi = phi[,2])
-  return(data.frame(t_eval, f1, f2))
-}
-
-library(Rcpp)
-cppFunction('double compute_marginal(double eval_point, NumericVector omega, NumericVector phi) {
-              return sum(cos(eval_point * omega + phi));
-            }')
-cppFunction('double compute_marginal_cross(double eval_point, NumericVector omega, NumericVector phi, NumericVector c_vec, NumericVector theta) {
-              return sum(c_vec * cos(eval_point * omega + phi + theta));
-            }')
 
 whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
   p11 <- c11 * (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs(h))^nu1) * (2*a1)^(-nu1) * 
@@ -149,11 +66,11 @@ whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
       besselK(x = a1 * abs(h), nu = nu1)
     if (h == 0) {
       p12 <- c12 * (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs( 1e-10))^nu1) * (2*a1)^(-nu1) * 
-        besselK(x = a1 * abs( 1e-10), nu = nu1)
+        besselK(x = a1 * abs(1e-10), nu = nu1)
       p11 <- c11 * (2*sqrt(pi)/(gamma(nu1 + .5)))*((abs( 1e-10))^nu1) * (2*a1)^(-nu1) * 
-        besselK(x = a1 * abs( 1e-10), nu = nu1)
+        besselK(x = a1 * abs(1e-10), nu = nu1)
       p22 <- c2 * (2*sqrt(pi)/(gamma(nu2 + .5)))*((abs( 1e-10))^nu2) * (2*a2)^(-nu2) * 
-        besselK(x = a2 * abs( 1e-10), nu = nu2)
+        besselK(x = a2 * abs(1e-10), nu = nu2)
     }
   } else if (nu1 + nu2 == round(nu1 + nu2)) { 
     p12 <- 0
