@@ -95,72 +95,6 @@ whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
   return(c(p11, Re(p12),p22))
 }
 
-whittaker_covariance_matrix <- function(locs, nu1, nu2, c11, c12, c2, a1,a2) {
-  grid <- expand.grid(locs, locs)
-  cov_val <- sapply(1:nrow(grid), function(x) {
-    whitt_version(grid[['Var2']][x] - grid[['Var1']][x], nu1 = nu1, nu2 = nu2, c11 = c11, c12 = c12, c2 = c2)
-  })
-  cov_mat1 <- matrix(cov_val[1,], nrow = length(locs))
-  cov_mat2 <- matrix(cov_val[3,], nrow = length(locs))
-  cov_mat12 <- matrix(cov_val[2,], nrow = length(locs))
-  cov_mat_all <- rbind(cbind(cov_mat1, cov_mat12),
-                       cbind(t(cov_mat12), cov_mat2))
-}
-whittaker_covariance_matrix_lags <- function(locs, nu1, nu2, c11, c12, c2, a1,a2) {
-  lags1 <- locs - locs[1]
-  lags2 <- locs - locs[length(locs)]
-  cov_val1 <- sapply(1:length(lags1), function(x) {
-    whitt_version(lags1[x], nu1 = nu1, nu2 = nu2, c11 = c11, c12 = c12, c2 = c2)
-  })
-  cov_val2 <- sapply(1:length(lags2), function(x) {
-    whitt_version(lags2[x], nu1 = nu1, nu2 = nu2, c11 = c11, c12 = c12, c2 = c2)
-  })
-  cov_mat1 <- toeplitz(cov_val1[1,])
-  cov_mat2 <- toeplitz(cov_val1[3,])
-  cov_mat12 <- toeplitz(rev(cov_val2[2,]))
-  lt <- lower.tri(cov_mat12)
-  cov_mat12[lt] <- toeplitz(cov_val1[2,])[lt]
-  cov_mat_all <- rbind(cbind(cov_mat1, cov_mat12),
-                       cbind(t(cov_mat12), cov_mat2))
-}
-
-imaginary_covariance_matrix_lags <- function(locs, nu1, nu2, c11, c12, c22, a1, a2) {
-  lags1 <- locs - locs[1]
-  lags2 <- locs - locs[length(locs)]
-  
-  cov_val11 <- sapply(1:length(lags1), function(x) {
-    cross_cov(s = 0, t = lags1[x], nu = nu1, z_ij = c11, a  = a1)
-  })
-  cov_val22 <- sapply(1:length(lags1), function(x) {
-    cross_cov(s = 0, t = lags1[x], nu = nu1, z_ij = c22, a  = a1)
-  })
-  cross_cov1 <- sapply(1:length(lags1), function(x) {
-    cross_cov(s = 0, t = lags1[x], nu = nu1, z_ij = c12, a  = a1)
-  })
-  cross_cov2 <- sapply(1:length(lags1), function(x) {
-    cross_cov(s = 0, t = lags2[x], nu = nu1, z_ij = c12, a  = a1)
-  })
-  cov_mat1 <- toeplitz(cov_val11)
-  cov_mat2 <- toeplitz(cov_val22)
-  cov_mat12 <- toeplitz(rev(cross_cov2))
-  lt <- lower.tri(cov_mat12)
-  cov_mat12[lt] <- toeplitz(cross_cov1)[lt]
-  cov_mat_all <- rbind(cbind(cov_mat1, cov_mat12),
-                       cbind(t(cov_mat12), cov_mat2))
-}
-
-simulate_manually <- function(cholesky, n_simu, locs) {
-  simulated <- t(cholesky) %*% matrix(nrow = nrow(cholesky),
-                                          ncol = n_simu,
-                                          rnorm(nrow(cholesky) * n_simu))
-  s1 <- simulated[1:length(locs),]
-  s2 <- simulated[-(1:length(locs)),]
-  simulation <- data.frame(var1 = as.double(s1), var2 = as.double(s2),
-                           t = locs, 
-                           simulation = rep(1:n_simu, each = length(locs)))
-}
-
-
 norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, norm_type = 'D') {
   if (norm_type == 'A') {
     (a_1 + a_2)^(nu_1 + nu_2)  / 2 / pi / gamma(nu_1 + nu_2) * gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
@@ -174,7 +108,6 @@ norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, norm_type = 'D') {
       sqrt(gamma(nu_1 + 1/2)) * sqrt(gamma(nu_2 + 1/2))/pi^(1/2)/sqrt(gamma(nu_1)*gamma(nu_2))
   }
 }
-
 
 full_cross_cov_single <- function(h, nu, a, realp, imp, norm_type = 'D') {
   -imp * plot_function( h, nu = nu, a = a) * 

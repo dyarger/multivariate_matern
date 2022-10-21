@@ -177,22 +177,3 @@ points(cc_summary$lag, sapply(cc_summary$lag, function(x) {
   whitt_only_single(x, nu1 = nu1, nu2 = nu2, a1 = 1, a2 = 1, realp = Re(AA_star[1,2]),
                     imp = Im(AA_star[1,2]), norm_type = 'D', which_val = 2)
 }),col = 2, cex = .2)
-
-#### Simulate in 1 dimension of time ###
-# t_eval - points to evaluate
-# N - number of basis function approximation
-N <- 15000
-data <- sim_bivariate(AA_star = AA_star, nu = nu, t_eval = test_seq,
-                      N = N)
-#par(mfrow = c(2,1))
-plot(data[,1], data[,2], type = 'l', main = 'Simulation, Variable 1')
-lines(col = 2,data[,1], data[,3], type = 'l', main = 'Simulation, Variable 2')
-AA_star <- matrix(nrow = 2, ncol = 2, complex(real = c(1,0,0,1),
-                                              imaginary = c(0, -.95, .95, 0)))
-nu <- 1.2
-
-data <- sim_bivariate(AA_star = AA_star, nu = nu, t_eval = test_seq,
-                      N = N)
-#par(mfrow = c(2,1))
-plot(data[,1], data[,2], type = 'l', main = 'Simulation, Variable 1')
-lines(col = 2,data[,1], data[,3], type = 'l', main = 'Simulation, Variable 2')
