@@ -8,31 +8,31 @@ plot_cc <- function(plot_seq =  seq(-5, 5, by = .05), cons, nu) {
 }
 
 plot_function <- function(h,nu, a = 1) {
-  if(h == 0) {
+  if (h == 0) {
     return(0)
   }
-  sign(h) * (abs(h)/a)^nu*
+  sign(h) * (abs(h)/a)^nu *
     (besselI(a*abs(h), nu = nu) - struve(a*abs(h), -nu))
 }
 
 norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, norm_type = 'A') {
   if (norm_type == 'A') {
-    (a_1 + a_2)^(nu_1 + nu_2)  /2/pi/gamma(nu_1 + nu_2) * gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
+    (a_1 + a_2)^(nu_1 + nu_2) / 2 / pi / gamma(nu_1 + nu_2) * gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
   } else if (norm_type == 'B') {
-    (2*a_1)^(nu_1) * (2*a_2)^(nu_2) /2/pi/sqrt(gamma(2*nu_1)*gamma(2 * nu_2)) * 
+    (2*a_1)^(nu_1) * (2*a_2)^(nu_2) / 2 / pi / sqrt(gamma(2*nu_1)*gamma(2 * nu_2)) * 
       gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
   } else if (norm_type == 'C') {
-    a_1^(nu_1 + 1/2) * a_2^(nu_2 + 1/2) /2/pi
+    a_1^(nu_1 + 1/2) * a_2^(nu_2 + 1/2) / 2 / pi
   } else if (norm_type == 'D') {
-    (a_1)^(nu_1) * (a_2)^(nu_2)*
+    (a_1)^(nu_1) * (a_2)^(nu_2) *
       sqrt(gamma(nu_1 + 1/2)) * sqrt(gamma(nu_2 + 1/2))/pi^(1/2)/sqrt(gamma(nu_1)*gamma(nu_2))
   }
 }
 
 
 full_function <- function(plot_seq, nu, a, norm_type = 'A') {
-  -sapply(1:length(plot_seq), function(x) plot_function(h = plot_seq[x], nu= nu, a = a))* 
-           2^(-nu) * pi^(3/2)/cos(nu * pi)/gamma(nu + .5)*
+  -sapply(1:length(plot_seq), function(x) plot_function(h = plot_seq[x], nu = nu, a = a)) * 
+           2^(-nu) * pi^(3/2)/cos(nu * pi)/gamma(nu + .5) *
    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = a, a_2 = a, norm_type = norm_type) 
 }
 nu_vals <- c(.25, .75, 1.75, 2.25, 2.75)
@@ -68,7 +68,7 @@ plot_seq <- seq(-5, 5, by = .01)
 nu_vals <- c(.2, .5, .8, 1.1, 1.8, 2.8)
 full_function <- function(plot_seq, nu1, nu2, a1, a2, norm_type = 'A') {
   sapply(1:length(plot_seq), function(x) whitt_version(h = plot_seq[x], nu1 = nu1, nu2 = nu2,
-                                                       c2 = 1,c11 = 1, c12 = 1, a1 = a1, a2 = a2)*
+                                                       c2 = 1,c11 = 1, c12 = 1, a1 = a1, a2 = a2) *
            norm_constant(nu_1 = nu1, nu_2 = nu2, a_1 = a1, a_2 = a2, norm_type = norm_type))[2,]
 }
 
@@ -79,13 +79,10 @@ df <- data.frame(plot_seq,
                  value = as.double(whitt_vals),
                  nu = rep(nu_vals, each = length(plot_seq)))
 
-library(ggplot2)
-theme_set(theme_bw())
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line() + 
   labs(x = 'Lags', y = 'Cross-covariance function', color = expression(nu[j]),
-       linetype = expression(nu[j]))#+
-  #theme(legend.position = 'bottom')
+       linetype = expression(nu[j]))
 ggsave('images/example_fun_whittaker_norm_A.png', height = 3, width = width)
 
 whitt_vals <- sapply(nu_vals, full_function, plot_seq = plot_seq, 
@@ -96,8 +93,7 @@ df <- data.frame(plot_seq,
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line() + 
   labs(x = 'Lags', y = 'Cross-covariance function', color = expression(nu[j]),
-       linetype = expression(nu[j]))#+
-  #theme(legend.position = 'bottom')
+       linetype = expression(nu[j]))
 ggsave('images/example_fun_whittaker_norm_B.png', height = 3, width = width)
 
 avals <- c(.2, .5, 1, 2)
@@ -109,8 +105,7 @@ df <- data.frame(plot_seq,
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(a), linetype = factor(a))) + 
   geom_line() + 
   labs(x = 'Lags', y = 'Cross-covariance function', color = expression(a[j]),
-       linetype = expression(a[j]))#+
-  #theme(legend.position = 'bottom')
+       linetype = expression(a[j]))
 ggsave('images/example_fun_whittaker_a_norm_A.png', height = 3, width = width)
 
 whitt_vals <- sapply(avals, full_function, plot_seq = plot_seq, 
@@ -121,17 +116,16 @@ df <- data.frame(plot_seq,
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(a), linetype = factor(a))) + 
   geom_line() + 
   labs(x = 'Lags', y = 'Cross-covariance function', color = expression(a[j]),
-       linetype = expression(a[j]))#+
- # theme(legend.position = 'bottom')
+       linetype = expression(a[j]))
 ggsave('images/example_fun_whittaker_a_norm_B.png', height = 3, width = width)
 
 
 full_function <- function(plot_seq, nu, a, realp, imp, norm_type = 'A') {
-  -imp * sapply(1:length(plot_seq), function(x) plot_function(h = plot_seq[x], nu= nu, a = a))* 
-    2^(-nu) * pi^(3/2)/cos(nu * pi)/gamma(nu + .5)*
+  -imp * sapply(1:length(plot_seq), function(x) plot_function(h = plot_seq[x], nu = nu, a = a)) * 
+    2^(-nu) * pi^(3/2)/cos(nu * pi)/gamma(nu + .5) *
     norm_constant(nu_1 = nu, nu_2 = nu, a_1 = a, a_2 = a, norm_type = norm_type)  +
     realp *  sapply(1:length(plot_seq), function(x) whitt_version(h = plot_seq[x], nu1 = nu, nu2 = nu,
-                                                                c2 = 1,c11 = 1, c12 = 1, a1 = a, a2 = a)*
+                                                                c2 = 1,c11 = 1, c12 = 1, a1 = a, a2 = a) *
                     norm_constant(nu_1 = nu, nu_2 = nu, a_1 = a, a_2 = a, norm_type = norm_type))[2,]
 }
 
@@ -150,8 +144,8 @@ df <- data.frame(plot_seq,
 ggplot(data = df, aes(x = plot_seq, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line() + 
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(Sigma[jk]),
-       linetype = expression(Sigma[jk]))+
-  scale_color_discrete(labels = expression(1, frac(sqrt(2) + i,sqrt(3)),frac(1 + sqrt(2)*i,sqrt(3)),i))+
+       linetype = expression(Sigma[jk])) +
+  scale_color_discrete(labels = expression(1, frac(sqrt(2) + i,sqrt(3)),frac(1 + sqrt(2)*i,sqrt(3)),i)) +
   scale_linetype_discrete(labels = expression(1, frac(sqrt(2) + i, sqrt(3)),frac(1 + sqrt(2)*i,sqrt(3)), i))
 ggsave('images/example_combination_function.png', height = 3, width = width)
 
@@ -174,7 +168,7 @@ full_function <- function(plot_seq, nu1, nu2, a1, a2, re_z, im_z, limits, subdiv
   sapply(plot_seq, function(z) {
     integrate(spec_dens, h = z, nu1 = nu1, nu2 = nu2, re_z = re_z, im_z = im_z,
               a1 = a1, a2 = a2,subdivisions = subdivisions,
-              lower = -limits, upper = limits)$value*
+              lower = -limits, upper = limits)$value *
       norm_constant(
         nu_1 = nu1, nu_2 = nu2, 
         a_1 = a1, a_2 = a2, norm_type = 'D')
