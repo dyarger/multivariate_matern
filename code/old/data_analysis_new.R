@@ -1,0 +1,458 @@
+# cpp only
+
+library(R.matlab)
+library(ggplot2)
+library(fields)
+library(scales)
+theme_set(theme_bw())
+library(dplyr)
+weather <- R.matlab::readMat('bolin_code/article_code/Application/TempPress/weather_data.mat')
+
+weather <- as.data.frame(weather)
+colnames(weather) <- c('lat', 'long', 'pres', 'temp')
+
+ggplot(data = weather, aes(x = long, y = lat, color = temp))+
+  geom_point()
+ggplot(data = weather, aes(x = long, y = lat, color = pres))+
+  geom_point()
+
+dist <- fields::rdist.earth(x1 = weather[, c('long', 'lat')],
+                            x2 = weather[, c('long', 'lat')], miles = F)
+diag(dist) <- 0
+n <- nrow(dist)
+
+dist_x <- matrix(weather[[c('long')]], n, n) - matrix(weather[[c('long')]], n, n, byrow = T)
+dist_y <- matrix(weather[[c('lat')]], n, n) - matrix(weather[[c('lat')]], n, n, byrow = T)
+
+
+response <- unlist(weather[, c('pres', 'temp')])
+response <- response - 
+  rep(colMeans(weather[, c('pres', 'temp')]), each = nrow(dist))
+
+# library(Rcpp)
+# (a_2 + unique_complex_r)^(-nu_2 - d/2)
+# cppFunction('std::complex<double> im_exp(double re_value1, double re_value2, double r_value, 
+#                                           double exp_val1, double exp_val2, int psi_val,
+#                                           double h1, double h2, double theta1, double theta2) {
+#         std::complex<double> eexp(0., r_value);
+#         std::complex<double> z1(re_value1, psi_val * r_value); 
+#         std::complex<double> z2(re_value2, -psi_val * r_value); 
+#         return r_value * std::exp(eexp * (h1 * theta1 + h2 * theta2)) *std::pow(z1, exp_val1) * std::pow(z2, exp_val2) ;
+# }')
+# 
+# 
+# rbenchmark::benchmark(one = {im_exp(a_1, a_2, r[1], -nu_1-d/2, -nu_2 - d/2, Psi_val[1], h[1], h[2], theta_x[1], theta_y[1])},
+#                       two = {(exp(complex_r[1]*(h[1] * theta_x[1] + h[2] * theta_y[1])) *
+#                                 (a_1 + Psi_val[1] * complex_r[1])^(-nu_1-d/2)*
+#                                 (a_2 - Psi_val[1] * complex_r[1])^(-nu_2-d/2) * r[1]^(d-1) )
+#                       }, replications = 100000)
+# im_exp(a_1, a_2, r[1], -nu_1-d/2, -nu_2 - d/2, Psi_val[1], h[1], h[2], theta_x[1], theta_y[1])
+# 
+# 
+# (exp(complex_r[1]*(h[1] * theta_x[1] + h[2] * theta_y[1])) *
+#   (a_1 + Psi_val[1] * complex_r[1])^(-nu_1-d/2)*
+#   (a_2 - Psi_val[1] * complex_r[1])^(-nu_2-d/2) * r[1]^(d-1) )
+# 
+# (a_2 + unique_complex_r[1])^(-nu_2 - d/2)
+# im_exp(a_2, r[1], -nu_2 - d/2)
+# 
+# rbenchmark::benchmark(one = {im_exp(a_2, r[1], -nu_2 - d/2)},
+#                       two = {(a_2 + unique_complex_r[1])^(-nu_2 - d/2)
+# }, replications = 100000)
+
+spatial_integrate_d2 <- function(h, a_1, a_2, nu_1, nu_2, Psi = Psi, approx_grid,
+                                 d = 2) {
+  
+  theta_x <-  approx_grid[['theta_x']]
+  theta_y <-  approx_grid[['theta_y']]
+  r <-  approx_grid[['r']]
+  Psi_val <- Psi(theta_x = theta_x, theta_y = theta_y)
+  complex_r <- complex(imaginary = r)
+  
+  # unique_r <- unique(r)
+  # unique_complex_r <- complex(imaginary = unique_r)
+  # ar1_positive <- (a_1 + unique_complex_r)^(-nu_1 - d/2)
+  # ar1_negative <- (a_1 - unique_complex_r)^(-nu_1 - d/2)
+  # 
+  # ar2_positive <- (a_2 + unique_complex_r)^(-nu_2 - d/2)
+  # ar2_negative <- (a_2 - unique_complex_r)^(-nu_2 - d/2)
+  # 
+  # ar1_all <- rep(ar1_positive, each = length(r)/length(unique_r))
+  # ar1_all[Psi_val == -1] <- rep(ar1_negative, each = length(r)/length(unique_r))[Psi_val == -1]
+  # 
+  # ar2_all <- rep(ar2_negative, each = length(r)/length(unique_r))
+  # ar2_all[Psi_val == -1] <- rep(ar2_positive, each = length(r)/length(unique_r))[Psi_val == -1]
+  # 
+  #  rbenchmark::benchmark(one = {(a_1 + Psi_val * complex_r)^(-nu_1-d/2)*
+  #     (a_2 - Psi_val * complex_r)^(-nu_2-d/2)},
+  #     two = {  unique_r <- unique(r)
+  #     unique_complex_r <- complex(imaginary = unique_r)
+  #     ar1_positive <- (a_1 + unique_complex_r)^(-nu_1 - d/2)
+  #     ar1_negative <- (a_1 - unique_complex_r)^(-nu_1 - d/2)
+  # 
+  #     ar2_positive <- (a_2 + unique_complex_r)^(-nu_2 - d/2)
+  #     ar2_negative <- (a_2 - unique_complex_r)^(-nu_2 - d/2)
+  # 
+  #     ar1_all <- rep(ar1_positive, each = length(r)/length(unique_r))
+  #     ar1_all[Psi_val == -1] <- rep(ar1_negative, each = length(r)/length(unique_r))[Psi_val == -1]
+  # 
+  #     ar2_all <- rep(ar2_negative, each = length(r)/length(unique_r))
+  #     ar2_all[Psi_val == -1] <- rep(ar2_positive, each = length(r)/length(unique_r))[Psi_val == -1]
+  #     }, replications = 1000)
+  #  
+  #  rbenchmark::benchmark(one = {(a_1 + Psi_val * complex_r)^(-nu_1-d/2)*
+  #      (a_2 - Psi_val * complex_r)^(-nu_2-d/2)},
+  #      two = {  unique_r <- unique(r)
+  #      unique_complex_r <- complex(imaginary = unique_r)
+  #      ar1_positive <- (a_1 + unique_complex_r)^(-nu_1 - d/2)
+  #      ar1_negative <- (a_1 - unique_complex_r)^(-nu_1 - d/2)
+  #      
+  #      ar2_positive <- (a_2 + unique_complex_r)^(-nu_2 - d/2)
+  #      ar2_negative <- (a_2 - unique_complex_r)^(-nu_2 - d/2)
+  #      },
+  #      three = {
+  #      ar1_all <- rep(ar1_positive, each = length(r)/length(unique_r))
+  #      ar1_all[Psi_val == -1] <- rep(ar1_negative, each = length(r)/length(unique_r))[Psi_val == -1]
+  #      
+  #      ar2_all <- rep(ar2_negative, each = length(r)/length(unique_r))
+  #      ar2_all[Psi_val == -1] <- rep(ar2_positive, each = length(r)/length(unique_r))[Psi_val == -1]
+  #      }, replications = 1000)
+  #  
+  # 
+  values <- exp(complex_r*(h[1] * theta_x + h[2] * theta_y)) *
+    (a_1 + Psi_val * complex_r)^(-nu_1-d/2)*
+    (a_2 - Psi_val * complex_r)^(-nu_2-d/2) * r^(d-1) 
+  Re(sum(values*approx_grid[['angle_lag']]*approx_grid[['r_lag']] *
+           approx_grid[['r']]) *
+       a_1^(nu_1 + 1/2) * a_2^(nu_2 + 1/2))
+}
+
+ml_eval <- function(par, dist_x, dist_y, approx_grid,
+                    d = 2, response) {
+  #par <- log(c(.1, .1, .6, .6, exp(pi), 10^5, 10, 200, 10^3, 2))
+  print(exp(par))
+  a_1 <- exp(par[1])
+  a_2 <- exp(par[2])
+  nu_1 <- exp(par[3])
+  nu_2 <- exp(par[4])
+  angle_theta <- par[5]
+  theta_star <- c(cos(angle_theta), sin(angle_theta))
+  
+  sigma_11 <- exp(par[6])
+  sigma_22 <- exp(par[7])
+  sigma_12 <- par[8]
+  nugget_1 <- exp(par[9])
+  nugget_2 <- exp(par[10])
+  
+  Psi <- function(theta_x, theta_y) {
+    sign(colSums(theta_star * rbind(theta_x, theta_y) ))
+  }
+  
+  dist_x_ut <- dist_x[upper.tri(dist_x, diag = T)]
+  dist_y_ut <- dist_y[upper.tri(dist_y, diag = T)]
+  
+  cc_1 <- sapply(1:length(dist_x_ut), function(x) {
+    h <- c(dist_x_ut[x], dist_y_ut[x])
+    spatial_integrate_d2(h = h, a_1 = a_1, a_2 = a_1, nu_1 = nu_1, nu_2 = nu_1, 
+                         Psi = Psi, approx_grid = approx_grid, d = 2)
+  })
+  cc_1_all <- matrix(nrow = nrow(dist_x), ncol = ncol(dist_x))
+  cc_1_all[upper.tri(cc_1_all, diag = T)] <- sigma_11 * cc_1
+  cc_1_all[lower.tri(cc_1_all, diag = F)] <- t(cc_1_all)[lower.tri(cc_1_all, diag = F)]
+  diag(cc_1_all) <-  diag(cc_1_all) + nugget_1
+  
+  cc_2 <- sapply(1:length(dist_x_ut), function(x) {
+    h <- c(dist_x_ut[x], dist_y_ut[x])
+    spatial_integrate_d2(h = h, a_1 = a_2, a_2 = a_2, nu_1 = nu_2, nu_2 = nu_2, 
+                         Psi = Psi, approx_grid = approx_grid, d = 2)
+  })
+  cc_2_all <- matrix(nrow = nrow(dist_x), ncol = ncol(dist_x))
+  cc_2_all[upper.tri(cc_2_all, diag = T)] <- sigma_22 * cc_2
+  cc_2_all[lower.tri(cc_2_all, diag = F)] <- t(cc_2_all)[lower.tri(cc_2_all, diag = F)]
+  diag(cc_2_all) <-  diag(cc_2_all) + nugget_2
+  
+  
+  cc_12 <- sapply(1:length(dist_x), function(x) {
+    h <- c(dist_x[x], dist_y[x])
+    spatial_integrate_d2(h = h, a_1 = a_1, a_2 = a_2, nu_1 = nu_1, nu_2 = nu_2, 
+                         Psi = Psi, approx_grid = approx_grid, d = 2)
+  })
+  cc_12_all <- matrix(nrow = nrow(dist_x), ncol = ncol(dist_x),
+                      cc_12)
+
+  cov_all <- rbind(cbind(cc_1_all, cc_12_all),
+                   cbind(t(cc_12_all), cc_2_all))
+  inv_all <- solve(cov_all)
+  
+  print(  format(- nrow(cov_all)/2 * log(2 * pi) - 1/2 * as.double(t(response) %*% inv_all %*% response) - 
+                   1/2 * as.vector(determinant(cov_all)$modulus), scientific = F))
+  -(- nrow(cov_all)/2 * log(2 * pi) - 1/2 * as.double(t(response) %*% inv_all %*% response) - 
+      1/2 * as.vector(determinant(cov_all)$modulus))
+}
+
+
+angle_grid <- seq(0, 2 * pi, length.out = 100)
+r_grid <- exp(seq(-9, 10, length.out = 100))
+r_lag <- data.frame('r' = r_grid,
+                    'r_lag' = c(r_grid[2] - r_grid[1], (r_grid - dplyr::lag(r_grid))[-1]))
+angle_lag <- data.frame('angle' = angle_grid,
+                        'angle_lag' = c(angle_grid[2] - angle_grid[1], (angle_grid - dplyr::lag(angle_grid))[-1]))
+approx_grid <- expand.grid('angle' = angle_grid,
+                           'r' = r_grid) %>%
+  left_join(r_lag) %>% left_join(angle_lag)
+
+approx_grid$x <- approx_grid$r * cos(approx_grid$angle)
+approx_grid$y <- approx_grid$r * sin(approx_grid$angle)
+approx_grid$theta_x <- cos(approx_grid$angle)
+approx_grid$theta_y <- sin(approx_grid$angle)
+ggplot(data = data.frame(approx_grid),
+       aes(x = x, y = y, color = theta_y))+
+  geom_point()+scale_color_gradient2()
+
+ml_eval(c(log(c(1/100, 1/100, .5, .5, exp(pi), 37974.705, 7.388775)), -.4692,
+          log(c(67^2, .05))), approx_grid = approx_grid, response = response, dist_x = dist_x,
+        dist_y = dist_y, d = 2)
+
+
+nu_lower <- .02
+nu_upper <- 3
+a_lower <- 10^-7
+a_upper <- 1
+d <- 2
+
+var(weather)
+cor(weather)
+a <- Sys.time()
+test_optim <- optim(par = c(log(c(1/100, 1/100, .5, .5, exp(pi), 37974.705,7.388775)), -.4692,
+                            log(c(67^2, .05))),
+                    lower = c(log(c(10^(-7), 10^(-7), .02, .02, NA, NA, NA)), -.96, NA, NA),
+                    upper = c(log(c(1, 1, 2, 2, NA, NA, NA)), .96, NA, NA),
+                    control = list(parscale = c(1,1,1,1,1/100, 1,1, 1/100, 1,1)),
+                    method = 'L-BFGS-B',
+                    d = d,
+                    fn = ml_eval, dist_x = dist_x, dist_y = dist_y,
+                    approx_grid = approx_grid, response = response)
+b <- Sys.time()
+b-a
+save(test_optim, approx_grid, dist_x, dist_y, file = 'testda_prayers_up.RData')
+
+
+ml_val <- function(par, dist, response, x_vals, k_vals, d = 2) {
+  #theta: a_1, a_2, nu_1, nu_2, sigma1, sigma2, sigma12, nugget1, nuggets
+  print(format(exp(par), scientific = F))
+  print(par[7])
+  a_1 <- exp(par[1]);a_2 <- exp(par[2])
+  nu_1 <- exp(par[3]);nu_2 <- exp(par[4])
+  sigma_1 <- exp(par[5]);sigma_2 <- exp(par[6])
+  sigma_12 <- par[7]*sqrt(sigma_1) * sqrt(sigma_2)
+  nugget_var_1 <- exp(par[8]);nugget_var_2 <- exp(par[9])
+  
+  
+  # approximate, then interpolate
+  test_input <- spec_dens_cpp(x_vals, d = d, 
+                              a_1 = a_1, a_2 = a_2, nu_1 = nu_1, nu_2 = nu_2)
+  cc_vals <- spec_dens_single_cpp(matrix(ncol = 1, nrow= approx_n, test_input),
+                               matrix(ncol = 1, nrow= approx_n, 0),
+                               x_max,
+                               nu_val,
+                               approx_n)
+  cc_vals_new <- (2 * pi)^(d/2-1) *k_vals^(-d/2 + 1) * as.double(cc_vals)* sqrt(nu_1) * sqrt(nu_2)*2* 
+    a_1^nu_1 * a_2^nu_2 
+  values <- approx(xout = dist[upper.tri(dist, diag = T)], x = k_vals, 
+                   y = cc_vals_new, method = 'linear', rule = 2)$y
+  
+  
+  cov12 <- dist
+  cov12[upper.tri(dist, diag = T)] <- values
+  cov12[lower.tri(dist, diag = F)] <- t(cov12)[lower.tri(dist, diag = F)]
+  
+  cov1 <- Matern(dist/a_1, smoothness = nu_1)
+  
+  cov11 <- dist
+  cov11[upper.tri(dist, diag = T)] <- Matern(dist[upper.tri(dist, diag = T)] * a_1, 
+                                             smoothness = nu_1)
+  cov11[lower.tri(dist, diag = F)] <- t(cov11)[lower.tri(dist, diag = F)]
+  
+  
+  cov22 <- dist
+  cov22[upper.tri(dist, diag = T)] <- Matern(dist[upper.tri(dist, diag = T)] * a_2, 
+                                             smoothness = nu_2)
+  cov22[lower.tri(dist, diag = F)] <- t(cov22)[lower.tri(dist, diag = F)]
+  
+  cov_all <- rbind(cbind(sigma_1 * cov11+ diag(nrow(dist), x = nugget_var_1), sigma_12 * cov12),
+                   cbind(sigma_12 * t(cov12), sigma_2  * cov22+ diag(nrow(dist), x = nugget_var_2)))
+  inv_all <- solve(cov_all)
+  
+  print(  format(- nrow(cov_all)/2 * log(2 * pi) - 1/2 * as.double(t(response) %*% inv_all %*% response) - 
+                   1/2 * as.vector(determinant(cov_all)$modulus), scientific = F))
+  -(- nrow(cov_all)/2 * log(2 * pi) - 1/2 * as.double(t(response) %*% inv_all %*% response) - 
+      1/2 * as.vector(determinant(cov_all)$modulus))
+}
+
+d <- 2
+approx_n <- 400
+x_max <- 2
+nu_val <- (d-2)/2
+summary(as.double(dist))
+x_vals  <- hankel_get_info_x(matrix(ncol = 1, nrow= approx_n, 1),
+                             x_max,
+                             nu_val,
+                             approx_n)
+k_vals <- hankel_get_info_k(matrix(ncol = 1, nrow= approx_n, 1),
+                            x_max,
+                            nu_val,
+                            approx_n)
+
+ml_product <- function(par, dist, response) {
+  #theta: a, nu, sigma1, sigma2, sigma12
+  a_1 <- exp(par[1])
+  nu_1 <- exp(par[2])
+  sigma_1 <- exp(par[3]);sigma_2 <- exp(par[4])
+  sigma_12 <- par[5]*sqrt(sigma_1) * sqrt(sigma_2)
+  nugget_var_1 <- exp(par[6]);nugget_var_2 <- exp(par[7])
+  
+  cov1 <- Matern(dist*a_1, smoothness = nu_1)
+  
+  cov_all <- rbind(cbind(sigma_1 * cov1+ diag(nrow(dist), x = nugget_var_1), sigma_12 * cov1),
+                   cbind(sigma_12 * t(cov1), sigma_2  * cov1+ diag(nrow(dist), x = nugget_var_2)))
+  inv_all <- solve(cov_all)
+  
+  -(- nrow(cov_all)/2 * log(2 * pi) - 1/2 * as.double(t(response) %*% inv_all %*% response) - 
+      1/2 * as.vector(determinant(cov_all)$modulus))
+}
+
+ml_pars <- function(par, dist, response) {
+  #theta: a, nu, sigma1, sigma2, sigma12
+  a_1 <- exp(par[1])
+  nu_1 <- exp(par[2]);nu_2 <- exp(par[3])
+  nu_12 = (nu_1 + nu_2)/2
+  sigma_1 <- exp(par[4]);sigma_2 <- exp(par[5])
+  sigma_12 <- par[6]*sqrt(sigma_1) * sqrt(sigma_2)
+  nugget_var_1 <- exp(par[7]);nugget_var_2 <- exp(par[8])
+  
+  cov1 <- Matern(dist*a_1, smoothness = nu_1)
+  cov2 <- Matern(dist*a_1, smoothness = nu_2)
+  cov12 <- Matern(dist*a_1, smoothness = nu_12)
+  
+  cov_all <- rbind(cbind(sigma_1 * cov1 + diag(nrow(dist), x = nugget_var_1), sigma_12 * cov12),
+                   cbind(sigma_12 * t(cov12), sigma_2  * cov2 + diag(nrow(dist), x = nugget_var_2)))
+  inv_all <- solve(cov_all)
+  
+  -(- nrow(cov_all)/2 * log(2 * pi) - 1/2 * as.double(t(response) %*% inv_all %*% response) - 
+      1/2 * as.vector(determinant(cov_all)$modulus))
+}
+
+
+ml_full_bivariate <- function(par, dist, response) {
+  print(exp(par))
+  #theta: a, nu, sigma1, sigma2, sigma12
+  a_1 <- exp(par[1]); a_2 <- exp(par[2]); a_12 <- exp(par[3])
+  nu_1 <- exp(par[4]);nu_2 <- exp(par[5]); nu_12 =  exp(par[6])
+  if (nu_12 < .5 *(nu_1 + nu_2)) {
+    return(10^8)
+  }
+  sigma_1 <- exp(par[7]);sigma_2 <- exp(par[8])
+  sigma_12 <- par[9]*sqrt(sigma_1) * sqrt(sigma_2)
+  nugget_var_1 <- exp(par[10]);nugget_var_2 <- exp(par[11])
+  
+  cov1 <- Matern(dist*a_1, smoothness = nu_1)
+  cov2 <- Matern(dist*a_2, smoothness = nu_2)
+  cov12 <- Matern(dist*a_12, smoothness = nu_12)
+  
+  cov_all <- rbind(cbind(sigma_1 * cov1 + diag(nrow(dist), x = nugget_var_1), sigma_12 * cov12),
+                   cbind(sigma_12 * t(cov12), sigma_2  * cov2 + diag(nrow(dist), x = nugget_var_2)))
+  inv_all <- solve(cov_all)
+  
+  v_val <- -(- nrow(cov_all)/2 * log(2 * pi) - 1/2 * as.double(t(response) %*% inv_all %*% response) - 
+      1/2 * as.vector(determinant(cov_all)$modulus))
+  print(v_val)
+  v_val
+}
+
+
+ml_ind <- function(par, dist, response) {
+  a_1 <- exp(par[1]);a_2 <- exp(par[2])
+  nu_1 <- exp(par[3]);nu_2 <- exp(par[4])
+  sigma_1 <- exp(par[5]);sigma_2 <- exp(par[6])
+  nugget_var_1 <- exp(par[7]);nugget_var_2 <- exp(par[8])
+  
+  cov1 <- Matern(dist*a_1, smoothness = nu_1)
+  cov2 <- Matern(dist*a_2, smoothness = nu_2)
+  
+  cov_all <- rbind(cbind(sigma_1 * cov1 + diag(nrow(dist), x = nugget_var_1), 0 * cov1),
+                   cbind(0 *cov1, sigma_2*cov2 + diag(nrow(dist), x = nugget_var_2)))
+  inv_all <- solve(cov_all)
+  -(- nrow(cov_all)/2 * log(2 * pi) - 1/2 * as.double(t(response) %*% inv_all %*% response) - 
+      1/2 * as.vector(determinant(cov_all)$modulus))
+}
+
+
+
+test_optim$value # 1263.651
+exp(test_optim$par)
+test_optim$par
+# 1.001108e-02 9.941713e-03 1.259391e+00 5.857067e-01 5.294730e+04 7.208793e+00 4.857589e-01
+# 4.411825e+03 2.056416e-06
+#11.58803 minutes
+
+
+test_optim_product <- optim(par = c(log(c(1/100, .5, 37974.705,7.388775)), -.4692, log(c(67^2, .05))),
+                            lower = c(log(c(10^(-7), .02, NA, NA)), -.96, NA, NA),
+                            upper = c(log(c(1, 2, NA, NA)), .96, NA, NA),
+                            method = 'L-BFGS-B',
+                            fn = ml_product, dist = dist, response = response)
+-test_optim_product$value
+exp(test_optim_product$par)
+test_optim_product$par
+# -test_optim_product$value
+# [1] -1268.251
+# > exp(test_optim_product$par)
+# [1] 6.713058e-03 5.439571e-01 3.860455e+04 9.059972e+00 6.690639e-01 2.463819e+03 5.343909e-06
+
+
+test_optim_pars <- optim(par = c(log(c(1/100, .5, .5, 37974.705,7.388775)), -.4692,
+                                 log(c(67^2, .05))),
+                         lower = c(log(c(10^(-7), .02, .02, NA, NA)), -.96, NA, NA),
+                         upper = c(log(c(1,2, 2, NA, NA)), .96, NA, NA),
+                         method = 'L-BFGS-B',
+                         fn = ml_pars, dist = dist, response = response)
+-test_optim_pars$value
+exp(test_optim_pars$par)
+test_optim_pars$par
+# -test_optim_pars$value
+# [1] -1263.651
+# > exp(test_optim_pars$par)
+# [1] 1.176902e-02 1.539742e+00 6.118016e-01 5.146804e+04 6.668356e+00 6.027517e-01 4.786829e+03
+# [8] 1.502564e-06
+
+test_optim_ind <- optim(par = c(log(c(1/100,1/100, .5, .5, 37974.705,7.388775)),
+                                log(c(67^2, .05))),
+                        lower = c(log(c(10^(-7), 10^(-7),.02, .02, NA, NA, NA, NA))),
+                        upper = c(log(c(1, 1, 2, 2, NA, NA, NA, NA))),
+                        method = 'L-BFGS-B',
+                        fn = ml_ind, dist = dist, response = response)
+-test_optim_ind$value
+exp(test_optim_ind$par)
+
+# -test_optim_ind$value
+# [1] -1274.429
+# > exp(test_optim_ind$par)
+# [1] 1.474127e-02 1.092680e-02 2.000000e+00 5.960592e-01 5.190552e+04 6.817124e+00 4.759082e+03
+# [8] 6.553402e-07
+
+
+test_optim_full <- optim(par = c(log(c(1/100, 1/100, 1/100, .5, .5, 1, 37974.705,7.388775)),
+                                 -.4692, log(c(67^2, .05))),
+                        lower = c(log(c(10^(-7), 10^(-7), 10^(-7),.02, .02,.02, NA, NA, NA, NA, NA))),
+                        upper = c(log(c(1, 1, 1, 2, 2, 2, NA, NA, NA, NA, NA))),
+                        method = 'L-BFGS-B',
+                        fn = ml_full_bivariate, dist = dist, response = response)
+test_optim_full$value
+exp(test_optim_full$par)
+
+save(test_optim_ind, test_optim_pars, test_optim_product, test_optim,
+     test_optim_full, 
+     file = 'results/data_analysis_optim.RData')
+
+
+
