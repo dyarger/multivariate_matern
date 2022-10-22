@@ -60,7 +60,7 @@ simu_bivariate <- function(grid, L = 1000, nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1,
 }
 
 set.seed(40)
-nu1 <- 2.2; nu2 <- 1.8
+nu1 <- 1.5; nu2 <- 1.5
 sim_f <- simu_bivariate(grid, L = n_samples, nu1 = nu1, nu2 = nu2, 
                         g_new = g_new, cc_fun = h_fun2)
 var(sim_f)
@@ -167,7 +167,7 @@ h_fun4 <- function(h, a1, a2, nu1, nu2, d = 2) {
 }
 set.seed(22^2)
 sim_f <- simu_bivariate(grid, L = n_samples,
-                        nu1 = .8, nu2 = 1.2, g_new = g_new, cc_fun = h_fun4)
+                        nu1 = .5, nu2 = 1.5, g_new = g_new, cc_fun = h_fun4)
 
 ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
          tidyr::pivot_longer(cols = starts_with('sim')) %>%
@@ -190,7 +190,7 @@ ggsave(filename = 'images/simu_7_ggplot.png', height = 4, width = 8.5, dpi = 150
 
 set.seed(23^2)
 sim_f <- simu_bivariate(grid, L = n_samples,
-                        nu1 = 1.5, nu2 = 1.5, a1 = .8, a2 = 1.2,
+                        nu1 = 1, nu2 = 1, a1 = 1.2, a2 = .8,
                         g_new = g_new, cc_fun = h_fun4)
 
 ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
@@ -213,7 +213,7 @@ ggsave(filename = 'images/simu_9_ggplot.png', height = 4, width = 8.5, dpi = 150
 
 
 set.seed(24^2)
-sim_f <- simu_bivariate(grid, L = n_samples, nu1 = 0.8, nu2 = 1.2, a1 = .8, a2 = 1.2,
+sim_f <- simu_bivariate(grid, L = n_samples, nu1 = .5, nu2 = 1.5, a1 = 1.1, a2 = .9,
                         g_new = g_new, cc_fun = h_fun4)
 
 ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
