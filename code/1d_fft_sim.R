@@ -1,47 +1,13 @@
 
+source('code/multi_matern_source.R')
 norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1) {
   (a_1)^(nu_1) * (a_2)^(nu_2) *
     sqrt(gamma(nu_1 + 1/2)) * sqrt(gamma(nu_2 + 1/2))/pi^(1/2)/sqrt(gamma(nu_1)*gamma(nu_2))
 }
 
-create_grid_info <- function(n_points, x_max) {
-  delta_t <-  pi / x_max
-  x_vals <- 1:n_points * (2 * pi) / n_points / delta_t
-  freq_points <- seq(-delta_t * n_points/2 + delta_t/2, 
-                     delta_t * n_points/2 - delta_t/2, 
-                     length.out = n_points)
-  phase_factor <- 1/(sqrt(2*pi))  * 
-    exp(complex(imaginary = freq_points[1] * 2 * pi * 
-                  (1:length(freq_points)) / (delta_t * length(freq_points))))
-  x_vals <- x_vals - x_max - abs(abs(x_vals[length(x_vals)] - 2*x_max) - abs(x_vals[1]))
-  list('freq_points' = freq_points,
-       'delta_t' = delta_t, 'n_points' = n_points, 
-       'x_vals' = x_vals, 'x_max' = x_max,
-       'phase_factor' = phase_factor)
-}
 
-grid_info <- create_grid_info(2^10, 15)
+grid_info <- create_grid_info_1d(2^10, 15)
 
-
-
-fft_1d <- function(grid_info, nu1 = .5, nu2 = .5, a1 = 1, a2 = 1, 
-                   re, im) {
-  phase_factor = grid_info[['phase_factor']]
-  delta_t = grid_info[['delta_t']]
-  n_points = grid_info[['n_points']]
-  x_vals = grid_info[['x_vals']]
-  freq_points = grid_info[['freq_points']]
-  x_max = grid_info[['x_max']]
-  # https://stackoverflow.com/questions/24077913/discretized-continuous-fourier-transform-with-numpy
-  tv <- complex(real = a1, imaginary = freq_points)^(-nu1 - .5) *
-    complex(real = a2, imaginary = -freq_points)^(-nu2 - .5) * 
-    complex(real = re, imaginary = im*sign(freq_points))
-  ff_res <- fftwtools::fftw_c2c(data = tv, inverse = 1)
-  p <- length(ff_res)/2
-  ff_res_adj <- c(ff_res[(p + 1):(2*p)], ff_res[1:p]) * phase_factor
-  cbind(x_vals, 'val' = 
-          as.double(Re(ff_res_adj) * norm_constant(nu1, nu2, a1, a2)) / x_max * n_points * 2.512596 )
-}
 nu_test <- .5
 df <- fft_1d(nu1 = nu_test, nu2 = nu_test, a1 = 1, a2 = 1, re = 1, im = 0, grid_info = grid_info)
 plot(df, type = 'l')

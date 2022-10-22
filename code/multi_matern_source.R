@@ -79,17 +79,17 @@ whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
   return(c(p11, Re(p12),p22))
 }
 
-norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, norm_type = 'D') {
-  if (norm_type == 'A') {
-    (a_1 + a_2)^(nu_1 + nu_2)  / 2 / pi / gamma(nu_1 + nu_2) * gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
-  } else if (norm_type == 'B') {
-    (2*a_1)^(nu_1) * (2*a_2)^(nu_2) / 2 / pi / sqrt(gamma(2 * nu_1)*gamma(2 * nu_2)) * 
-      gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
+norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, d = 1, norm_type = 'A') {
+  if (norm_type == 'B') {
+    (a_1 + a_2)^(nu_1 + nu_2)  / 2 / pi / gamma(nu_1 + nu_2) * gamma(nu_1 + d/2) * gamma(nu_2 + d/2)
+  # } else if (norm_type == 'D') {
+  #   (2*a_1)^(nu_1) * (2*a_2)^(nu_2) / 2 / pi / sqrt(gamma(2 * nu_1)*gamma(2 * nu_2)) * 
+  #     gamma(nu_1 + 1/2) * gamma(nu_2 + 1/2)
   } else if (norm_type == 'C') {
-    a_1^(nu_1 + 1/2) * a_2^(nu_2 + 1/2) / 2 / pi
-  } else if (norm_type == 'D') {
+    a_1^(nu_1 + d/2) * a_2^(nu_2 + d/2) / 2 / pi
+  } else if (norm_type == 'A') {
     (a_1)^(nu_1) * (a_2)^(nu_2) *
-      sqrt(gamma(nu_1 + 1/2)) * sqrt(gamma(nu_2 + 1/2))/pi^(1/2)/sqrt(gamma(nu_1)*gamma(nu_2))
+      sqrt(gamma(nu_1 + d/2)) * sqrt(gamma(nu_2 + d/2))/pi^(d/2)/sqrt(gamma(nu_1)*gamma(nu_2))
   }
 }
 
@@ -112,5 +112,106 @@ plot_function <- function(h,nu, a = 1) {
   }
   sign(h) * (abs(h)/a)^nu *
     (besselI(a*abs(h), nu = nu) - struve(a*abs(h), -nu))
+}
+
+
+
+### FFT work
+library(fftwtools)
+
+# define Fourier transform grid 
+create_grid_info_2d <- function(n_points, x_max) {
+  delta_t <-  pi / x_max
+  x_vals <- 1:n_points * (2 * pi) / n_points / delta_t
+  freq_points <- seq(-delta_t * n_points/2 + delta_t/2, 
+                     delta_t * n_points/2 - delta_t/2, 
+                     length.out = n_points)
+  freq_grid <- as.data.frame(expand.grid('x' = freq_points, 'y' = freq_points))
+  freq_grid$r <- sqrt(freq_grid[['x']]^2 + freq_grid[['y']]^2)
+  freq_grid$theta <- atan2(freq_grid[['y']], freq_grid[['x']])
+  
+  phase_factor <- 1/(2*pi)  * 
+    exp(complex(imaginary = rowSums(cbind(freq_grid[['x']][1], freq_grid[['y']][1]) * 2 * pi *
+                                      (expand.grid((1:length(freq_points)) / (delta_t * length(freq_points)), 
+                                                   (1:length(freq_points)) / (delta_t * length(freq_points))) ))))
+  phase_factor_mat <- matrix(nrow = length(freq_points), ncol = length(freq_points),
+                             phase_factor)
+  x_vals <- x_vals - x_max - abs(abs(x_vals[length(x_vals)] - 2*x_max) - abs(x_vals[1]))
+  x_vals_eg <- expand.grid(x_vals, x_vals)
+  list('freq_grid' = freq_grid, 'freq_points' = freq_points,
+       'delta_t' = delta_t, 'n_points' = n_points, 
+       'x_vals' = x_vals, 'x_max' = x_max,
+       'phase_factor_mat' = phase_factor_mat,
+       'x_vals_eg' = x_vals_eg)
+}
+# given a grid and model parameters, computes value of Matern cross-covariance on grid
+fft_2d <- function(grid_info, nu1 = .5, nu2 = .5, a1 = 1, a2 = 1, 
+                   Psi, 
+                   Delta, d = 2) {
+  freq_grid <- grid_info[['freq_grid']]
+  freq_points <- grid_info[['freq_points']]
+  delta_t <- grid_info[['delta_t']]
+  n_points <- grid_info[['n_points']]
+  x_vals <- grid_info[['x_vals']]
+  x_max <- grid_info[['x_max']]
+  x_vals_eg <- grid_info[['x_vals_eg']]
+  phase_factor_mat <- grid_info[['phase_factor_mat']]
+  # https://stackoverflow.com/questions/24077913/discretized-continuous-fourier-transform-with-numpy
+  tv <- complex(real = a1, imaginary = Psi(freq_grid[['theta']])*freq_grid[['r']])^(-nu1 - d/2) *
+    complex(real = a2, imaginary = -Psi(freq_grid[['theta']])*freq_grid[['r']])^(-nu2 - d/2) * 
+    Delta(freq_grid[['theta']])
+  tv_mat <- matrix(nrow = length(freq_points), ncol = length(freq_points), tv)
+  ff_res <- fftwtools::fftw_c2c_2d(data = tv_mat, inverse = 1)/n_points^2
+  p <- ncol(ff_res)/2
+  ff_res_adj <- cbind(rbind(ff_res[(p + 1):(2*p),(p + 1):(2*p)], ff_res[1:p,(p + 1):(2*p)]),
+                      rbind(ff_res[(p + 1):(2*p),1:p], ff_res[1:p,1:p])) * -phase_factor_mat
+  x_vals <- x_vals - (x_vals[length(x_vals)] - x_vals[1]) / 2
+  cbind(x_vals_eg, 'val' = (length(x_vals))^(2) *
+          as.double(Re(ff_res_adj) * norm_constant(nu1, nu2, a1, a2)) * 2 / pi / x_max^2 / 0.01026171)
+}
+
+# 1d versions
+create_grid_info_1d <- function(n_points, x_max) {
+  delta_t <-  pi / x_max
+  x_vals <- 1:n_points * (2 * pi) / n_points / delta_t
+  freq_points <- seq(-delta_t * n_points/2 + delta_t/2, 
+                     delta_t * n_points/2 - delta_t/2, 
+                     length.out = n_points)
+  phase_factor <- 1/(sqrt(2*pi))  * 
+    exp(complex(imaginary = freq_points[1] * 2 * pi * 
+                  (1:length(freq_points)) / (delta_t * length(freq_points))))
+  x_vals <- x_vals - x_max - abs(abs(x_vals[length(x_vals)] - 2*x_max) - abs(x_vals[1]))
+  list('freq_points' = freq_points,
+       'delta_t' = delta_t, 'n_points' = n_points, 
+       'x_vals' = x_vals, 'x_max' = x_max,
+       'phase_factor' = phase_factor)
+}
+
+fft_1d <- function(grid_info, nu1 = .5, nu2 = .5, a1 = 1, a2 = 1, 
+                   re, im, norm_type = 'A') {
+  phase_factor = grid_info[['phase_factor']]
+  delta_t = grid_info[['delta_t']]
+  n_points = grid_info[['n_points']]
+  x_vals = grid_info[['x_vals']]
+  freq_points = grid_info[['freq_points']]
+  x_max = grid_info[['x_max']]
+  # https://stackoverflow.com/questions/24077913/discretized-continuous-fourier-transform-with-numpy
+  tv <- complex(real = a1, imaginary = freq_points)^(-nu1 - .5) *
+    complex(real = a2, imaginary = -freq_points)^(-nu2 - .5) * 
+    complex(real = re, imaginary = im*sign(freq_points))
+  ff_res <- fftwtools::fftw_c2c(data = tv, inverse = 1)
+  p <- length(ff_res)/2
+  ff_res_adj <- c(ff_res[(p + 1):(2*p)], ff_res[1:p]) * phase_factor
+  cbind(x_vals, 'val' = 
+          as.double(Re(ff_res_adj) * norm_constant(nu1, nu2, a1, a2, norm_type = norm_type)) / x_max * n_points * 2.512596 )
+}
+
+
+spec_dens <- function(r, h, nu1, nu2, a1 = 1, a2 = 1, re_z, im_z) {
+  val <- exp(complex(imaginary = h * r)) *
+    complex(real = a1, imaginary = r)^(-nu1 - 1/2) *
+    complex(real = a2, imaginary = -r)^(-nu2 - 1/2) * 
+    complex(real = re_z, imaginary = sign(r) * im_z)
+  Re(val)
 }
 
