@@ -2,8 +2,8 @@ library(tidyverse)
 source('code/multi_matern_source.R')
 library(ggplot2)
 theme_set(theme_bw())
-n_points <- 2^13
-grid_info <- create_grid_info_1d(n_points, x_max = 60)
+n_points <- 2^15
+grid_info <- create_grid_info_1d(n_points, x_max = 80)
 
 full_function <- function(grid_info, nu, a, norm_type = 'A') {
   fft_1d(grid_info, nu1 = nu, nu2 = nu, a1 = a, a2 = a, re = 0, im = 1, norm_type = norm_type)[,2]

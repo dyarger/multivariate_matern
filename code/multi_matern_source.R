@@ -167,7 +167,7 @@ fft_2d <- function(grid_info, nu1 = .5, nu2 = .5, a1 = 1, a2 = 1,
                       rbind(ff_res[(p + 1):(2*p),1:p], ff_res[1:p,1:p])) * -phase_factor_mat
   x_vals <- x_vals - (x_vals[length(x_vals)] - x_vals[1]) / 2
   cbind(x_vals_eg, 'val' = (length(x_vals))^(2) *
-          as.double(Re(ff_res_adj) * norm_constant(nu1, nu2, a1, a2)) * 2 / pi / x_max^2 / 0.01026171)
+          as.double(Re(ff_res_adj) * norm_constant(nu1, nu2, a1, a2, d = d)) * 2 / pi / x_max^2 / 0.01026171)
 }
 
 # 1d versions
@@ -214,4 +214,20 @@ spec_dens <- function(r, h, nu1, nu2, a1 = 1, a2 = 1, re_z, im_z) {
     complex(real = re_z, imaginary = sign(r) * im_z)
   Re(val)
 }
+
+spatial_integrate_d2 <- function(h, a_1, a_2, nu_1, nu_2, Delta, Psi= Psi, approx_grid,
+                                 d = 2) {
+  theta_x <-  approx_grid[['theta_x']]
+  theta_y <-  approx_grid[['theta_y']]
+  r <-  approx_grid[['r']]
+  Psi_val <- Psi(theta_x = theta_x, theta_y = theta_y)
+  complex_r <- complex(imaginary = r)
+  values <- exp(complex_r*(h[1] * theta_x + h[2] * theta_y)) *
+    Delta(theta_x, theta_y, 1, 2) *
+    (a_1 + Psi_val * complex_r)^(-nu_1 - d/2) *
+    (a_2 - Psi_val * complex_r)^(-nu_2 - d/2) * r^(d - 1) 
+  Re(sum(values*approx_grid[['angle_lag']]*approx_grid[['r_lag']]))
+}
+
+
 
