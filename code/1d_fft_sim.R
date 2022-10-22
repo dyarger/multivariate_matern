@@ -1,30 +1,7 @@
 
 source('code/multi_matern_source.R')
-norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1) {
-  (a_1)^(nu_1) * (a_2)^(nu_2) *
-    sqrt(gamma(nu_1 + 1/2)) * sqrt(gamma(nu_2 + 1/2))/pi^(1/2)/sqrt(gamma(nu_1)*gamma(nu_2))
-}
-
-
-grid_info <- create_grid_info_1d(2^10, 15)
-
-nu_test <- .5
-df <- fft_1d(nu1 = nu_test, nu2 = nu_test, a1 = 1, a2 = 1, re = 1, im = 0, grid_info = grid_info)
-plot(df, type = 'l')
-lines(df[,1], exp(-abs(df[,1])), col = 2)
-mean((abs(df[,2]) - exp(-abs(df[,1])))^2)
-mean(exp(-abs(df[,1])) / abs(df[,2]))
-
-df[df[,1] == 0,2] / exp(-abs(df[df[,1] == 0,1]))
-exp(-abs(df[df[,1] == 0,1])) / df[df[,1] == 0,2] 
-
+grid_info <- create_grid_info_1d(2^12, 25)
 library(fields)
-df <- fft_1d(nu1 = 1.5, nu2 = 1.5, a1 = 2, a2 = 2, re = 1, im = 0,  grid_info = grid_info)
-plot(df, type = 'l')
-lines(df[,1], Matern(abs(df[,1]), range = 1/2, smoothness = 1.5), col = 2)
-mean((abs(df[,2]) - Matern(abs(df[,1]), range = 1/2, smoothness = 1.5))^2)
-
-
 
 df <- fft_1d(nu1 = 1, nu2 = 2, a1 = .8, a2 = .8, re = 1, im = 0, grid_info = grid_info)
 plot(df, type = 'l')
@@ -56,11 +33,10 @@ construct_matrix <- function(nu1, nu2, a1, a2,
                              re, im, dist_mat) {
   C_val <- fft_1d(grid_info = grid_info, nu1 = nu1, nu2 = nu2, 
                   a1 = a1, a2 = a2, re = re, im = im)
-  
   yout <- approx(xout = as.vector(dist_mat), y = C_val[,2], x = C_val[,1], method = 'linear')$y
   matrix(yout, nrow = (nrow(dist_mat)), ncol = (nrow(dist_mat)))
 }
-construct_entire_matrix <- function(nu1, nu2, a1, a2, 
+construct_bivariate_matrix <- function(nu1, nu2, a1, a2, 
                                     grid_info = grid_info,
                                     Sigma11, Sigma12, Sigma22, dist_mat, nugget1, nugget2) {
   C1 <- construct_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1,
@@ -74,7 +50,7 @@ construct_entire_matrix <- function(nu1, nu2, a1, a2,
   rbind(cbind(C1, C12), cbind(t(C12), C2))
 }
 
-test_mat <- construct_entire_matrix(nu1 = 1.2, nu2 = 1.5, a1 = 4, a2 = 4, Sigma11 = 1, Sigma22 = 1, 
+test_mat <- construct_bivariate_matrix(nu1 = 1.2, nu2 = 1.5, a1 = 4, a2 = 4, Sigma11 = 1, Sigma22 = 1, 
                                     Sigma12 = complex(real = .4, imaginary = .4),
                                     dist_mat = dist, grid_info = grid_info,
                                     nugget1 = .1, nugget2 = .1)
@@ -103,7 +79,7 @@ ll_fun <- function(par, dist_one, grid_info, response) {
   Sigma22 <- exp(par[8])
   Sigma12re <- par[9]*sqrt(Sigma11)*sqrt(Sigma22)
   Sigma12im <- par[10]*sqrt(Sigma11)*sqrt(Sigma22)
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                      Sigma11 = Sigma11, Sigma22 = Sigma22, 
                                      Sigma12 = complex(real = Sigma12re, imaginary = Sigma12im),
                                      dist_mat = dist_one, grid_info = grid_info,

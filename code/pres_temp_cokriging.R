@@ -1,60 +1,12 @@
 load('results/pres_temp_actual_spectral_results_10_final.RData')
-library(Rcpp)
 library(tidyverse)
 library(fftw)
 library(fftwtools)
-source('code/multi_matern_source.R')
-norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, d = 2) {
-  (a_1)^(nu_1) * (a_2)^(nu_2) *
-    sqrt(gamma(nu_1 + d/2)) * sqrt(gamma(nu_2 + d/2))/pi^(d/2)/sqrt(gamma(nu_1)*gamma(nu_2))
-}
-Delta <- function(x) {
-  1
-}
-Psi <- function(x) {
-  sign(x)
-}
-# create fourier grid
-grid_info <- create_grid_info_2d(n_points = 2^10, x_max = 10)
-
-
-# test it out
-df <- fft_2d(nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1, Psi = Psi, Delta = Delta, grid_info = grid_info)
-library(fields)
-var1_vals <- df[['Var1']][df[['Var2']] == min(abs(df[['Var2']]))]
-plot(var1_vals, Re(df[['val']][df[['Var2']] == min(abs(df[['Var2']]))]), type = 'l')
-lines(var1_vals, col = 2, Matern(abs(var1_vals), nu = 1.5))
-plot(var1_vals, Re(df[['val']][df[['Var2']] == min(abs(df[['Var2']]))]) - 
-       Matern(abs(var1_vals), nu = 1.5), type = 'l')
-df_mat <- matrix(df[['val']], nrow = sqrt(length(df[['val']])))
-image.plot(df_mat)
-
-
-df <- fft_2d(nu1 = 1.5, nu2 = .2, a1 = 1, a2 = 1, Delta = Delta, Psi = Psi, grid_info = grid_info)
-var1_vals <- df$Var1[df[['Var2']] == min(abs(df[['Var2']]))]
-plot(var1_vals, Re(df[['val']][df[['Var2']] == min(abs(df[['Var2']]))]), type = 'l')
-df_mat <- matrix(df[['val']], nrow = sqrt(length(df[['val']])))
-image.plot(df_mat)
-
-
-Delta <- function(x) {
-  .97 * complex(imaginary = sign(x))
-}
-
-df <- fft_2d(nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1, Delta = Delta, Psi = Psi, grid_info = grid_info)
-
-ggplot(data = df %>%
-         filter(abs(Var1) < 5, abs(Var2) < 5), aes(x = Var2, y = Var1, fill = val)) +
-  geom_raster() + 
-  scale_fill_gradient2() +
-  labs(x = 'Dimension 1', y = 'Dimension 2',
-       fill = 'Cross-\ncovariance') +
-  coord_equal() + 
-  theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-
-# load in data
 library(R.matlab)
 library(fields)
+source('code/multi_matern_source.R')
+
+# load in data
 weather <- R.matlab::readMat('bolin_code/article_code/Application/TempPress/weather_data.mat')
 
 weather <- as.data.frame(weather)
@@ -71,38 +23,12 @@ diag(dist) <- 0
 response <- unlist(weather[, c('pres', 'temp')])
 response <- response -
   rep(colMeans(weather[, c('pres', 'temp')]), each = nrow(dist))
+response1 <- response[1:n]
+response2 <- response[-c(1:n)]
+sqrt(mean(response1^2))
+sqrt(mean(response2^2))
 
-# create long/lat distance matrices
-dist_one <- dist
-dist_tens <- array(NA, c(dim(dist), 2))
-reference_location <- colMeans(weather[, c('long', 'lat')])
-for (i in 1:dim(dist_tens)[1]) {
-  for (j in 1:dim(dist_tens)[1]) {
-    dist_long_prelim <- fields::rdist.earth.vec(cbind(weather$long[i],
-                                                      reference_location['lat']), 
-                                                cbind(weather$long[j],
-                                                      reference_location['lat']),
-                                                miles = F)
-    if (weather$long[i] < weather$long[j]) {
-      dist_long_prelim <- -dist_long_prelim
-    }
-    
-    dist_lat_prelim <- fields::rdist.earth.vec(cbind(reference_location['long'],
-                                                     weather$lat[i]), 
-                                               cbind(reference_location['long'],
-                                                     weather$lat[j]),
-                                               miles = F)
-    if (weather$lat[i] < weather$lat[j]) {
-      dist_lat_prelim <- -dist_lat_prelim
-    }
-    
-    dist_tens[i,j,1] <- dist_long_prelim
-    dist_tens[i,j,2] <- dist_lat_prelim
-  }
-}
-dist_tens_mat <- cbind(as.vector(dist_tens[,,1]), as.vector(dist_tens[,,2]))
-
-
+# create joint matrices for each model
 
 # given distances, compute fft on grid, then interpolate onto distances
 construct_matrix <- function(nu1, nu2, a1, a2, 
@@ -121,7 +47,7 @@ construct_matrix <- function(nu1, nu2, a1, a2,
 }
 
 # construct bivariate Matern covariance matrix
-construct_entire_matrix <- function(nu1, nu2, a1, a2, 
+construct_bivariate_matrix <- function(nu1, nu2, a1, a2, 
                                     grid_info,
                                     Psi_list, Delta_list, dist_tens_mat, nugget1, nugget2) {
   C1 <- construct_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1,
@@ -137,44 +63,6 @@ construct_entire_matrix <- function(nu1, nu2, a1, a2,
   diag(C2) <- diag(C2) + nugget2
   rbind(cbind(C1, C12), cbind(t(C12), C2))
 }
-
-grid_info <- create_grid_info_2d(2^10, x_max = 2500)
-
-# test the matrix creation
-par <- test_optim_real$par
-(nu1 <- exp(par[1]))
-(nu2 <- exp(par[2]))
-(a1 <- exp(par[3]))
-(a2 <- exp(par[4]))
-
-(nugget1 <-  exp(par[5]))
-(nugget2 <-  exp(par[6]))
-(Sigma11 <- exp(par[7]))
-(Sigma22 <- exp(par[8]))
-(Sigma12re <- par[9]*sqrt(Sigma11)*sqrt(Sigma22))
-par[9]
-atan2(par[11],par[10])
-
-theta_star <- atan2(par[11], par[10])
-Psi_fun <- function(theta) {
-  if (theta_star < 0) {
-    ifelse(theta > theta_star & theta < theta_star + pi, 1, -1)
-  } else {
-    ifelse(theta > theta_star | theta < theta_star - pi, 1, -1)
-  }
-}
-test_mat_real <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
-                                    Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
-                                                      function(x) {Sigma12re}),
-                                    Psi_list = replicate(3, Psi_fun),
-                                    grid_info = grid_info,
-                                    dist_tens_mat = dist_tens_mat, 
-                                    nugget1 = nugget1, nugget2 = nugget2)
-
-response1 <- response[1:n]
-response2 <- response[-c(1:n)]
-sqrt(mean(response1^2))
-sqrt(mean(response2^2))
 
 do_cokriging <- function(cov_mat, folds, n, response1, response2) {
   rmse_matrix <- matrix(ncol = 7, nrow = max(folds))
@@ -217,6 +105,40 @@ do_cokriging <- function(cov_mat, folds, n, response1, response2) {
   }
   return(list(rmse_matrix, pred_values))
 }
+grid_info <- create_grid_info_2d(2^10, x_max = 2500)
+
+
+
+par <- test_optim_real$par
+(nu1 <- exp(par[1]))
+(nu2 <- exp(par[2]))
+(a1 <- exp(par[3]))
+(a2 <- exp(par[4]))
+
+(nugget1 <-  exp(par[5]))
+(nugget2 <-  exp(par[6]))
+(Sigma11 <- exp(par[7]))
+(Sigma22 <- exp(par[8]))
+(Sigma12re <- par[9]*sqrt(Sigma11)*sqrt(Sigma22))
+par[9]
+atan2(par[11],par[10])
+
+theta_star <- atan2(par[11], par[10])
+Psi_fun <- function(theta) {
+  if (theta_star < 0) {
+    ifelse(theta > theta_star & theta < theta_star + pi, 1, -1)
+  } else {
+    ifelse(theta > theta_star | theta < theta_star - pi, 1, -1)
+  }
+}
+test_mat_real <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+                                    Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
+                                                      function(x) {Sigma12re}),
+                                    Psi_list = replicate(3, Psi_fun),
+                                    grid_info = grid_info,
+                                    dist_tens_mat = dist_tens_mat, 
+                                    nugget1 = nugget1, nugget2 = nugget2)
+
 
 # test the matrix creation
 par <- test_optim_im$par
@@ -248,7 +170,7 @@ Psi_fun2 <- function(theta) {
     ifelse(theta > theta_star2 | theta < theta_star2 - pi, 1, -1)
   }
 }
-test_mat_im <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+test_mat_im <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                          Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
                                                            function(x) {complex(real = Sigma12re, 
                                                                                 imaginary = Sigma12im * Psi_fun2(x))}),
@@ -270,7 +192,7 @@ par <- test_optim$par
 (Sigma22 <- exp(par[8]))
 (Sigma12re <- par[9]*sqrt(Sigma11)*sqrt(Sigma22))
 par[9]
-test_mat_fix <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+test_mat_fix <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                        Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
                                                          function(x) Sigma12re),
                                        Psi_list = replicate(3, function(x) sign(x)),
@@ -283,7 +205,7 @@ nu1 <- exp(par[1]); a1 <- exp(par[2])
 nugget1 <- exp(par[3]); nugget2 <- exp(par[4])
 Sigma11 <- exp(par[5]); Sigma22 <- exp(par[6])
 Sigma12 <- par[7]*sqrt(Sigma11)*sqrt(Sigma22)
-test_mat_single <- construct_entire_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, 
+test_mat_single <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, 
                                    Delta_list = list(function(x) Sigma11, 
                                                      function(x) Sigma22, 
                                                      function(x) Sigma12),

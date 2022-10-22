@@ -3,58 +3,11 @@ library(Rcpp)
 library(tidyverse)
 library(fftw)
 library(fftwtools)
-source('code/multi_matern_source.R')
-norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, d = 2) {
-  (a_1)^(nu_1) * (a_2)^(nu_2) *
-    sqrt(gamma(nu_1 + d/2)) * sqrt(gamma(nu_2 + d/2))/pi^(d/2)/sqrt(gamma(nu_1)*gamma(nu_2))
-}
-# given a grid and model parameters, computes value of Matern cross-covariance on grid
-Delta <- function(x) {
-  1
-}
-Psi <- function(x) {
-  sign(x)
-}
-
-grid_info <- create_grid_info_2d(n_points = 2^9, x_max = 10)
-
-# test it out
-df <- fft_2d(nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1, Psi = Psi, Delta = Delta, grid_info = grid_info)
-library(fields)
-var1_vals <- df[['Var1']][df[['Var2']] == min(abs(df[['Var2']]))]
-plot(var1_vals, Re(df[['val']][df[['Var2']] == min(abs(df[['Var2']]))]), type = 'l')
-lines(var1_vals, col = 2, Matern(abs(var1_vals), nu = 1.5))
-plot(var1_vals, Re(df[['val']][df[['Var2']] == min(abs(df[['Var2']]))]) - 
-       Matern(abs(var1_vals), nu = 1.5), type = 'l')
-df_mat <- matrix(df[['val']], nrow = sqrt(length(df[['val']])))
-image.plot(df_mat)
-
-
-df <- fft_2d(nu1 = 1.5, nu2 = .2, a1 = 1, a2 = 1, Delta = Delta, Psi = Psi, grid_info = grid_info)
-var1_vals <- df$Var1[df[['Var2']] == min(abs(df[['Var2']]))]
-plot(var1_vals, Re(df[['val']][df[['Var2']] == min(abs(df[['Var2']]))]), type = 'l')
-df_mat <- matrix(df[['val']], nrow = sqrt(length(df[['val']])))
-image.plot(df_mat)
-
-
-Delta <- function(x) {
-  .97 * complex(imaginary = sign(x))
-}
-
-df <- fft_2d(nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1, Delta = Delta, Psi = Psi, grid_info = grid_info)
-
-ggplot(data = df %>%
-         filter(abs(Var1) < 5, abs(Var2) < 5), aes(x = Var2, y = Var1, fill = val)) +
-  geom_raster() + 
-  scale_fill_gradient2() +
-  labs(x = 'Dimension 1', y = 'Dimension 2',
-       fill = 'Cross-\ncovariance') +
-  coord_equal() + 
-  theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-
-# load in data
 library(R.matlab)
 library(fields)
+
+source('code/multi_matern_source.R')
+# load in data
 weather <- R.matlab::readMat('bolin_code/article_code/Application/TempPress/weather_data.mat')
 
 weather <- as.data.frame(weather)
@@ -119,7 +72,7 @@ construct_matrix <- function(nu1, nu2, a1, a2,
 }
 
 # construct bivariate Matern covariance matrix
-construct_entire_matrix <- function(nu1, nu2, a1, a2, 
+construct_bivariate_matrix <- function(nu1, nu2, a1, a2, 
                                     grid_info,
                                     Psi_list, Delta_list, dist_tens_mat, nugget1, nugget2) {
   C1 <- construct_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1,
@@ -139,7 +92,7 @@ construct_entire_matrix <- function(nu1, nu2, a1, a2,
 grid_info <- create_grid_info_2d(2^10, x_max = 2500)
 
 # test the matrix creation
-test_mat <- construct_entire_matrix(nu1 = .5, nu2 = .5, a1 = 10^-3, a2 = 10^-3, 
+test_mat <- construct_bivariate_matrix(nu1 = .5, nu2 = .5, a1 = 10^-3, a2 = 10^-3, 
                                     Delta_list = list(function(x) 1, function(x) 1, 
                                                  function(x) {
                                                    .97 * complex(imaginary = sign(x))
@@ -157,43 +110,17 @@ solve(test_mat)
 image.plot(test_mat[1:50, 1:50])
 isSymmetric(test_mat)
 
-ll_ind <- function(par, dist_tens_mat, response, grid_info) {
-  nu1 <- exp(par[1])
-  a1 <- exp(par[2])
-  nugget1 <- exp(par[3])
-  Sigma11 <- exp(par[4])
-  cov_mat <- construct_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1,
-                         Psi = function(x) {
-                           sign(x)
-                         }, Delta =function(x) Sigma11,
-                         grid_info = grid_info, dist_tens_mat)
- # cov_mat <- Sigma11 * fields::Matern(dist_one, range = 1/a1, smoothness = nu1)
-  
-  diag(cov_mat) <- diag(cov_mat) + nugget1
-  chol_mat <- base::chol(cov_mat)
-  ll_val <- -nrow(cov_mat)/2 * log(2 * pi) - 1/2 * sum(backsolve(chol_mat, response, transpose = T)^2) - 
-    sum(log(diag(chol_mat)))
-  - ll_val
-}
-ind_optim <- optim(
-  par = log(c(.5, .01, 2000, var(weather$pres))),
-  fn = ll_ind, dist_tens_mat = dist_tens_mat, response = response[1:157], 
-   lower = log(c(.001, 10^-6, 10^-6, 10^-6)),
-   upper = log(c(3, NA, NA, NA)),
-  method = 'L-BFGS-B',
-  grid_info = grid_info,
-)
 
 nu1_init <- nu2_init <- .5
 nu_lower <- 0.001; nu_higher = 7
 a1_init <- a2_init <- 10^-3
 a_lower <- 10^-6
-Sigma11_init <- var(weather$pres)
-Sigma22_init <- var(weather$temp)
-cor_re_init <- cor(weather$temp, weather$pres)
-cor_im_init <- cor(weather$temp, weather$pres)/10
-nugget1_init <- var(weather$pres)/25
-nugget2_init <- var(weather$temp)/25
+Sigma11_init <- var(weather[['pres']])
+Sigma22_init <- var(weather[['temp']])
+cor_re_init <- cor(weather[['temp']], weather[['pres']])
+cor_im_init <- cor(weather[['temp']], weather[['pres']])/10
+nugget1_init <- var(weather[['pres']])/25
+nugget2_init <- var(weather[['temp']])/25
 var_lower <- 10^-9
 
 # log likelihood as function of parameters
@@ -204,7 +131,7 @@ ll_fun <- function(par, dist_tens_mat, response, grid_info) {
   nugget1 <- exp(par[5]); nugget2 <- exp(par[6])
   Sigma11 <- exp(par[7]); Sigma22 <- exp(par[8])
   Sigma12 <- par[9]*sqrt(Sigma11)*sqrt(Sigma22)
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                      Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
                                                        function(x) Sigma12),
                                      Psi_list = replicate(3, {function(x) {
@@ -252,16 +179,6 @@ df_fix <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2,
                   sign(x)
                 }, grid_info = grid_info)
 
-ggplot(data = df_fix %>%
-         filter(abs(Var1) < 750, abs(Var2) < 750), aes(x = Var2, y = Var1, fill = val)) +
-  geom_raster() + 
-  scale_fill_gradient2() +
-  labs(x = 'Dimension 1', y = 'Dimension 2',
-       fill = 'Cross-\ncovariance') +
-  coord_equal() + 
-  theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-
-
 ll_fun_psi_real <- function(par, dist_tens_mat, response, grid_info) {
   #print(exp(par[1:8]))
   nu1 <- exp(par[1]); nu2 <- exp(par[2])
@@ -277,7 +194,7 @@ ll_fun_psi_real <- function(par, dist_tens_mat, response, grid_info) {
       ifelse(theta > theta_star | theta < theta_star - pi, 1, -1)
     }
   }
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                      Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
                                                        function(x) Sigma12),
                                      Psi_list = replicate(3, Psi_fun),
@@ -326,19 +243,6 @@ df_re <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2,
                 d = 2,
                 Delta = function(x) Sigma12re, Psi = Psi_fun, grid_info = grid_info)
 
-ggplot(data = df_re %>%
-         filter(abs(Var1) < 750, abs(Var2) < 750), aes(x = Var2, y = Var1, fill = val)) +
-  geom_raster() + 
-  scale_fill_gradient2() +
-  labs(x = 'Dimension 1', y = 'Dimension 2',
-       fill = 'Cross-\ncovariance') +
-  coord_equal() + 
-  theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-
-
-
-
-
 # with an imaginary entry
 ll_fun_psi_im <- function(par, dist_tens_mat, response, grid_info) {
   #print(exp(par[1:8]))
@@ -365,7 +269,7 @@ ll_fun_psi_im <- function(par, dist_tens_mat, response, grid_info) {
       ifelse(theta > theta_star2 | theta < theta_star2 - pi, 1, -1)
     }
   }
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                      Delta_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) complex(real = Sigma12,
@@ -429,16 +333,7 @@ df_im <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2,
                     Delta = function(x) complex(real = Sigma12re,
                                                 imaginary = Sigma12im*Psi_fun2(x)), Psi = Psi_fun, grid_info = grid_info)
 
-ggplot(data = df_im %>%
-         filter(abs(Var1) < 750, abs(Var2) < 750), aes(x = Var2, y = Var1, fill = val)) +
-  geom_raster() + 
-  scale_fill_gradient2() +
-  labs(x = 'Dimension 1', y = 'Dimension 2',
-       fill = 'Cross-\ncovariance') +
-  coord_equal() + 
-  theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-
-# only an imaginary entry
+# only an imaginary entry, not presented
 ll_fun_psi_im_only <- function(par, dist_tens_mat, response, grid_info) {
   #print(exp(par[1:8]))
  # print((par[9:10]))
@@ -463,7 +358,7 @@ ll_fun_psi_im_only <- function(par, dist_tens_mat, response, grid_info) {
       ifelse(theta > theta_star2 | theta < theta_star2 - pi, 1, -1)
     }
   }
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                      Delta_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) complex(real = 0,
@@ -527,7 +422,7 @@ df_im_only <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2,
 
 
 # independent Matern
-construct_entire_matrix_independent <- function(nu1, nu2, a1, a2, 
+construct_bivariate_matrix_independent <- function(nu1, nu2, a1, a2, 
                                     grid_info,
                                     Psi_list, Delta_list, dist_tens_mat, nugget1, nugget2) {
   C1 <- construct_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1,
@@ -547,7 +442,7 @@ ll_fun_ind <- function(par, dist_tens_mat, response, grid_info) {
   a1 <- exp(par[3]); a2 <- exp(par[4])
   nugget1 <- exp(par[5]); nugget2 <- exp(par[6])
   Sigma11 <- exp(par[7]); Sigma22 <- exp(par[8])
-  cov_mat <- construct_entire_matrix_independent(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix_independent(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                      Delta_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) 0),
@@ -594,7 +489,7 @@ ll_fun_single <- function(par, dist_tens_mat, response, grid_info) {
   nugget1 <- exp(par[3]); nugget2 <- exp(par[4])
   Sigma11 <- exp(par[5]); Sigma22 <- exp(par[6])
   Sigma12 <- par[7]*sqrt(Sigma11)*sqrt(Sigma22)
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, 
                                      Delta_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) Sigma12),
@@ -632,17 +527,6 @@ par[7]
 
 df_single <- fft_2d(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, Delta = 
                   function(x) par[7] * sqrt(Sigma11) * sqrt(Sigma22), Psi = function(x) sign(x), grid_info = grid_info)
-
-ggplot(data = df_single %>%
-         filter(abs(Var1) < 750, abs(Var2) < 750), aes(x = Var2, y = Var1, fill = val)) +
-  geom_raster() + 
-  scale_fill_gradient2() +
-  labs(x = 'Dimension 1', y = 'Dimension 2',
-       fill = 'Cross-\ncovariance') +
-  coord_equal() + 
-  theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-
-
 
 
 # bivariate Matern
@@ -725,16 +609,6 @@ df_mm <- fft_2d(nu1 = nu12, nu2 = nu12, a1 = a12, a2 = a12, Delta =
                function(x) par[11] * sqrt(Sigma11) * sqrt(Sigma22), 
                Psi = function(x) sign(x), grid_info = grid_info)
 
-ggplot(data = df_mm %>%
-         filter(abs(Var1) < 750, abs(Var2) < 750), aes(x = Var2, y = Var1, fill = val)) +
-  geom_raster() + 
-  scale_fill_gradient2() +
-  labs(x = 'Dimension 1', y = 'Dimension 2',
-       fill = 'Cross-\ncovariance') +
-  coord_equal() + 
-  theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-
-
 df_all <- rbind(cbind(df_fix, type = 'theta_star_fixed'),
                 cbind(df_re, type = 'real'),
                 cbind(df_im, type = 'imaginary'),
@@ -749,11 +623,6 @@ df_params <- data.frame(type = c('theta_star_fixed', 'real', 'imaginary', 'multi
                         var2 = exp(c(test_optim$par[8], test_optim_real$par[8],
                                      test_optim_im$par[8], test_optim_mm$par[10],
                                      test_optim_single$par[6])))
-
-save(test_optim, test_optim_im, test_optim_ind, test_optim_single, test_optim_mm, test_optim_real,
-     df_all,dist_tens_mat, df_params,
-     file = 'results/pres_temp_actual_spectral_results_10_final.RData')
-
 
 labels <- data.frame(type = c('real', 'imaginary', 'multi_matern', 'single', 'theta_star_fixed'),
                      label = factor(c('TPMM w/ real directional measure',
@@ -773,9 +642,12 @@ ggplot(data = df_all %>%
   geom_raster() + 
   facet_wrap(~label) + 
   scale_fill_gradientn(colors = rev(rainbow(10))) +
-  #scale_fill_gradient2() +
   labs(x = 'Zonal distance (km)', y = 'Meridional distance (km)',
        fill = 'Cross-\ncovariance') +
   coord_equal() + 
   theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
 ggsave('images/cov_fun_comparison_data.png', height = 6, width = 9)
+
+save(test_optim, test_optim_im, test_optim_ind, test_optim_single, test_optim_mm, test_optim_real,
+     df_all,dist_tens_mat, df_params,
+     file = 'results/pres_temp_actual_spectral_results_10_final.RData')

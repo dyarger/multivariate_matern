@@ -100,7 +100,7 @@ construct_matrix <- function(nu1, nu2, a1, a2,
 }
 
 # construct bivariate Matern covariance matrix
-construct_entire_matrix <- function(nu1, nu2, a1, a2, 
+construct_bivariate_matrix <- function(nu1, nu2, a1, a2, 
                                     grid_info,
                                     Psi_list, Delta_list, dist_tens_mat_1, 
                                     dist_tens_mat_2, dist_tens_mat_12, nugget1, nugget2,
@@ -144,7 +144,7 @@ ll_fun <- function(par, dist_tens_mat_1, dist_tens_mat_2, dist_tens_mat_12, resp
   nugget1 <- exp(par[5]); nugget2 <- exp(par[6])
   Sigma11 <- exp(par[7]); Sigma22 <- exp(par[8])
   Sigma12 <- par[9]*sqrt(Sigma11)*sqrt(Sigma22)
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                      Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
                                                        function(x) Sigma12),
                                      Psi_list = replicate(3, {function(x) {
@@ -223,7 +223,7 @@ ll_fun_psi_real <- function(par, dist_tens_mat_1, dist_tens_mat_2, dist_tens_mat
       ifelse(theta > theta_star | theta < theta_star - pi, 1, -1)
     }
   }
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                      Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
                                                        function(x) Sigma12),
                                      Psi_list = replicate(3, Psi_fun),
@@ -319,7 +319,7 @@ ll_fun_psi_im <- function(par, response, grid_info,
       ifelse(theta > theta_star2 | theta < theta_star2 - pi, 1, -1)
     }
   }
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                      Delta_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) complex(real = Sigma12,
@@ -413,7 +413,7 @@ ll_fun_single <- function(par, response, grid_info,
   nugget1 <- exp(par[3]); nugget2 <- exp(par[4])
   Sigma11 <- exp(par[5]); Sigma22 <- exp(par[6])
   Sigma12 <- par[7]*sqrt(Sigma11)*sqrt(Sigma22)
-  cov_mat <- construct_entire_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, 
+  cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, 
                                      Delta_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) Sigma12),
@@ -547,7 +547,7 @@ df_mm <- fft_2d(nu1 = nu12, nu2 = nu12, a1 = a12, a2 = a12, Delta =
 
 
 # independent Matern
-construct_entire_matrix_independent <- function(nu1, nu2, a1, a2, 
+construct_bivariate_matrix_independent <- function(nu1, nu2, a1, a2, 
                                                 grid_info,
                                                 Psi_list, Delta_list, dist_tens_mat_1, dist_tens_mat_2,
                                                 dist_tens_mat_12, n1, n2, nugget1, nugget2) {
@@ -569,7 +569,7 @@ ll_fun_ind <- function(par, response, grid_info, dist_tens_mat_1, dist_tens_mat_
   a1 <- exp(par[3]); a2 <- exp(par[4])
   nugget1 <- exp(par[5]); nugget2 <- exp(par[6])
   Sigma11 <- exp(par[7]); Sigma22 <- exp(par[8])
-  cov_mat <- construct_entire_matrix_independent(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
+  cov_mat <- construct_bivariate_matrix_independent(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                                  Delta_list = list(function(x) Sigma11, 
                                                                    function(x) Sigma22, 
                                                                    function(x) 0),
