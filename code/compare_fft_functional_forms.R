@@ -15,7 +15,7 @@ fft_fun <- df[ii,2]
 exp_fun <- exp(-abs(df[ii,1]))
 int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu, nu2 = nu, a1 = 1, a2 = 1, re_z = 1, im_z = 0,
                                                   lower = -10^2, upper = 10^2)$value *
-                    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = 1, a_2 = 1, d = 1))
+                    norm_constant(nu1 = nu, nu2 = nu, a1 = 1, a2 = 1, d = 1))
 plot(x, fft_fun, type = 'l')
 lines(x, exp_fun, col = 2)
 lines(x, int_fun, col = 3)
@@ -28,10 +28,10 @@ nu <- .88
 df <- fft_1d(nu1 = nu, nu2 = nu, a1 = a, a2 = a, re = 1, im = 0, grid_info = grid_info_1d)
 fields_fun <- fields::Matern(d = abs(x), smoothness = nu)
 our_matern_fun <- sapply(x, function(y) matern_cov(s = 0, t = abs(y), nu, a = 1) * 
-                           norm_constant(nu_1 = nu, nu_2 = nu, a_1 = 1, a_2 = 1, d = 1))
+                           norm_constant(nu1 = nu, nu2 = nu, a1 = 1, a2 = 1, d = 1))
 int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu, nu2 = nu, a1 = 1, a2 = 1, re_z = 1, im_z = 0,
                                                   lower = -10^2, upper = 10^2)$value *
-                    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = 1, a_2 = 1, d = 1))
+                    norm_constant(nu1 = nu, nu2 = nu, a1 = 1, a2 = 1, d = 1))
 fft_fun <- df[ii,2]
 plot(x, fft_fun, type = 'l')
 lines(x, fields_fun, col = 2)
@@ -50,7 +50,7 @@ whitt_fun <- sapply(x, function(y) whitt_only_single(y, nu1 = nu + .6, nu2 = nu,
                                                      a2 = a, realp = 1, imp = 0, norm_type = 'A'))
 int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu + .6, nu2 = nu, a1 = a - .2, a2 = a, re_z = 1, im_z = 0,
                                                   lower = -10^2, upper = 10^2)$value *
-                    norm_constant(nu_1 = nu + .6, nu_2 = nu, a_1 = a - .2, a_2 = a, d = 1))
+                    norm_constant(nu1 = nu + .6, nu2 = nu, a1 = a - .2, a2 = a, d = 1))
 plot(x, fft_fun, type = 'l')
 lines(x, whitt_fun, col = 2)
 lines(x, int_fun, col = 3)
@@ -65,7 +65,7 @@ struve_fun <- sapply(x, function(y) full_cross_cov_single(y,nu = nu,
                                                      a = a, realp = 0, imp = 1, norm_type = 'A'))
 int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu, nu2 = nu, a1 = a, a2 = a, re_z = 0, im_z = 1,
                                                   lower = -10^2, upper = 10^2)$value *
-                    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = a, a_2 = a, d = 1))
+                    norm_constant(nu1 = nu, nu2 = nu, a1 = a, a2 = a, d = 1))
 plot(x, fft_fun, type = 'l')
 lines(x, struve_fun, col = 2)
 lines(x, int_fun, col = 3)
@@ -78,7 +78,7 @@ df <- fft_1d(nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, re = 0, im = 1, grid
 fft_fun <- df[ii,2]
 int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, re_z = 0, im_z = 1,
                                                   lower = -10^2, upper = 10^2)$value *
-                    norm_constant(nu_1 = nu + 1.6, nu_2 = nu, a_1 = a + .2, a_2 = a, d = 1))
+                    norm_constant(nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, d = 1))
 plot(x, fft_fun, type = 'l')
 lines(x, int_fun, col = 2)
 mean((fft_fun - int_fun)^2)
@@ -89,7 +89,7 @@ df <- fft_1d(nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, re = .2, im = .2, gr
 fft_fun <- df[ii,2]
 int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, re_z = .2, im_z = .2,
                                                   lower = -10^2, upper = 10^2)$value *
-                    norm_constant(nu_1 = nu + 1.6, nu_2 = nu, a_1 = a + .2, a_2 = a, d = 1))
+                    norm_constant(nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, d = 1))
 plot(x, fft_fun, type = 'l')
 lines(x, int_fun, col = 2)
 mean((fft_fun - int_fun)^2)
@@ -126,11 +126,11 @@ fields_fun <- Matern(abs(x), nu = 1.5)
 # only integrate at a few places
 n_compare <- 500
 indexes_use <- sample(1:nrow(df), size = n_compare, replace = FALSE)
-int_fun <- sapply(indexes_use, function(x, a_1, a_2, nu_1, nu_2, Delta, Psi,  approx_grid,
+int_fun <- sapply(indexes_use, function(x, a1, a2, nu1, nu2, Delta, Psi,  approx_grid,
                                        d = 2) {
   h = as.double(df[x,1:2])
-  spatial_integrate_d2(h = h, a_1, a_2, nu_1 = nu_1, nu_2 = nu_2, Delta = Delta, Psi = Psi, approx_grid = approx_grid)
-}, a_1 = 1, a_2 = 1, nu_1 = 1.5, nu_2 = 1.5,
+  spatial_integrate_d2(h = h, a1, a2, nu1 = nu1, nu2 = nu2, Delta = Delta, Psi = Psi, approx_grid = approx_grid)
+}, a1 = 1, a2 = 1, nu1 = 1.5, nu2 = 1.5,
 Delta = function(theta_x, theta_y, i1,i2) 1, Psi = function(theta_x, theta_y) sign(theta_x), approx_grid = approx_grid, d = 2
 )
 
@@ -156,11 +156,11 @@ df <- fft_2d(nu1 = 1.1, nu2 = 1.5, a1 = 1.1, a2 = 1, Psi = sign,
 # only integrate at a few places
 n_compare <- 500
 indexes_use <- sample(1:nrow(df), size = n_compare, replace = FALSE)
-int_fun <- sapply(indexes_use, function(x, a_1, a_2, nu_1, nu_2, Delta, Psi,  approx_grid,
+int_fun <- sapply(indexes_use, function(x, a1, a2, nu1, nu2, Delta, Psi,  approx_grid,
                                        d = 2) {
   h = as.double(df[x,2:1])
-  spatial_integrate_d2(h = h, a_1, a_2, nu_1 = nu_1, nu_2 = nu_2, Delta = Delta, Psi = Psi, approx_grid = approx_grid)
-}, a_1 = 1.1, a_2 = 1, nu_1 = 1.1, nu_2 = 1.5,
+  spatial_integrate_d2(h = h, a1, a2, nu1 = nu1, nu2 = nu2, Delta = Delta, Psi = Psi, approx_grid = approx_grid)
+}, a1 = 1.1, a2 = 1, nu1 = 1.1, nu2 = 1.5,
 Delta = function(theta_x, theta_y, i1, i2) complex(real = .2, imaginary = .2 * sign(theta_x)), Psi = function(theta_x, theta_y) sign(theta_x), approx_grid = approx_grid, d = 2
 )
 plot(df[['val']][indexes_use], int_fun)

@@ -2,14 +2,14 @@
 ## Covariance and plotting
 
 # the normalization constants as written in the paper
-norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, d = 1, norm_type = 'A') {
+norm_constant <- function(nu1, nu2, a1 = 1, a2 = 1, d = 1, norm_type = 'A') {
   if (norm_type == 'B') {
-    (a_1 + a_2)^(nu_1 + nu_2)  / 2 / pi / gamma(nu_1 + nu_2) * gamma(nu_1 + d/2) * gamma(nu_2 + d/2)
+    (a1 + a2)^(nu1 + nu2)  / 2 / pi / gamma(nu1 + nu2) * gamma(nu1 + d/2) * gamma(nu2 + d/2)
   } else if (norm_type == 'C') {
-    a_1^(nu_1 + d/2) * a_2^(nu_2 + d/2) / 2 / pi
+    a1^(nu1 + d/2) * a2^(nu2 + d/2) / 2 / pi
   } else if (norm_type == 'A') {
-    (a_1)^(nu_1) * (a_2)^(nu_2) *
-      sqrt(gamma(nu_1 + d/2)) * sqrt(gamma(nu_2 + d/2))/pi^(d/2)/sqrt(gamma(nu_1)*gamma(nu_2))
+    (a1)^(nu1) * (a2)^(nu2) *
+      sqrt(gamma(nu1 + d/2)) * sqrt(gamma(nu2 + d/2))/pi^(d/2)/sqrt(gamma(nu1)*gamma(nu2))
   }
 }
 
@@ -62,9 +62,9 @@ plot_function <- function(h,nu, a = 1) {
 full_cross_cov_single <- function(h, nu, a, realp, imp, norm_type = 'A') {
   -imp * plot_function(h, nu = nu, a = a) * 
     2^(-nu) * pi^(3/2)/cos(nu * pi)/gamma(nu + .5) *
-    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = a, a_2 = a, norm_type = norm_type)  +
+    norm_constant(nu1 = nu, nu2 = nu, a1 = a, a2 = a, norm_type = norm_type)  +
     realp *  whitt_version( h, nu1 = nu, nu2 = nu,c2 = 1,c11 = 1, c12 = 1, a1 = a, a2 = a)[2] *
-    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = a, a_2 = a, norm_type = norm_type)
+    norm_constant(nu1 = nu, nu2 = nu, a1 = a, a2 = a, norm_type = norm_type)
 }
 
 #########3 whittaker function where nu1, nu2, a1, and a2 are allowed to vary ########
@@ -112,7 +112,7 @@ whitt_version <- function(h,nu1, nu2,c11, c12, c2, a1 = 1, a2 = 1) {
 
 whitt_only_single <- function(h, nu1, nu2, a1, a2, realp, imp, norm_type = 'A', which_val = 2) {
   realp * whitt_version(h, nu1 = nu1, nu2 = nu2, c2 = 1, c11 = 1, c12 = 1, a1 = a1, a2 = a2)[which_val] *
-    norm_constant(nu_1 = nu1, nu_2 = nu2, a_1 = a1, a_2 = a2, norm_type = norm_type)
+    norm_constant(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, norm_type = norm_type)
 }
 
 
@@ -224,7 +224,7 @@ spec_dens <- function(r, h, nu1, nu2, a1 = 1, a2 = 1, re_z, im_z) {
 }
 
 # d=2 
-spatial_integrate_d2 <- function(h, a_1, a_2, nu_1, nu_2, Delta, Psi= Psi, approx_grid,
+spatial_integrate_d2 <- function(h, a1, a2, nu1, nu2, Delta, Psi= Psi, approx_grid,
                                  d = 2) {
   theta_x <-  approx_grid[['theta_x']]
   theta_y <-  approx_grid[['theta_y']]
@@ -233,7 +233,7 @@ spatial_integrate_d2 <- function(h, a_1, a_2, nu_1, nu_2, Delta, Psi= Psi, appro
   complex_r <- complex(imaginary = r)
   values <- exp(complex_r*(h[1] * theta_x + h[2] * theta_y)) *
     Delta(theta_x, theta_y, 1, 2) *
-    (a_1 + Psi_val * complex_r)^(-nu_1 - d/2) *
-    (a_2 - Psi_val * complex_r)^(-nu_2 - d/2) * r^(d - 1) 
+    (a1 + Psi_val * complex_r)^(-nu1 - d/2) *
+    (a2 - Psi_val * complex_r)^(-nu2 - d/2) * r^(d - 1) 
   Re(sum(values*approx_grid[['angle_lag']]*approx_grid[['r_lag']]))
 }

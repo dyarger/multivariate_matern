@@ -17,9 +17,9 @@ library(tidyverse)
 library(fftw)
 library(fftwtools)
 source('code/multi_matern_source.R')
-norm_constant <- function(nu_1, nu_2, a_1 = 1, a_2 = 1, d = 2) {
-  (a_1)^(nu_1) * (a_2)^(nu_2) *
-    sqrt(gamma(nu_1 + d/2)) * sqrt(gamma(nu_2 + d/2))/pi^(d/2)/sqrt(gamma(nu_1)*gamma(nu_2))
+norm_constant <- function(nu1, nu2, a1 = 1, a2 = 1, d = 2) {
+  (a1)^(nu1) * (a2)^(nu2) *
+    sqrt(gamma(nu1 + d/2)) * sqrt(gamma(nu2 + d/2))/pi^(d/2)/sqrt(gamma(nu1)*gamma(nu2))
 }
 Delta <- function(x) {
   1
