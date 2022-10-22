@@ -1,43 +1,104 @@
-
-
+# informal comparison of the difference computing methods
 source('code/multi_matern_source.R')
-grid_info <- create_grid_info_1d(2^12, 25)
-
-nu_test <- .5
-df <- fft_1d(nu1 = .5, nu2 = .5, a1 = 1, a2 = 1, re = 1, im = 0, grid_info = grid_info)
-plot(df, type = 'l')
-lines(df[,1], exp(-abs(df[,1])), col = 2)
-plot(df[,2],exp(-abs(df[,1])), type = 'l')
-abline(col = 2, a = 0, b = 1)
-mean((abs(df[,2]) - exp(-abs(df[,1])))^2)
-mean(exp(-abs(df[,1])) / abs(df[,2]))
-
 library(fields)
-df <- fft_1d(nu1 = 1.5, nu2 = 1.5, a1 = 2, a2 = 2, re = 1, im = 0,  grid_info = grid_info)
-plot(df, type = 'l')
-lines(df[,1], Matern(abs(df[,1]), range = 1/2, smoothness = 1.5), col = 2)
-mean((abs(df[,2]) - Matern(abs(df[,1]), range = 1/2, smoothness = 1.5))^2)
-plot(df[,2], Matern(abs(df[,1]), range = 1/2, smoothness = 1.5), type = 'l')
-abline(col = 2, a = 0, b = 1)
+
+# d = 1
+
+# exponential covariance
+grid_info_1d <- create_grid_info_1d(2^14, 20)
+nu <- .5
+a <- 1
+df <- fft_1d(nu1 = nu, nu2 = nu, a1 = a, a2 = a, re = 1, im = 0, grid_info = grid_info_1d)
+ii <- abs(df[,1]) < 5
+x <- df[ii,1]
+fft_fun <- df[ii,2]
+exp_fun <- exp(-abs(df[ii,1]))
+int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu, nu2 = nu, a1 = 1, a2 = 1, re_z = 1, im_z = 0,
+                                                  lower = -10^2, upper = 10^2)$value *
+                    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = 1, a_2 = 1, d = 1))
+plot(x, fft_fun, type = 'l')
+lines(x, exp_fun, col = 2)
+lines(x, int_fun, col = 3)
+mean((fft_fun - exp_fun)^2)
+mean((int_fun - exp_fun)^2)
+mean((fft_fun - int_fun)^2)
+
+# Matern covariance
+nu <- .88
+df <- fft_1d(nu1 = nu, nu2 = nu, a1 = a, a2 = a, re = 1, im = 0, grid_info = grid_info_1d)
+fields_fun <- fields::Matern(d = abs(x), smoothness = nu)
+our_matern_fun <- sapply(x, function(y) matern_cov(s = 0, t = abs(y), nu, a = 1) * 
+                           norm_constant(nu_1 = nu, nu_2 = nu, a_1 = 1, a_2 = 1, d = 1))
+int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu, nu2 = nu, a1 = 1, a2 = 1, re_z = 1, im_z = 0,
+                                                  lower = -10^2, upper = 10^2)$value *
+                    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = 1, a_2 = 1, d = 1))
+fft_fun <- df[ii,2]
+plot(x, fft_fun, type = 'l')
+lines(x, fields_fun, col = 2)
+lines(x, our_matern_fun, col = 3)
+lines(x, int_fun, col = 4)
+mean((fft_fun - fields_fun)^2)
+mean((fft_fun - our_matern_fun)^2)
+mean((fields_fun - our_matern_fun)^2)
+mean((int_fun - our_matern_fun)^2)
+
+# Whittaker function
+a = 1
+df <- fft_1d(nu1 = nu + .6, nu2 = nu, a1 = a - .2, a2 = a, re = 1, im = 0, grid_info = grid_info_1d)
+fft_fun <- df[ii,2]
+whitt_fun <- sapply(x, function(y) whitt_only_single(y, nu1 = nu + .6, nu2 = nu, a1 = a - .2,
+                                                     a2 = a, realp = 1, imp = 0, norm_type = 'A'))
+int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu + .6, nu2 = nu, a1 = a - .2, a2 = a, re_z = 1, im_z = 0,
+                                                  lower = -10^2, upper = 10^2)$value *
+                    norm_constant(nu_1 = nu + .6, nu_2 = nu, a_1 = a - .2, a_2 = a, d = 1))
+plot(x, fft_fun, type = 'l')
+lines(x, whitt_fun, col = 2)
+lines(x, int_fun, col = 3)
+mean((fft_fun - whitt_fun)^2)
+mean((int_fun - whitt_fun)^2)
+mean((fft_fun - int_fun)^2)
+
+#struve function
+df <- fft_1d(nu1 = nu, nu2 = nu, a1 = a, a2 = a, re = 0, im = 1, grid_info = grid_info_1d)
+fft_fun <- df[ii,2]
+struve_fun <- sapply(x, function(y) full_cross_cov_single(y,nu = nu, 
+                                                     a = a, realp = 0, imp = 1, norm_type = 'A'))
+int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu, nu2 = nu, a1 = a, a2 = a, re_z = 0, im_z = 1,
+                                                  lower = -10^2, upper = 10^2)$value *
+                    norm_constant(nu_1 = nu, nu_2 = nu, a_1 = a, a_2 = a, d = 1))
+plot(x, fft_fun, type = 'l')
+lines(x, struve_fun, col = 2)
+lines(x, int_fun, col = 3)
+mean((fft_fun - struve_fun)^2)
+mean((int_fun - struve_fun)^2)
+mean((fft_fun - int_fun)^2)
+
+# imaginary part, general 
+df <- fft_1d(nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, re = 0, im = 1, grid_info = grid_info_1d)
+fft_fun <- df[ii,2]
+int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, re_z = 0, im_z = 1,
+                                                  lower = -10^2, upper = 10^2)$value *
+                    norm_constant(nu_1 = nu + 1.6, nu_2 = nu, a_1 = a + .2, a_2 = a, d = 1))
+plot(x, fft_fun, type = 'l')
+lines(x, int_fun, col = 2)
+mean((fft_fun - int_fun)^2)
 
 
-# 2d
-# test it out
-grid_info <- create_grid_info_2d(n_points = 2^9, x_max = 10)
-df <- fft_2d(nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1, Psi = Psi, Delta = Delta, grid_info = grid_info)
-library(fields)
-var1_vals <- df[['Var1']][df[['Var2']] == min(abs(df[['Var2']]))]
-plot(var1_vals, Re(df[['val']][df[['Var2']] == min(abs(df[['Var2']]))]), type = 'l')
-lines(var1_vals, col = 2, Matern(abs(var1_vals), nu = 1.5))
-plot(var1_vals, Re(df[['val']][df[['Var2']] == min(abs(df[['Var2']]))]) - 
-       Matern(abs(var1_vals), nu = 1.5), type = 'l')
-df_mat <- matrix(df[['val']], nrow = sqrt(length(df[['val']])))
-image.plot(df_mat)
+# full 1d cross-covariance
+df <- fft_1d(nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, re = .2, im = .2, grid_info = grid_info_1d)
+fft_fun <- df[ii,2]
+int_fun <- sapply(df[ii,1], function(y) integrate(spec_dens, h = y, nu1 = nu + 1.6, nu2 = nu, a1 = a + .2, a2 = a, re_z = .2, im_z = .2,
+                                                  lower = -10^2, upper = 10^2)$value *
+                    norm_constant(nu_1 = nu + 1.6, nu_2 = nu, a_1 = a + .2, a_2 = a, d = 1))
+plot(x, fft_fun, type = 'l')
+lines(x, int_fun, col = 2)
+mean((fft_fun - int_fun)^2)
 
-# compare fft, spectral density, and functional forms
 
-lag_seq <- seq(-3, 3, by = .02)
-grid <- expand.grid(lag_seq, lag_seq)
+############ 2d ########
+
+# set up integration challenge in polar coordinates
+# we're not going to do this because it takes forever, but a reminder that it exists
 angle_grid <- seq(0, 2 * pi, length.out = 100)
 r_grid <- exp(seq(-9, 8, length.out = 800))
 r_lag <- data.frame('r' = r_grid,
@@ -52,15 +113,54 @@ approx_grid$x <- approx_grid$r * cos(approx_grid$angle)
 approx_grid$y <- approx_grid$r * sin(approx_grid$angle)
 approx_grid$theta_x <- cos(approx_grid$angle)
 approx_grid$theta_y <- sin(approx_grid$angle)
-# res <- sapply(1:nrow(grid), function(x, a_1, a_2, nu_1, nu_2, Delta, Psi,  approx_grid, 
-#                                      d = 2) {
-#   h = as.double(grid[x,])
-#   spatial_integrate_d2(h = h, a_1, a_2, nu_1 = nu_1, nu_2 = nu_2, Delta = Delta, Psi = Psi, approx_grid = approx_grid)
-# }, a_1 = 1, a_2 = 1, nu_1 = 0.8, nu_2 = 1.2, 
-# Delta = Delta, Psi = Psi, approx_grid = approx_grid, d = 2
-# )
-# mat <- matrix(unlist(res) * norm_constant(d =2, nu_1 = .8, nu_2 = 1.2, a_1 = 1, a_2 = 1, norm_type = 'D'),
-#               length(lag_seq), length(lag_seq))
-# image.plot(mat)
-# df <- data.frame(grid_info$x_vals_eg, res)
-# df <- data.frame(grid, res = unlist(res) * norm_constant(d =2, nu_1 = .8, nu_2 = 1.2, a_1 = 1, a_2 = 1, norm_type = 'D'))
+
+# Matern
+grid_info_2d <- create_grid_info_2d(n_points = 2^9, x_max = 10)
+df <- fft_2d(nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1, Psi = sign, Delta = function(x) 1, grid_info = grid_info_2d)
+ii <- df[['Var2']] == min(abs(df[['Var2']]))
+min(abs(df[['Var2']]))
+x <- df[['Var1']][ii]
+fft_fun <- df[['val']][ii]
+fields_fun <- Matern(abs(x), nu = 1.5)
+
+# only integrate at a few places
+n_compare <- 500
+indexes_use <- sample(1:nrow(df), size = n_compare, replace = FALSE)
+int_fun <- sapply(indexes_use, function(x, a_1, a_2, nu_1, nu_2, Delta, Psi,  approx_grid,
+                                       d = 2) {
+  h = as.double(df[x,1:2])
+  spatial_integrate_d2(h = h, a_1, a_2, nu_1 = nu_1, nu_2 = nu_2, Delta = Delta, Psi = Psi, approx_grid = approx_grid)
+}, a_1 = 1, a_2 = 1, nu_1 = 1.5, nu_2 = 1.5,
+Delta = function(theta_x, theta_y, i1,i2) 1, Psi = function(theta_x, theta_y) sign(theta_x), approx_grid = approx_grid, d = 2
+)
+
+
+plot(x, fft_fun, type = 'l')
+lines(x, col = 2, fields_fun)
+mean((fft_fun - fields_fun)^2)
+mean((df[['val']][indexes_use] - int_fun)^2)
+plot(df[['val']][indexes_use], int_fun)
+
+
+fft_mat <- matrix(df[['val']], nrow = sqrt(length(ii)))
+fields_mat <- matrix(Matern(sqrt(df[['Var1']]^2 + df[['Var2']]^2), nu = 1.5) , nrow = sqrt(length(ii)))
+image.plot(fft_mat)
+image.plot(fields_mat)
+image.plot(fft_mat - fields_mat)
+mean((fft_mat - fields_mat)^2)
+
+# with imaginary directional measure
+df <- fft_2d(nu1 = 1.1, nu2 = 1.5, a1 = 1.1, a2 = 1, Psi = sign, 
+             Delta = function(y) complex(real = .2, imaginary = .2 * sign(y)), 
+             grid_info = grid_info_2d)
+# only integrate at a few places
+n_compare <- 500
+indexes_use <- sample(1:nrow(df), size = n_compare, replace = FALSE)
+int_fun <- sapply(indexes_use, function(x, a_1, a_2, nu_1, nu_2, Delta, Psi,  approx_grid,
+                                       d = 2) {
+  h = as.double(df[x,2:1])
+  spatial_integrate_d2(h = h, a_1, a_2, nu_1 = nu_1, nu_2 = nu_2, Delta = Delta, Psi = Psi, approx_grid = approx_grid)
+}, a_1 = 1.1, a_2 = 1, nu_1 = 1.1, nu_2 = 1.5,
+Delta = function(theta_x, theta_y, i1, i2) complex(real = .2, imaginary = .2 * sign(theta_x)), Psi = function(theta_x, theta_y) sign(theta_x), approx_grid = approx_grid, d = 2
+)
+plot(df[['val']][indexes_use], int_fun)
