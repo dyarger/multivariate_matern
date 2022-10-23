@@ -1,7 +1,7 @@
 
 library(dplyr)
-dat300 <- read.table('bolin_code/article_code/Application/Argo/data300.txt', header = T)
-dat1500 <- read.table('bolin_code/article_code/Application/Argo/data1500.txt', header = T)
+dat300 <- read.table('data/data300.txt', header = T)
+dat1500 <- read.table('data/data1500.txt', header = T)
 dat300 <- dat300[dat300$year == 2015,]
 dat1500 <- dat1500[dat1500$year == 2015,]
 

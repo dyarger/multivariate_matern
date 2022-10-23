@@ -8,7 +8,7 @@ library(fields)
 
 source('code/multi_matern_source.R')
 # load in data
-weather <- R.matlab::readMat('bolin_code/article_code/Application/TempPress/weather_data.mat')
+weather <- R.matlab::readMat('data/weather_data.mat')
 
 weather <- as.data.frame(weather)
 colnames(weather) <- c('lat', 'long', 'pres', 'temp')
