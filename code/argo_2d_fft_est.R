@@ -632,7 +632,7 @@ save(test_optim, test_optim_im, test_optim_single, test_optim_mm,
      dist_tens_mat_2,
      dist_tens_mat_12,
      df_all,
-     file = 'results/argo_parameters.RData')
+     file = 'results/argo_results.RData')
 
 #load('pres_temp_spectral_results_11.RData')
 

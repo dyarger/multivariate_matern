@@ -1,4 +1,4 @@
-load('results/pres_temp_actual_spectral_results_10_final.RData')
+load('results/pres_temp_results.RData')
 library(tidyverse)
 library(fftw)
 library(fftwtools)

@@ -650,4 +650,4 @@ ggsave('images/cov_fun_comparison_data.png', height = 6, width = 9)
 
 save(test_optim, test_optim_im, test_optim_ind, test_optim_single, test_optim_mm, test_optim_real,
      df_all,dist_tens_mat, df_params,
-     file = 'results/pres_temp_actual_spectral_results_10_final.RData')
+     file = 'results/pres_temp_results.RData')
