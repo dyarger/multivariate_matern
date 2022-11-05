@@ -1,9 +1,14 @@
+results/old/*
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
 davidbolin-ngme-457a0dc6e198/*
+data/old/*
 bolin_code/*
+code/old/*
+images/old/*
+writeups/*
 old/*
 articles/*
 *.gz

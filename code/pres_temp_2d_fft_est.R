@@ -90,6 +90,7 @@ construct_bivariate_matrix <- function(nu1, nu2, a1, a2,
 }
 
 grid_info <- create_grid_info_2d(2^10, x_max = 2500)
+grid_info_plot <- create_grid_info_2d(2^11, x_max = 2500)
 
 # test the matrix creation
 test_mat <- construct_bivariate_matrix(nu1 = .5, nu2 = .5, a1 = 10^-3, a2 = 10^-3, 
@@ -177,7 +178,7 @@ df_fix <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2,
                 d = 2,
                 Delta = function(x) Sigma12re, Psi = function(x) {
                   sign(x)
-                }, grid_info = grid_info)
+                }, grid_info = grid_info_plot)
 
 ll_fun_psi_real <- function(par, dist_tens_mat, response, grid_info) {
   #print(exp(par[1:8]))
@@ -241,7 +242,7 @@ Psi_fun <- function(theta) {
 
 df_re <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                 d = 2,
-                Delta = function(x) Sigma12re, Psi = Psi_fun, grid_info = grid_info)
+                Delta = function(x) Sigma12re, Psi = Psi_fun, grid_info = grid_info_plot)
 
 # with an imaginary entry
 ll_fun_psi_im <- function(par, dist_tens_mat, response, grid_info) {
@@ -331,7 +332,7 @@ Psi_fun2 <- function(theta) {
 df_im <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                       d = 2,
                     Delta = function(x) complex(real = Sigma12re,
-                                                imaginary = Sigma12im*Psi_fun2(x)), Psi = Psi_fun, grid_info = grid_info)
+                                                imaginary = Sigma12im*Psi_fun2(x)), Psi = Psi_fun, grid_info = grid_info_plot)
 
 # only an imaginary entry, not presented
 ll_fun_psi_im_only <- function(par, dist_tens_mat, response, grid_info) {
@@ -418,7 +419,7 @@ Psi_fun2 <- function(theta) {
 df_im_only <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                 d = 2,
                 Delta = function(x) complex(real = 0,
-                                            imaginary = Sigma12im*Psi_fun2(x)), Psi = Psi_fun, grid_info = grid_info)
+                                            imaginary = Sigma12im*Psi_fun2(x)), Psi = Psi_fun, grid_info = grid_info_plot)
 
 
 # independent Matern
@@ -526,7 +527,7 @@ par <- test_optim_single$par
 par[7]
 
 df_single <- fft_2d(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, Delta = 
-                  function(x) par[7] * sqrt(Sigma11) * sqrt(Sigma22), Psi = function(x) sign(x), grid_info = grid_info)
+                  function(x) par[7] * sqrt(Sigma11) * sqrt(Sigma22), Psi = function(x) sign(x), grid_info = grid_info_plot)
 
 
 # bivariate Matern
@@ -607,7 +608,7 @@ par[11]
 
 df_mm <- fft_2d(nu1 = nu12, nu2 = nu12, a1 = a12, a2 = a12, Delta = 
                function(x) par[11] * sqrt(Sigma11) * sqrt(Sigma22), 
-               Psi = function(x) sign(x), grid_info = grid_info)
+               Psi = function(x) sign(x), grid_info = grid_info_plot)
 
 df_all <- rbind(cbind(df_fix, type = 'theta_star_fixed'),
                 cbind(df_re, type = 'real'),

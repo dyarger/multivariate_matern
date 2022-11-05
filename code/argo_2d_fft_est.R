@@ -122,6 +122,7 @@ construct_bivariate_matrix <- function(nu1, nu2, a1, a2,
   rbind(cbind(C1, C12), cbind(t(C12), C2))
 }
 grid_info <- create_grid_info_2d(2^10, x_max = 3000)
+grid_info_plot <- create_grid_info_2d(2^12, x_max = 3000)
 
 nu1_init <- nu2_init <- .5
 nu_lower <- 0.001; nu_higher = 7
@@ -195,7 +196,7 @@ df_fix <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2,
                  d = 2,
                  Delta = function(x) Sigma12re, Psi = function(x) {
                    sign(x)
-                 }, grid_info = grid_info)
+                 }, grid_info = grid_info_plot)
 
 ggplot(data = df_fix %>%
          filter(abs(Var1) < 750, abs(Var2) < 750), aes(x = Var2, y = Var1, fill = val)) +
@@ -275,7 +276,7 @@ Psi_fun <- function(theta) {
 
 df_re <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                 d = 2,
-                Delta = function(x) Sigma12re, Psi = Psi_fun, grid_info = grid_info)
+                Delta = function(x) Sigma12re, Psi = Psi_fun, grid_info = grid_info_plot)
 
 ggplot(data = df_re %>%
          filter(abs(Var1) < 750, abs(Var2) < 750), aes(x = Var2, y = Var1, fill = val)) +
@@ -384,13 +385,10 @@ Psi_fun2 <- function(theta) {
   }
 }
 
-grid_info_fine <- create_grid_info_2d(2^11, x_max = 3000)
-
-
 df_im <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                 d = 2,
                 Delta = function(x) complex(real = Sigma12re, imaginary = Sigma12im*Psi_fun2(x)),
-                Psi = Psi_fun, grid_info = grid_info_fine)
+                Psi = Psi_fun, grid_info = grid_info_plot)
 
 ggplot(data = df_im %>%
          filter(abs(Var1) < 300, abs(Var2) < 300), aes(x = Var2, y = Var1, fill = val)) +
@@ -454,7 +452,8 @@ par <- test_optim_single$par
 par[7]
 
 df_single <- fft_2d(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, Delta = 
-                      function(x) par[7] * sqrt(Sigma11) * sqrt(Sigma22), Psi = function(x) sign(x), grid_info = grid_info)
+                      function(x) par[7] * sqrt(Sigma11) * sqrt(Sigma22), Psi = function(x) sign(x),
+                    grid_info = grid_info_plot)
 
 # bivariate Matern
 construct_matrix_mm <- function(nu1, nu2, nu12, a1, a2, a12,
@@ -543,7 +542,7 @@ par[11]
 
 df_mm <- fft_2d(nu1 = nu12, nu2 = nu12, a1 = a12, a2 = a12, Delta = 
                   function(x) par[11] * sqrt(Sigma11) * sqrt(Sigma22), 
-                Psi = function(x) sign(x), grid_info = grid_info)
+                Psi = function(x) sign(x), grid_info = grid_info_plot)
 
 
 # independent Matern
