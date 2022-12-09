@@ -13,10 +13,10 @@ fun_vals <- sapply(nu_vals, full_function, grid_info = grid_info, a = 1)
 df <- data.frame(x = grid_info[['x_vals']], 
                  value = as.double(fun_vals),
                  nu = rep(nu_vals, each = n_points))
-
+line_cex <- .65
 ggplot(data = df %>%
          filter(abs(x) < 8), aes(x = x, y = value, color = factor(nu), linetype = factor(nu))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(nu),
        linetype = expression(nu))
 ggsave('images/example_fun.png', height = 3, width = 6)
@@ -30,7 +30,7 @@ df <- data.frame(x = grid_info$x_vals,
 
 ggplot(data = df %>%
          filter(abs(x) < 8), aes(x = x, y = value, color = factor(a), linetype = factor(a))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(a),
        linetype = expression(a))
 ggsave('images/example_fun_range.png', height = 3, width = 6)
@@ -46,7 +46,7 @@ df <- data.frame(x = grid_info[['x_vals']],
                  nu = rep(nu_vals, each = length(grid_info$x_vals)))
 
 ggplot(data = filter(df, abs(x) < 5), aes(x = x, y = value, color = factor(nu), linetype = factor(nu))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function', color = expression(nu[j]),
        linetype = expression(nu[j]))
 ggsave('images/example_fun_whittaker_norm_A.png', height = 3, width = width)
@@ -57,7 +57,7 @@ df <- data.frame(x = grid_info[['x_vals']],
                  value = as.double(whitt_vals),
                  nu = rep(nu_vals, each = n_points))
 ggplot(data = filter(df, abs(x) < 5), aes(x = x, y = value, color = factor(nu), linetype = factor(nu))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function', color = expression(nu[j]),
        linetype = expression(nu[j]))
 ggsave('images/example_fun_whittaker_norm_B.png', height = 3, width = width)
@@ -69,7 +69,7 @@ df <- data.frame(x = grid_info[['x_vals']],
                  value = as.double(whitt_vals),
                  a = rep(avals, each = length( grid_info$x_vals)))
 ggplot(data = filter(df, abs(x) < 5), aes(x = x, y = value, color = factor(a), linetype = factor(a))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function', color = expression(a[j]),
        linetype = expression(a[j]))
 ggsave('images/example_fun_whittaker_a_norm_A.png', height = 3, width = width)
@@ -80,7 +80,7 @@ df <- data.frame(x = grid_info$x_vals,
                  value = as.double(whitt_vals),
                  a = rep(avals, each = length(grid_info$x_vals)))
 ggplot(data = filter(df, abs(x) < 5), aes(x = x, y = value, color = factor(a), linetype = factor(a))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function', color = expression(a[j]),
        linetype = expression(a[j]))
 ggsave('images/example_fun_whittaker_a_norm_B.png', height = 3, width = width)
@@ -97,7 +97,7 @@ df <- data.frame(x = grid_info$x_vals,
                           levels = c('1', '(2 + 1i)/sqrt(3)', '(1 + 2i)/sqrt(3)', 'i')))
 
 ggplot(data = filter(df, abs(x) < 5), aes(x = x, y = value, color = factor(nu), linetype = factor(nu))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(Sigma[jk]),
        linetype = expression(Sigma[jk])) +
   scale_color_discrete(labels = expression(1, frac(sqrt(2) + i,sqrt(3)),frac(1 + sqrt(2)*i,sqrt(3)),i)) +
@@ -120,7 +120,7 @@ df <- data.frame(x = grid_info[['x_vals']],
                  nu = rep(nu_vals, each = length(grid_info[['x_vals']])))
 
 ggplot(data = filter(df, abs(x) < 5), aes(x = x, y = value, color = factor(nu), linetype = factor(nu))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function value',
        color = expression(nu[j]),
        linetype = expression(nu[j]))
@@ -137,7 +137,7 @@ df <- data.frame(x = grid_info[['x_vals']],
                  nu = rep(nu_vals, each = length(grid_info[['x_vals']])))
 
 ggplot(data = filter(df, abs(x) < 5), aes(x = x, y = value, color = factor(nu), linetype = factor(nu))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(nu[j]),
        linetype = expression(nu[j]))
 ggsave('images/im_varying_nu.png', height = 3, width = width)
@@ -152,7 +152,7 @@ df <- data.frame(x = grid_info[['x_vals']],
                  nu = rep(a_vals, each = length(grid_info[['x_vals']])))
 
 ggplot(data = filter(df, abs(x) < 5), aes(x = x, y = value, color = factor(nu), linetype = factor(nu))) + 
-  geom_line() + 
+  geom_line(size = line_cex) + 
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(a[j]),
        linetype = expression(a[j]))
 ggsave('images/im_varying_a.png', height = 3, width = width)

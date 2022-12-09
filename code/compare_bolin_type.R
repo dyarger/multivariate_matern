@@ -39,7 +39,7 @@ df <- data.frame(x = grid_info$x_vals,
 
 ggplot(data = df %>%
          filter(abs(x) < 8), aes(x = x, y = value, color = factor(a), linetype = factor(a))) + 
-  geom_line() + 
+  geom_line(size = .65) + 
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(a[j]),
        linetype = expression(a[j]))
 ggsave('images/bolin_version_range.png', height = 3, width = 6)
@@ -77,7 +77,7 @@ df <- data.frame(x = grid_info$x_vals,
 
 ggplot(data = df %>%
          filter(abs(x) < 8), aes(x = x, y = value, color = factor(a), linetype = factor(a))) + 
-  geom_line() + 
+  geom_line(size = .65) + 
   labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(a[j]),
        linetype = expression(a[j]))
 ggsave('images/bolin_version_range_im.png', height = 3, width = 6)
