@@ -630,9 +630,9 @@ save(test_optim, test_optim_im, test_optim_single, test_optim_mm,
      dist_tens_mat_1,
      dist_tens_mat_2,
      dist_tens_mat_12,
-     df_all,
      file = 'results/argo_results.RData')
-
+save(df_all,
+     file = 'results/argo_results_df.RData')
 #load('results/argo_results.RData')
 
 

@@ -646,6 +646,7 @@ ggplot(data = df_all %>%
   labs(x = 'Zonal distance (km)', y = 'Meridional distance (km)',
        fill = 'Cross-\ncovariance') +
   coord_equal() + 
+  theme_bw() + 
   theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
 ggsave('images/cov_fun_comparison_data.png', height = 6, width = 9)
 
