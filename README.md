@@ -1,6 +1,6 @@
-# Multivariate Mat\'ern 
+# Multivariate Matérn 
 
-This repository houses new multivariate Matern models based on stochastic integration. 
+This repository houses new multivariate Matérn models based on stochastic integration. 
 
 The primary interest is likely the code/ folder. 
 There are separate files for d = 1 and d = 2. Files plot_1d.R and plot_2d.R plot the cross-covariance functions included in the paper. 
