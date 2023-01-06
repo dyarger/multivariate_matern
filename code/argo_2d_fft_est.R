@@ -638,16 +638,16 @@ save(test_optim, test_optim_im, test_optim_single, test_optim_mm,
 
 
 labels <- data.frame(type = c('real', 'imaginary', 'multi_matern', 'single', 'theta_star_fixed'),
-                     label = factor(c('TPMM w/ real directional measure',
-                                      'TPMM w/ complex directional measure',
+                     label = factor(c('SMM w/ real directional measure',
+                                      'SMM w/ complex directional measure',
                                       'MM of Gnieting et al. (2010)',
                                       'Single covariance function',
-                                      'TPMM w/ phi fixed'),
+                                      'SMM w/ phi fixed'),
                                     levels = c('Single covariance function',
                                                'MM of Gnieting et al. (2010)',
-                                               'TPMM w/ phi fixed', 
-                                               'TPMM w/ real directional measure',
-                                               'TPMM w/ complex directional measure')))
+                                               'SMM w/ phi fixed', 
+                                               'SMM w/ real directional measure',
+                                               'SMM w/ complex directional measure')))
 
 ggplot(data = df_all %>%
          filter(abs(Var1) < 300, abs(Var2) < 300, type != 'imaginary_only') %>%
@@ -655,9 +655,9 @@ ggplot(data = df_all %>%
   geom_raster() + 
   facet_wrap(~label) + 
   scale_fill_gradientn(colors = rev(rainbow(10))) +
-  #scale_fill_gradient2() +
   labs(x = 'Zonal distance (km)', y = 'Meridional distance (km)',
        fill = 'Cross-\ncovariance') +
   coord_equal() + 
+  theme_bw() + 
   theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
 ggsave('images/argo_cov_fun_comparison_data.png', height = 6, width = 9)

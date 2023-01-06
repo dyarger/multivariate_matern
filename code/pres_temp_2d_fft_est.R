@@ -626,16 +626,16 @@ df_params <- data.frame(type = c('theta_star_fixed', 'real', 'imaginary', 'multi
                                      test_optim_single$par[6])))
 
 labels <- data.frame(type = c('real', 'imaginary', 'multi_matern', 'single', 'theta_star_fixed'),
-                     label = factor(c('TPMM w/ real directional measure',
-                               'TPMM w/ complex directional measure',
+                     label = factor(c('SMM w/ real directional measure',
+                               'SMM w/ complex directional measure',
                                'MM of Gnieting et al. (2010)',
                                'Single covariance function',
-                               'TPMM w/ phi fixed'),
+                               'SMM w/ phi fixed'),
                                levels = c('Single covariance function',
                                           'MM of Gnieting et al. (2010)',
-                                          'TPMM w/ phi fixed', 
-                                          'TPMM w/ real directional measure',
-                                          'TPMM w/ complex directional measure')))
+                                          'SMM w/ phi fixed', 
+                                          'SMM w/ real directional measure',
+                                          'SMM w/ complex directional measure')))
 
 ggplot(data = df_all %>%
          filter(abs(Var1) < 500, abs(Var2) < 500, type != 'imaginary_only') %>%
