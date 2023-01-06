@@ -98,8 +98,8 @@ df <- data.frame(x = grid_info$x_vals,
 
 ggplot(data = filter(df, abs(x) < 5), aes(x = x, y = value, color = factor(nu), linetype = factor(nu))) + 
   geom_line(size = line_cex) + 
-  labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(Sigma[jk]),
-       linetype = expression(Sigma[jk])) +
+  labs(x = 'Lags', y = 'Cross-covariance function value', color = expression(sigma[jk]),
+       linetype = expression(sigma[jk])) +
   scale_color_discrete(labels = expression(1, frac(sqrt(2) + i,sqrt(3)),frac(1 + sqrt(2)*i,sqrt(3)),i)) +
   scale_linetype_discrete(labels = expression(1, frac(sqrt(2) + i, sqrt(3)),frac(1 + sqrt(2)*i,sqrt(3)), i))
 ggsave('images/example_combination_function.png', height = 3, width = width)
