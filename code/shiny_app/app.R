@@ -206,7 +206,7 @@ server <- function(input, output) {
         geom_raster() + 
         coord_equal() + 
         color_scale + 
-        labs(color = 'Cross-covariance value', fill = 'Cross-covariance value')
+        labs(color = 'Cross-covariance\nvalue', fill = 'Cross-covariance\nvalue')
     })
     
 }
