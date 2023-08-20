@@ -65,3 +65,34 @@ ggplot(data = filter(df, abs(Var1) < 5, abs(Var2) < 5), aes(x = Var2, y = Var1, 
   geom_raster() + coord_equal() + 
   scale_fill_gradient2() + labels + theme_use 
 ggsave('images/cc_fun_2d_5.png', height = 4, width = 5.1, dpi = 150)
+
+Psi <- function(theta_x, theta_y) {
+  sign(theta_x)
+}
+Delta <- function(theta) {
+  complex(real = ifelse(theta < -pi/2, 1, 
+                        ifelse(theta < 0, 0.25, 
+                               ifelse(theta < pi/2, 1, 0.25))))
+}
+df1 <- fft_2d(grid_info, nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1, Psi = Psi, d = 2, Delta = Delta) %>%
+  filter(abs(Var1) < 5, abs(Var2) < 5)
+ggplot(data = filter(df1, abs(Var1) < 5, abs(Var2) < 5), aes(x = Var2, y = Var1, fill = val)) +
+  geom_raster() + coord_equal() + 
+  color_scale2 + labels + theme_use 
+ggsave('images/cc_fun_2d_aniso.png', height = 4, width = 5.1, dpi = 150)
+
+Delta <- function(theta) {
+  complex(real = ifelse(theta < -pi/2, 1, 
+                        ifelse(theta < 0, 1, 
+                               ifelse(theta < pi/2, 1, 1))))
+}
+df1 <- fft_2d(grid_info, nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1, Psi = Psi, d = 2, Delta = Delta) %>%
+  filter(abs(Var1) < 5, abs(Var2) < 5)
+ggplot(data = filter(df1, abs(Var1) < 5, abs(Var2) < 5), aes(x = Var2, y = Var1, fill = val)) +
+  geom_raster() + coord_equal() + 
+  color_scale2 + labels + theme_use 
+ggsave('images/cc_fun_2d_aniso_compare.png', height = 4, width = 5.1, dpi = 150)
+
+
+
+
