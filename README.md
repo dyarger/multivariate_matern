@@ -12,6 +12,8 @@ The file compare_fft_functional_forms.R compares different approaches for evalua
 
 The file compare_1d_2d.R compares cross-covariances in the d = 1 and d = 2 case. 
 The file compare_1d_reversed.R compares models beginning with (a_1 + ix)^(-nu_1 - 1/2) with those beginning with (a_1 - ix)^(-nu_1 - 1/2).
+The file compare_hilbert_transform.R compares the d = 1 imaginary case with fast Fourier transforms and the exponential integral form of this part of the cross-covariance. 
+The file compare_bolin_type.R implements and gives examples of cross-covariances using the alternative factorization of the spectral density first explored by Bolin and Wallin (2020, Multivariate Type G Matérn Stochastic Partial Differential Equation Random Fields). 
 
 The file multi_matern_source.R contains utility functions used in a variety of the above scripts. 
 

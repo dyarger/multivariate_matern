@@ -96,7 +96,7 @@ mean((fft_fun - int_fun)^2)
 
 
 ############ 2d ########
-
+library(dplyr)
 # set up integration challenge in polar coordinates
 # we're not going to do this because it takes forever, but a reminder that it exists
 angle_grid <- seq(0, 2 * pi, length.out = 100)
