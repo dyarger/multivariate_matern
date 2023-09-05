@@ -1,5 +1,5 @@
 library(tidyverse)
-theme_set(theme_bw())
+theme_set(theme_bw() + theme(text = element_text(size = 16)))
 source('code/multi_matern_source.R')
 Sigma_mat <- matrix(nrow = 2, ncol = 2, complex(real = c(1,0,0,1),
                                               imaginary = c(0, -.95, .95, 0)))
@@ -56,11 +56,12 @@ simulation_long <- simulation %>%
 ggplot(data = simulation_long, aes(x = t, y = value, group = name, color = name)) +
   geom_line() +
   facet_wrap(~simulation, ncol = 1) + 
-  labs(x = 't', y = 'Value', color = 'Variable') +
+  labs(x = 't', y = 'Simulated value', color = 'Variable') +
   theme(strip.background = element_blank(),
-        strip.text.x = element_blank()) +
+        strip.text.x = element_blank(),
+        legend.position = 'bottom') +
   scale_color_discrete(labels = c('j', 'k'))
-ggsave('images/example_simulation_asymm.png', height = 5, width = 4)
+ggsave('images/example_simulation_asymm.png', height = 6, width = 4)
 
 cc_summary <- grid_all %>%
   left_join(data.frame('Var1' = test_seq, p1l1 = s1[,1], p2l1 = s2[,1]), by = 'Var1') %>%
@@ -135,11 +136,12 @@ simulation_long <- simulation %>%
 ggplot(data = simulation_long, aes(x = t, y = value, group = name, color = name)) +
   geom_line() +
   facet_wrap(~simulation, ncol = 1) + 
-  labs(x = 't', y = 'Value', color = 'Variable') +
+  labs(x = 't', y = 'Simulated value', color = 'Variable') +
   theme(strip.background = element_blank(),
-        strip.text.x = element_blank()) +
+        strip.text.x = element_blank(),
+        legend.position = 'bottom') +
   scale_color_discrete(labels = c('j', 'k'))
-ggsave('images/example_simulation.png', height = 5, width = 4)
+ggsave('images/example_simulation.png', height = 6, width = 4)
 
 
 cc_summary <- grid_all %>%

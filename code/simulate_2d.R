@@ -1,7 +1,7 @@
 library(fields)
 library(ggplot2)
 library(tidyverse)
-theme_set(theme_bw())
+theme_set(theme_bw()+ theme(text = element_text(size = 16), legend.position = 'bottom'))
 n_samples <- 2000
 dim_grid <- 501
 
@@ -79,12 +79,12 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10))) + 
   labs(fill = 'Simulated\nvalue') +
-  theme(legend.position = 'left',
-        strip.background = element_blank(),
+  theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.height = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm"),
+        legend.key.width = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_1_ggplot.png', height = 4, width = 8.5, dpi = 150)
+ggsave(filename = 'images/simu_1_ggplot.png', height = 5.1, width = 8, dpi = 150)
 
 set.seed(45)
 sim_f <- simu_bivariate(grid, L = n_samples, nu1 = .4, nu2 = 2.5, 
@@ -100,12 +100,12 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
   labs(fill = 'Simulated\nvalue') +
-  theme(legend.position = 'left',
-        strip.background = element_blank(),
+  theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.height = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm"),
+        legend.key.width = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_3_ggplot.png', height = 4, width = 8.5, dpi = 150)
+ggsave(filename = 'images/simu_3_ggplot.png', height = 5.1, width = 8, dpi = 150)
 
 h_fun3 <- function(h, a1, a2, nu1, nu2, d = 2) {
   if (h[1] > 0) {
@@ -145,12 +145,12 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
   labs(fill = 'Simulated\nvalue') +
-  theme(legend.position = 'left',
-        strip.background = element_blank(),
+  theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.height = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm"),
+        legend.key.width = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_5_ggplot.png', height = 4, width = 8.5, dpi = 150)
+ggsave(filename = 'images/simu_5_ggplot.png', height = 5.1, width = 8, dpi = 150)
 
 
 
@@ -179,12 +179,12 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
   labs(fill = 'Simulated\nvalue') +
-  theme(legend.position = 'left',
-        strip.background = element_blank(),
+  theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.height = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm"),
+        legend.key.width = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_7_ggplot.png', height = 4, width = 8.5, dpi = 150)
+ggsave(filename = 'images/simu_7_ggplot.png', height = 5.1, width = 8, dpi = 150)
 
 
 
@@ -203,12 +203,12 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
   labs(fill = 'Simulated\nvalue') +
-  theme(legend.position = 'left',
-        strip.background = element_blank(),
+  theme(strip.background = element_blank(),
         strip.text.x = element_blank(),
-        legend.key.height = unit(.8, "cm")
+        legend.key.height = unit(.8, "cm"),
+        legend.key.width = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_9_ggplot.png', height = 4, width = 8.5, dpi = 150)
+ggsave(filename = 'images/simu_9_ggplot.png', height = 5.1, width = 8, dpi = 150)
 
 
 
@@ -226,12 +226,12 @@ ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%
   coord_equal() +
   scale_fill_gradientn(colors = rev(rainbow(10)))  + 
   labs(fill = 'Simulated\nvalue') +
-  theme(legend.position = 'left',
-    strip.background = element_blank(),
+  theme(strip.background = element_blank(),
     strip.text.x = element_blank(),
-    legend.key.height = unit(.8, "cm")
+    legend.key.height = unit(.8, "cm"),
+    legend.key.width = unit(.8, "cm")
   )
-ggsave(filename = 'images/simu_11_ggplot.png', height = 4, width = 8.5, dpi = 150)
+ggsave(filename = 'images/simu_11_ggplot.png', height = 5.1, width = 8, dpi = 150)
 
 
 

@@ -647,17 +647,28 @@ labels <- data.frame(type = c('real', 'imaginary', 'multi_matern', 'single', 'th
                                                'MM of Gnieting et al. (2010)',
                                                'SMM w/ phi fixed', 
                                                'SMM w/ real directional measure',
-                                               'SMM w/ complex directional measure')))
+                                               'SMM w/ complex directional measure')),
+                     label2 = factor(c('SMM-R',
+                                       'SMM-C',
+                                       'MMG',
+                                       'SCF',
+                                       'SMM-0'),
+                                     levels = c('SCF',
+                                                'MMG',
+                                                'SMM-0', 
+                                                'SMM-R',
+                                                'SMM-C')))
 
 ggplot(data = df_all %>%
          filter(abs(Var1) < 300, abs(Var2) < 300, type != 'imaginary_only') %>%
          left_join(labels), aes(x = Var2, y = Var1, fill = val)) +
   geom_raster() + 
-  facet_wrap(~label) + 
+  facet_wrap(~label2) + 
   scale_fill_gradientn(colors = rev(rainbow(10))) +
   labs(x = 'Zonal distance (km)', y = 'Meridional distance (km)',
        fill = 'Cross-\ncovariance') +
   coord_equal() + 
   theme_bw() + 
-  theme(legend.position = 'left',legend.key.height = unit(.8, "cm")) 
-ggsave('images/argo_cov_fun_comparison_data.png', height = 6, width = 9)
+  theme(legend.position = 'bottom',legend.key.width = unit(1, "cm"), text = element_text(size = 16),
+        axis.text.x = element_text(angle = -90, vjust = .5)) 
+ggsave('images/argo_cov_fun_comparison_data.png', height = 7, width = 8)
