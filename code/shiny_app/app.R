@@ -162,7 +162,7 @@ server <- function(input, output) {
     output$distPlot2 <- renderPlot({
       # generate bins based on input$bins from ui.R
       df <- fft_1d(nu1 = input$nu1, nu2 = input$nu2, a1 = input$a1,
-                   a2 = input$a2, re = input$sigma2_new, im = 0,  grid_info = grid_info)
+                   a2 = input$a2, Sigma_re = input$sigma2_new, Sigma_im = 0,  grid_info = grid_info)
       x_res <- approx(x = df[,1], y = df[,2], xout = x)$y
       ggplot(data = data.frame('Lag'  =  x, `Covariance value`  = x_res),
              aes(x = Lag, y = Covariance.value)) + 
@@ -173,7 +173,7 @@ server <- function(input, output) {
     output$distPlot3 <- renderPlot({
       # generate bins based on input$bins from ui.R
       df <- fft_1d(nu1 = input$nu12, nu2 = input$nu22, a1 = input$a12,
-                   a2 = input$a22, re = input$sigma2_new2, im = input$sigma2_im,  grid_info = grid_info)
+                   a2 = input$a22, Sigma_re = input$sigma2_new2, Sigma_im = input$sigma2_im,  grid_info = grid_info)
       x_res <- approx(x = df[,1], y = df[,2], xout = x)$y
       ggplot(data = data.frame('Lag'  =  x, `Covariance value`  = x_res),
              aes(x = Lag, y = Covariance.value)) + 
@@ -194,11 +194,11 @@ server <- function(input, output) {
       } else {
         color_scale <- scale_fill_gradientn(colors = rev(rainbow(10))) 
       }
-      Delta <- function(x) complex(real = input$sigma2_d2_im,
+      Mu <- function(x) complex(real = input$sigma2_d2_im,
                                    imaginary = input$sigma2_d2_im_im*Psi_fun_im(x))
       # generate bins based on input$bins from ui.R
       df <- fft_2d(nu1 = input$nu1_d2_im, nu2 = input$nu2_d2_im, a1 = input$a1_d2_im,
-                   a2 = input$a2_d2_im, Delta = Delta, 
+                   a2 = input$a2_d2_im, Mu = Mu, 
                    Psi = Psi_fun_im, grid_info = grid_info_2d) %>%
         filter(abs(Var1) < 5, abs(Var2) < 5)
       ggplot(data = df,

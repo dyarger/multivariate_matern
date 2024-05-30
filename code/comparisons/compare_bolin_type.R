@@ -5,8 +5,8 @@ theme_set(theme_bw() + theme(text = element_text(size = 16)))
 n_points <- 2^15
 grid_info <- create_grid_info_1d(n_points, x_max = 80)
 
-fft_1d <- function(grid_info, nu1 = .5, nu2 = .5, a1 = 1, a2 = 1, 
-                   re, im, norm_type = 'A') {
+fft_1d_alt <- function(grid_info, nu1 = .5, nu2 = .5, a1 = 1, a2 = 1, 
+                   Sigma_re, Sigma_im, norm_type = 'A') {
   phase_factor = grid_info[['phase_factor']]
   delta_t = grid_info[['delta_t']]
   n_points = grid_info[['n_points']]
@@ -14,32 +14,34 @@ fft_1d <- function(grid_info, nu1 = .5, nu2 = .5, a1 = 1, a2 = 1,
   freq_points = grid_info[['freq_points']]
   x_max = grid_info[['x_max']]
   # https://stackoverflow.com/questions/24077913/discretized-continuous-fourier-transform-with-numpy
-  tv <- (a1^2 + freq_points^2)^(-nu1/2 - .5/2) *
-    (a2^2 + freq_points^2)^(-nu2/2 - .5/2) * 
-    complex(real = re, imaginary = im*sign(freq_points))
+  tv <- (a1^2 + grid_info[['freq_points']]^2)^(-nu1/2 - .5/2) *
+    (a2^2 + grid_info[['freq_points']]^2)^(-nu2/2 - .5/2) * 
+    complex(real = Sigma_re, imaginary = Sigma_im*sign(grid_info[['freq_points']]))
   ff_res <- fftwtools::fftw_c2c(data = tv, inverse = 1)
   p <- length(ff_res)/2
-  ff_res_adj <- c(ff_res[(p + 1):(2*p)], ff_res[1:p]) * phase_factor
-  cbind(x_vals, 'val' = 
-          as.double(Re(ff_res_adj) * norm_constant(nu1, nu2, a1, a2, norm_type = norm_type)) / x_max * n_points * 2.512596 )
+  ff_res_adj <- c(ff_res[(p + 1):(2*p)], ff_res[1:p]) * grid_info[['phase_factor']]
+  cbind(grid_info[['x_vals']], 'val' = 
+          as.double(Re(ff_res_adj) * norm_constant(nu1, nu2, a1, a2)) / 
+          grid_info[['x_max']] * grid_info[['n_points']] * sqrt(2 * pi) )
 }
 
 
 
-full_function <- function(grid_info, nu, a, norm_type = 'A') {
-  fft_1d(grid_info, nu1 = nu, nu2 = nu, a1 = 1, a2 = a, re = 1, im = 0, norm_type = norm_type)[,2]
+full_function <- function(grid_info, nu, a) {
+  fft_1d_alt(grid_info, nu1 = nu, nu2 = nu, a1 = 1, a2 = a, Sigma_re = 1, 
+             Sigma_im = 0)[,2]
 }
 
 a_vals <- c(.1, .4, 1, 2)
 fun_vals <- sapply(a_vals, FUN = full_function, grid_info = grid_info,
-                   nu = 1.5, norm_type = 'A')
+                   nu = 1.5)
 df <- data.frame(x = grid_info$x_vals, 
                  value = as.double(fun_vals),
                  a = rep(a_vals, each = n_points))
 
 ggplot(data = df %>%
          filter(abs(x) < 8), aes(x = x, y = value, color = factor(a), linetype = factor(a))) + 
-  geom_line(size = .65) + 
+  geom_line(linewidth = .65) + 
   labs(x = 'Lags', y = 'Cross-covariance\nfunction', color = expression(a[j]),
        linetype = expression(a[j]))
 ggsave('images/bolin_version_range.png', height = 3, width = 6)
@@ -65,7 +67,7 @@ ggplot(data = df %>%
 
 
 full_function <- function(grid_info, nu, a, norm_type = 'A') {
-  fft_1d(grid_info, nu1 = nu, nu2 = nu, a1 = 1, a2 = a, re = 0, im = 1, norm_type = norm_type)[,2]
+  fft_1d(grid_info, nu1 = nu, nu2 = nu, a1 = 1, a2 = a, Sigma_re = 0, Sigma_im = 1, norm_type = norm_type)[,2]
 }
 
 a_vals <- c(.1, .4, 1, 2)

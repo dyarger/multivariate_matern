@@ -6,12 +6,32 @@ dat300 <- dat300[dat300$year == 2015,]
 dat1500 <- dat1500[dat1500$year == 2015,]
 
 data_all <- rbind(cbind(dat300, level = 300), cbind(dat1500, level = 1500))
-
+library(ggplot2)
 ggplot(data = data_all,
        aes(x = lon, y = lat, color = Y)) +
   facet_grid(level~year) + 
   geom_point() + 
   scale_color_gradient2()
+
+theme_set(theme_bw())
+
+ggplot(data = data_all %>%filter(level == 300),
+       aes(x = lon, y = lat)) +
+  #facet_wrap(~year, ncol = 2) + 
+  geom_point(shape = 21, aes(fill = Y), color = 'grey75', size = 1.8) + 
+  scale_fill_gradient2() + 
+  labs(x = 'Longitude', y = 'Latitude', fill = 'Temperature Residual\n(°C) at 300m') + 
+  theme(legend.position = 'bottom')
+ggsave('images/argo_data1.png', height = 4.5, width = 3.75)
+ggplot(data = data_all %>%filter(level == 1500),
+       aes(x = lon, y = lat)) +
+  #facet_wrap(~year, ncol = 2) + 
+  geom_point(shape = 21, aes(fill = Y), color = 'grey75', size = 1.8) + 
+  scale_fill_gradient2(breaks = c(-0.5,-0.25, 0, 0.25, .5)) +
+  labs(x = 'Longitude', y = 'Latitude', fill = 'Temperature Residual\n(°C) at 1500m') + 
+  theme(legend.position = 'bottom') 
+ggsave('images/argo_data2.png', height = 4.5, width = 3.75)
+
 library(fields)
 library(tidyverse)
 library(fftw)

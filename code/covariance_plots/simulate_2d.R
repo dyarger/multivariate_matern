@@ -33,7 +33,8 @@ simu_bivariate <- function(grid, L = 1000, nu1 = 1.5, nu2 = 1.5, a1 = 1, a2 = 1,
   for (p in 1:2) {
     for (l in 1:L) {
       phi <- runif(n = 1, 0, 2 * pi)
-      sim_vals <- rnorm(n = 2)/sqrt(rgamma(n = 1, shape = .5))
+      #sim_vals <- rnorm(n = 2)/sqrt(rgamma(n = 1, shape = .5))
+      sim_vals <- rnorm(n = 2)/sqrt(rgamma(n = 1, shape = .5, rate = 1/2))
       test_g <- g_new(sqrt(sum(sim_vals^2)), a = a1, nu = nu1)
       test_g12 <- cc_fun(sim_vals, a1 = a1, a2 = a2, nu1 = nu1, nu2 = nu2)
       test_g22 <- g_new(sqrt(sum(sim_vals^2)), a = a2, nu = nu2)
@@ -156,8 +157,8 @@ ggsave(filename = 'images/simu_5_ggplot.png', height = 5.1, width = 8, dpi = 150
 
 h_fun4 <- function(h, a1, a2, nu1, nu2, d = 2) {
   if (h[1] > 0) {
-    complex(real = 0.85)/(1 + complex(imaginary = a1 * sqrt(sum(h^2))))^(nu1 + d/2) / 
-      (1 + complex(imaginary = -a2 * sqrt(sum(h^2))))^(nu2 + d/2) *
+    complex(real = 0.85)/(a1 + complex(imaginary = sqrt(sum(h^2))))^(nu1 + d/2) / 
+      (a2 + complex(imaginary = - sqrt(sum(h^2))))^(nu2 + d/2) *
       a1^(nu1) * a2^(nu2) * sqrt(gamma(nu1 + d/2)*gamma(nu2 + d/2)) / sqrt(gamma(nu1)*gamma(nu2)) / pi^(d/2)
   } else {
     complex(real = 0.85)/(a1 + complex(imaginary = -sqrt(sum(h^2))))^(nu1 + d/2) / 
@@ -190,7 +191,7 @@ ggsave(filename = 'images/simu_7_ggplot.png', height = 5.1, width = 8, dpi = 150
 
 set.seed(23^2)
 sim_f <- simu_bivariate(grid, L = n_samples,
-                        nu1 = 1, nu2 = 1, a1 = 1.2, a2 = .8,
+                        nu1 = 1, nu2 = 1, a1 = 1.6, a2 = .4,
                         g_new = g_new, cc_fun = h_fun4)
 
 ggplot(data = cbind(as.data.frame(grid), sim1 = sim_f[,1], sim2 = sim_f[,2]) %>%

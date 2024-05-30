@@ -2,7 +2,7 @@ library(tidyverse)
 theme_set(theme_bw() + theme(text = element_text(size = 16)))
 source('code/multi_matern_source.R')
 Sigma_mat <- matrix(nrow = 2, ncol = 2, complex(real = c(1,0,0,1),
-                                              imaginary = c(0, -.95, .95, 0)))
+                                              imaginary = c(0, -.9, .9, 0)))
 nu <- .8
 
 #### Plot covariance
@@ -13,16 +13,16 @@ grid <- expand.grid(test_seq, test_seq)
 grid$lag <- round((grid$Var1 - grid$Var2)/gap)*gap
 grid_unique <- grid[!duplicated(grid$lag),]
 cov_val1 <- sapply(1:nrow(grid_unique), function(x) {
-  full_cross_cov_single(h = grid_unique$lag[x], nu = nu, a = 1, 
-                        realp = Re(Sigma_mat[1,1]), imp = Im(Sigma_mat[1,1]))
+  cross_cov_same_params(s = grid_unique$lag[x], t = 0, nu = nu, a = 1, 
+                        Sigma = Sigma_mat[1,1])
 })
 cov_val2 <- sapply(1:nrow(grid_unique), function(x) {
-  full_cross_cov_single(h = grid_unique$lag[x], nu = nu, a = 1, 
-                        realp = Re(Sigma_mat[2,2]), imp = Im(Sigma_mat[2,2]))
+  cross_cov_same_params(s = grid_unique$lag[x], t = 0, nu = nu, a = 1, 
+                        Sigma = Sigma_mat[2,2])
 })
 cov_val12 <- sapply(1:nrow(grid_unique), function(x) {
-  full_cross_cov_single(h =  grid_unique$lag[x], nu = nu, a = 1, 
-                        realp = Re(Sigma_mat[1,2]), imp = Im(Sigma_mat[1,2]))
+  cross_cov_same_params(s = grid_unique$lag[x], t = 0,  nu = nu, a = 1, 
+                        Sigma = Sigma_mat[1,2])
 })
 grid_unique$cov1 <- cov_val1
 grid_unique$cov2 <- cov_val2
@@ -92,16 +92,16 @@ nu2 <- .8
 Sigma_mat <- matrix(nrow = 2, ncol = 2, complex(real = c(1,.95,.95,1),
                                               imaginary = c(0, 0, 0, 0))) 
 cov_val1 <- sapply(1:nrow(grid_unique), function(x) {
-  whitt_only_single(h = grid_unique$lag[x], nu1 = nu1, nu2 = nu1, a1 = 1, a2 = 1, 
-                    realp = Re(Sigma_mat[1,1]), imp = Im(Sigma_mat[1,1]), which_val = 1)
+  re_part_d1(h = grid_unique$lag[x], nu1 = nu1, nu2 = nu1, a1 = 1, a2 = 1, 
+                    Sigma = Sigma_mat[1,1])
 })
 cov_val2 <- sapply(1:nrow(grid_unique), function(x) {
-  whitt_only_single(h = grid_unique$lag[x], nu1 = nu2, nu2 = nu2, a1 = 1, a2 = 1, 
-                    realp = Re(Sigma_mat[2,2]), imp = Im(Sigma_mat[2,2]), which_val = 3)
+  re_part_d1(h = grid_unique$lag[x], nu1 = nu2, nu2 = nu2, a1 = 1, a2 = 1, 
+                    Sigma = Sigma_mat[2,2])
 })
 cov_val12 <- sapply(1:nrow(grid_unique), function(x) {
-  whitt_only_single(h =  grid_unique$lag[x], nu1 = nu1, nu2 = nu2, a1 = 1, a2 = 1, 
-                    realp = Re(Sigma_mat[1,2]), imp = Im(Sigma_mat[1,2]), which_val = 2)
+  re_part_d1(h =  grid_unique$lag[x], nu1 = nu1, nu2 = nu2, a1 = 1, a2 = 1, 
+                    Sigma = Sigma_mat[1,2])
 })
 grid_unique$cov1 <- cov_val1
 grid_unique$cov2 <- cov_val2
@@ -155,17 +155,14 @@ cc_summary <- grid_all %>%
 
 plot(cc_summary$lag, cc_summary$vval1, cex = .2)
 points(cc_summary$lag, sapply(cc_summary$lag, function(x) {
-  whitt_only_single(x, nu1 = nu1, nu2 = nu2, a1 = 1, a2 = 1, realp = Re(Sigma_mat[1,1]),
-                    imp = Im(Sigma_mat[1,1]), norm_type = 'D', which_val = 1)
+  re_part_d1(x, nu1 = nu1, nu2 = nu2, a1 = 1, a2 = 1, Sigma = Sigma_mat[1,1])
 }),col = 2, cex = .2)
 plot(cc_summary$lag, cc_summary$vval2, cex = .2)
 points(cc_summary$lag, sapply(cc_summary$lag, function(x) {
-  whitt_only_single(x, nu1 = nu1, nu2 = nu2, a1 = 1, a2 = 1, realp = Re(Sigma_mat[2,2]),
-                    imp = Im(Sigma_mat[2,2]), norm_type = 'D', which_val = 1)
+  re_part_d1(x, nu1 = nu1, nu2 = nu2, a1 = 1, a2 = 1, Sigma = Sigma_mat[2,2])
 }),col = 2, cex = .2)
 plot(cc_summary$lag, cc_summary$cc_val, cex = .2, ylim = c(-.1, 1))
 points(cc_summary$lag, sapply(cc_summary$lag, function(x) {
-  whitt_only_single(x, nu1 = nu1, nu2 = nu2, a1 = 1, a2 = 1, realp = Re(Sigma_mat[1,2]),
-                    imp = Im(Sigma_mat[1,2]), norm_type = 'D', which_val = 2)
+  re_part_d1(x, nu1 = nu1, nu2 = nu2, a1 = 1, a2 = 1, Sigma = Sigma_mat[1,2])
 }),col = 2, cex = .2)
 

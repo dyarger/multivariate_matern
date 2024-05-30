@@ -58,9 +58,9 @@ dist_tens_mat <- cbind(as.vector(dist_tens[,,1]), as.vector(dist_tens[,,2]))
 # given distances, compute fft on grid, then interpolate onto distances
 construct_matrix <- function(nu1, nu2, a1, a2, 
                              grid_info,
-                             Psi, Delta, dist_tens_mat) {
+                             Psi, Mu, dist_tens_mat) {
   C_val <- fft_2d(grid_info = grid_info, nu1 = nu1, nu2 = nu2, 
-                  a1 = a1, a2 = a2,  Psi = Psi, Delta = Delta)
+                  a1 = a1, a2 = a2,  Psi = Psi, Mu = Mu)
   
   tmat <- matrix(C_val[['val']], nrow = sqrt(nrow(C_val)))
   long1 <- grid_info[['x_vals']]
@@ -74,16 +74,16 @@ construct_matrix <- function(nu1, nu2, a1, a2,
 # construct bivariate Matern covariance matrix
 construct_bivariate_matrix <- function(nu1, nu2, a1, a2, 
                                     grid_info,
-                                    Psi_list, Delta_list, dist_tens_mat, nugget1, nugget2) {
+                                    Psi_list, Mu_list, dist_tens_mat, nugget1, nugget2) {
   C1 <- construct_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1,
-                         Psi = Psi_list[[1]], Delta = Delta_list[[1]], 
+                         Psi = Psi_list[[1]], Mu = Mu_list[[1]], 
                          grid_info = grid_info, dist_tens_mat)
   diag(C1) <- diag(C1) + nugget1
   C12 <- construct_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2,
-                          Psi = Psi_list[[3]], Delta = Delta_list[[3]], 
+                          Psi = Psi_list[[3]], Mu = Mu_list[[3]], 
                           grid_info = grid_info, dist_tens_mat)
   C2 <- construct_matrix(nu1 = nu2, nu2 = nu2, a1 = a2, a2 = a2,
-                         Psi = Psi_list[[2]], Delta = Delta_list[[2]],
+                         Psi = Psi_list[[2]], Mu = Mu_list[[2]],
                          grid_info = grid_info, dist_tens_mat)
   diag(C2) <- diag(C2) + nugget2
   rbind(cbind(C1, C12), cbind(t(C12), C2))
@@ -94,7 +94,7 @@ grid_info_plot <- create_grid_info_2d(2^11, x_max = 2500)
 
 # test the matrix creation
 test_mat <- construct_bivariate_matrix(nu1 = .5, nu2 = .5, a1 = 10^-3, a2 = 10^-3, 
-                                    Delta_list = list(function(x) 1, function(x) 1, 
+                                    Mu_list = list(function(x) 1, function(x) 1, 
                                                  function(x) {
                                                    .97 * complex(imaginary = sign(x))
                                                  }),
@@ -133,7 +133,7 @@ ll_fun <- function(par, dist_tens_mat, response, grid_info) {
   Sigma11 <- exp(par[7]); Sigma22 <- exp(par[8])
   Sigma12 <- par[9]*sqrt(Sigma11)*sqrt(Sigma22)
   cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
-                                     Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
+                                     Mu_list = list(function(x) Sigma11, function(x) Sigma22, 
                                                        function(x) Sigma12),
                                      Psi_list = replicate(3, {function(x) {
                                        sign(x)
@@ -176,7 +176,7 @@ par[9]
 
 df_fix <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                 d = 2,
-                Delta = function(x) Sigma12re, Psi = function(x) {
+                Mu = function(x) Sigma12re, Psi = function(x) {
                   sign(x)
                 }, grid_info = grid_info_plot)
 
@@ -196,7 +196,7 @@ ll_fun_psi_real <- function(par, dist_tens_mat, response, grid_info) {
     }
   }
   cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
-                                     Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
+                                     Mu_list = list(function(x) Sigma11, function(x) Sigma22, 
                                                        function(x) Sigma12),
                                      Psi_list = replicate(3, Psi_fun),
                                      dist_tens_mat = dist_tens_mat, grid_info = grid_info,
@@ -242,7 +242,7 @@ Psi_fun <- function(theta) {
 
 df_re <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                 d = 2,
-                Delta = function(x) Sigma12re, Psi = Psi_fun, grid_info = grid_info_plot)
+                Mu = function(x) Sigma12re, Psi = Psi_fun, grid_info = grid_info_plot)
 
 # with an imaginary entry
 ll_fun_psi_im <- function(par, dist_tens_mat, response, grid_info) {
@@ -271,7 +271,7 @@ ll_fun_psi_im <- function(par, dist_tens_mat, response, grid_info) {
     }
   }
   cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
-                                     Delta_list = list(function(x) Sigma11, 
+                                     Mu_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) complex(real = Sigma12,
                                                                            imaginary = Sigma12im*Psi_fun2(x))),
@@ -331,7 +331,7 @@ Psi_fun2 <- function(theta) {
 
 df_im <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                       d = 2,
-                    Delta = function(x) complex(real = Sigma12re,
+                    Mu = function(x) complex(real = Sigma12re,
                                                 imaginary = Sigma12im*Psi_fun2(x)), Psi = Psi_fun, grid_info = grid_info_plot)
 
 # only an imaginary entry, not presented
@@ -360,7 +360,7 @@ ll_fun_psi_im_only <- function(par, dist_tens_mat, response, grid_info) {
     }
   }
   cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
-                                     Delta_list = list(function(x) Sigma11, 
+                                     Mu_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) complex(real = 0,
                                                                            imaginary = Sigma12im*Psi_fun2(x))),
@@ -418,20 +418,20 @@ Psi_fun2 <- function(theta) {
 
 df_im_only <- fft_2d(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                 d = 2,
-                Delta = function(x) complex(real = 0,
+                Mu = function(x) complex(real = 0,
                                             imaginary = Sigma12im*Psi_fun2(x)), Psi = Psi_fun, grid_info = grid_info_plot)
 
 
 # independent Matern
 construct_bivariate_matrix_independent <- function(nu1, nu2, a1, a2, 
                                     grid_info,
-                                    Psi_list, Delta_list, dist_tens_mat, nugget1, nugget2) {
+                                    Psi_list, Mu_list, dist_tens_mat, nugget1, nugget2) {
   C1 <- construct_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1,
-                         Psi = Psi_list[[1]], Delta = Delta_list[[1]], 
+                         Psi = Psi_list[[1]], Mu = Mu_list[[1]], 
                          grid_info = grid_info, dist_tens_mat)
   diag(C1) <- diag(C1) + nugget1
   C2 <- construct_matrix(nu1 = nu2, nu2 = nu2, a1 = a2, a2 = a2,
-                         Psi = Psi_list[[2]], Delta = Delta_list[[2]],
+                         Psi = Psi_list[[2]], Mu = Mu_list[[2]],
                          grid_info = grid_info, dist_tens_mat)
   diag(C2) <- diag(C2) + nugget2
   as.matrix(Matrix::bdiag(C1, C2))
@@ -444,7 +444,7 @@ ll_fun_ind <- function(par, dist_tens_mat, response, grid_info) {
   nugget1 <- exp(par[5]); nugget2 <- exp(par[6])
   Sigma11 <- exp(par[7]); Sigma22 <- exp(par[8])
   cov_mat <- construct_bivariate_matrix_independent(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
-                                     Delta_list = list(function(x) Sigma11, 
+                                     Mu_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) 0),
                                      Psi_list = replicate(3, function(x) sign(x)),
@@ -491,7 +491,7 @@ ll_fun_single <- function(par, dist_tens_mat, response, grid_info) {
   Sigma11 <- exp(par[5]); Sigma22 <- exp(par[6])
   Sigma12 <- par[7]*sqrt(Sigma11)*sqrt(Sigma22)
   cov_mat <- construct_bivariate_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, 
-                                     Delta_list = list(function(x) Sigma11, 
+                                     Mu_list = list(function(x) Sigma11, 
                                                        function(x) Sigma22, 
                                                        function(x) Sigma12),
                                      Psi_list = replicate(3, function(x) sign(x)),
@@ -526,23 +526,23 @@ par <- test_optim_single$par
 (Sigma22 <- exp(par[6]))
 par[7]
 
-df_single <- fft_2d(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, Delta = 
+df_single <- fft_2d(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1, Mu = 
                   function(x) par[7] * sqrt(Sigma11) * sqrt(Sigma22), Psi = function(x) sign(x), grid_info = grid_info_plot)
 
 
 # bivariate Matern
 construct_matrix_mm <- function(nu1, nu2, nu12, a1, a2, a12,
                                     grid_info,
-                                    Psi_list, Delta_list, dist_tens_mat, nugget1, nugget2) {
+                                    Psi_list, Mu_list, dist_tens_mat, nugget1, nugget2) {
   C1 <- construct_matrix(nu1 = nu1, nu2 = nu1, a1 = a1, a2 = a1,
-                         Psi = Psi_list[[1]], Delta = Delta_list[[1]], 
+                         Psi = Psi_list[[1]], Mu = Mu_list[[1]], 
                          grid_info = grid_info, dist_tens_mat)
   diag(C1) <- diag(C1) + nugget1
   C12 <- construct_matrix(nu1 = nu12, nu2 = nu12, a1 = a12, a2 = a12,
-                          Psi = Psi_list[[3]], Delta = Delta_list[[3]], 
+                          Psi = Psi_list[[3]], Mu = Mu_list[[3]], 
                           grid_info = grid_info, dist_tens_mat)
   C2 <- construct_matrix(nu1 = nu2, nu2 = nu2, a1 = a2, a2 = a2,
-                         Psi = Psi_list[[2]], Delta = Delta_list[[2]],
+                         Psi = Psi_list[[2]], Mu = Mu_list[[2]],
                          grid_info = grid_info, dist_tens_mat)
   diag(C2) <- diag(C2) + nugget2
   rbind(cbind(C1, C12), cbind(t(C12), C2))
@@ -558,7 +558,7 @@ ll_fun_mm <- function(par, dist_tens_mat, response, grid_info) {
   Sigma12 <- par[11]*sqrt(Sigma11)*sqrt(Sigma22)
   cov_mat <- construct_matrix_mm(nu1 = nu1, nu2 = nu2, a1 = a1, a2 = a2, 
                                  nu12 = nu12, a12 = a12,
-                                     Delta_list = list(function(x) Sigma11, function(x) Sigma22, 
+                                     Mu_list = list(function(x) Sigma11, function(x) Sigma22, 
                                                        function(x) Sigma12),
                                      Psi_list = replicate(3, {function(x) {
                                        sign(x)
@@ -606,7 +606,7 @@ par <- test_optim_mm$par
 (Sigma22 <- exp(par[10]))
 par[11]
 
-df_mm <- fft_2d(nu1 = nu12, nu2 = nu12, a1 = a12, a2 = a12, Delta = 
+df_mm <- fft_2d(nu1 = nu12, nu2 = nu12, a1 = a12, a2 = a12, Mu = 
                function(x) par[11] * sqrt(Sigma11) * sqrt(Sigma22), 
                Psi = function(x) sign(x), grid_info = grid_info_plot)
 
