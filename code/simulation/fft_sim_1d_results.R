@@ -1,10 +1,41 @@
 files <- list.files('results/sim_results_1d/', pattern = '300')
 result_df <- list()
+
+compute_crps <- function(pred_vals, pred_vars, response_true) {
+  pred_sds <- ifelse(is.na(sqrt(pred_vars)), 10^-8, sqrt(pred_vars))
+  crps <- pred_sds * 
+    ( 1/sqrt(pi) - 2 * dnorm((response_true - pred_vals)/pred_sds)  - 
+        ((response_true - pred_vals)/pred_sds) * 
+        (2 * pnorm((response_true - pred_vals)/pred_sds)) - 1)
+  mean(crps, na.rm = T)
+}
+
+
+error_codes <- matrix(nrow = length(files), ncol = 6, '')
+sum_na_var <- matrix(nrow = length(files), ncol = 6, 0)
 for (i in 1:length(files)) {
   load(paste0('results/sim_results_1d/', files[i]))
   
   vals <- strsplit(files[i], '\\_')[[1]]
   response <- pred[,1]
+  
+  error_codes[i,] <- c(
+    test_optim$message,
+    test_optim_real$message,
+    test_optim_alt$message,
+    test_optim_real_alt$message,
+    test_optim_mm$message,
+    test_optim_mm_re$message
+  )
+  sum_na_var[i,] <- c(
+    sum(pred[,5:7] < 0),
+    sum(pred_re[,5:7] < 0),
+    sum(pred_alt[,5:7] < 0),
+    sum(pred_re_alt[,5:7] < 0),
+    sum(pred_mm[,5:7] < 0), 
+    sum(pred_mm_re[,5:7] < 0)
+  )
+  
   
   result_df[[i]] <- data.frame(model = c('A', 'B', 'C')[as.integer(vals[2])],
                                Re_true = vals[3],
@@ -25,6 +56,46 @@ for (i in 1:length(files)) {
                                C_Co_Sigma12_Re = test_optim_mm$par[11] * sqrt(exp(test_optim_mm$par[10])*exp(test_optim_mm$par[9])),
                                C_Co_Sigma12_Im = test_optim_mm$par[12] * sqrt(exp(test_optim_mm$par[10])*exp(test_optim_mm$par[9])),
                                C_Re_Sigma12_Re = test_optim_mm_re$par[11] * sqrt(exp(test_optim_mm_re$par[9])*exp(test_optim_mm_re$par[10])),
+                               
+                               A_Co_crps_1_12 = compute_crps(pred[1:100,2], pred[1:100,5], response[1:100]),
+                               A_Co_crps_1_1 = compute_crps(pred[1:100,3], pred[1:100,6], response[1:100]),
+                               A_Co_crps_1_2 = compute_crps(pred[1:100,4], pred[1:100,7], response[1:100]),
+                               A_Re_crps_1_12 = compute_crps(pred_re[1:100,2], pred_re[1:100,5], response[1:100]),
+                               A_Re_crps_1_1 = compute_crps(pred_re[1:100,3], pred_re[1:100,6], response[1:100]),
+                               A_Re_crps_1_2 = compute_crps(pred_re[1:100,4], pred_re[1:100,7], response[1:100]),
+                               B_Co_crps_1_12 = compute_crps(pred_alt[1:100,2], pred_alt[1:100,5], response[1:100]),
+                               B_Co_crps_1_1 = compute_crps(pred_alt[1:100,3], pred_alt[1:100,6], response[1:100]),
+                               B_Co_crps_1_2 = compute_crps(pred_alt[1:100,4], pred_alt[1:100,7], response[1:100]),
+                               B_Re_crps_1_12 = compute_crps(pred_re_alt[1:100,2], pred_re_alt[1:100,5], response[1:100]),
+                               B_Re_crps_1_1 = compute_crps(pred_re_alt[1:100,3], pred_re_alt[1:100,6], response[1:100]),
+                               B_Re_crps_1_2 = compute_crps(pred_re_alt[1:100,4], pred_re_alt[1:100,7], response[1:100]),
+                               C_Co_crps_1_12 = compute_crps(pred_mm[1:100,2], pred_mm[1:100,5], response[1:100]),
+                               C_Co_crps_1_1 = compute_crps(pred_mm[1:100,3], pred_mm[1:100,6], response[1:100]),
+                               C_Co_crps_1_2 = compute_crps(pred_mm[1:100,4], pred_mm[1:100,7], response[1:100]),
+                               C_Re_crps_1_12 = compute_crps(pred_mm_re[1:100,2], pred_mm_re[1:100,5], response[1:100]),
+                               C_Re_crps_1_1 = compute_crps(pred_mm_re[1:100,3], pred_mm_re[1:100,6], response[1:100]),
+                               C_Re_crps_1_2 = compute_crps(pred_mm_re[1:100,4], pred_mm_re[1:100,7], response[1:100]),
+                               
+                               A_Co_crps_2_12 = compute_crps(pred[101:200,2], pred[101:200,5], response[101:200]),
+                               A_Co_crps_2_1 = compute_crps(pred[101:200,3], pred[101:200,6], response[101:200]),
+                               A_Co_crps_2_2 = compute_crps(pred[101:200,4], pred[101:200,7], response[101:200]),
+                               A_Re_crps_2_12 = compute_crps(pred_re[101:200,2], pred_re[101:200,5], response[101:200]),
+                               A_Re_crps_2_1 = compute_crps(pred_re[101:200,3], pred_re[101:200,6], response[101:200]),
+                               A_Re_crps_2_2 = compute_crps(pred_re[101:200,4], pred_re[101:200,7], response[101:200]),
+                               B_Co_crps_2_12 = compute_crps(pred_alt[101:200,2], pred_alt[101:200,5], response[101:200]),
+                               B_Co_crps_2_1 = compute_crps(pred_alt[101:200,3], pred_alt[101:200,6], response[101:200]),
+                               B_Co_crps_2_2 = compute_crps(pred_alt[101:200,4], pred_alt[101:200,7], response[101:200]),
+                               B_Re_crps_2_12 = compute_crps(pred_re_alt[101:200,2], pred_re_alt[101:200,5], response[101:200]),
+                               B_Re_crps_2_1 = compute_crps(pred_re_alt[101:200,3], pred_re_alt[101:200,6], response[101:200]),
+                               B_Re_crps_2_2 = compute_crps(pred_re_alt[101:200,4], pred_re_alt[101:200,7], response[101:200]),
+                               C_Co_crps_2_12 = compute_crps(pred_mm[101:200,2], pred_mm[101:200,5], response[101:200]),
+                               C_Co_crps_2_1 = compute_crps(pred_mm[101:200,3], pred_mm[101:200,6], response[101:200]),
+                               C_Co_crps_2_2 = compute_crps(pred_mm[101:200,4], pred_mm[101:200,7], response[101:200]),
+                               C_Re_crps_2_12 = compute_crps(pred_mm_re[101:200,2], pred_mm_re[101:200,5], response[101:200]),
+                               C_Re_crps_2_1 = compute_crps(pred_mm_re[101:200,3], pred_mm_re[101:200,6], response[101:200]),
+                               C_Re_crps_2_2 = compute_crps(pred_mm_re[101:200,4], pred_mm_re[101:200,7], response[101:200]),
+                               
+                               
                                A_Co_resp1_pred12 = sqrt(mean((pred[1:100,2] - response[1:100])^2)),
                                A_Co_resp1_pred1 = sqrt(mean((pred[1:100,3] - response[1:100])^2)),
                                A_Co_resp1_pred2 = sqrt(mean((pred[1:100,4] - response[1:100])^2)),
@@ -64,6 +135,9 @@ for (i in 1:length(files)) {
 }
 library(dplyr)
 df <- dplyr::bind_rows(result_df)
+
+apply(sum_na_var, 2,summary)
+apply(sum_na_var, 2,function(x) mean(x > 0))
 
 
 
@@ -155,10 +229,10 @@ df_pred <- df %>%
   summarize_at(vars(contains('resp')), function(x) round(mean(x), 3)) %>%
   arrange(model, as.numeric(Im_true), as.numeric(Re_true)) %>%
   ungroup() %>%
-  filter(model == 'C') %>%
+  filter(model == 'A') %>%
   tidyr::pivot_longer(cols = contains('resp')) %>%
   tidyr::separate(name, into = c('model_est', 'type', 'resp', 'pred')) %>%
-  dplyr::filter(model_est == 'C') %>%
+  dplyr::filter(model_est == 'A') %>%
   dplyr::mutate(model_summary = paste(Re_true, Im_true)) %>%
   dplyr::select(-Re_true, -Im_true, -model, -model_est) %>%
   tidyr::pivot_wider(names_from = model_summary, values_from = value) %>%
@@ -168,6 +242,32 @@ df_pred <- df %>%
   as.data.frame() 
 
 df_pred
+
+
+
+crps_df <- df %>%
+  group_by(model, Re_true, Im_true) %>%
+  summarize_at(vars(contains('crps')), function(x) round(mean(x), 3)) %>%
+  arrange(model, as.numeric(Im_true), as.numeric(Re_true)) %>%
+  ungroup() %>%
+  filter(model == 'A') %>%
+  tidyr::pivot_longer(cols = contains('crps')) %>%
+  tidyr::separate(name, into = c('model_est', 'type', 'var', 'resp', 'pred')) %>%
+  dplyr::filter(model_est == 'A') %>%
+  dplyr::mutate(model_summary = paste(Re_true, Im_true)) %>%
+  dplyr::select(-Re_true, -Im_true, -model, -model_est) %>%
+  tidyr::pivot_wider(names_from = model_summary, values_from = value) %>%
+  dplyr::mutate(pred = factor(pred, levels = c('12', '1', '2')),
+                type = factor(type, levels = c('Co', 'Re'))) %>% 
+  arrange(resp, pred, type) %>%
+  as.data.frame() 
+
+crps_df %>%
+  filter((pred == 1  & resp == 2) | (pred == 2 & resp == 1)) %>%
+  arrange(resp, rev(type))
+
+crps_df %>%
+  arrange(resp, factor(pred, levels = c(12, 1, 2)), rev(type))
 
 library(ggplot2)
 library(tidyr)
